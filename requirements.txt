@@ -1,0 +1,11 @@
+tensorflow[and-cuda]
+tensorflow_datasets
+tensorflow_hub
+rlds
+tf_agents
+dm-reverb[tensorflow]
+apache_beam
+tfp-nightly
+matplotlib
+IPython
+mediapy

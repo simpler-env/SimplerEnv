@@ -4,13 +4,20 @@
 
 Create an anaconda environment: 
 ```
-conda create -n real2sim python=3.8
+conda create -n real2sim python=3.9
 ```
 
 Install ManiSkill2:
 ```
 cd {this_repo}/ManiSkill2_real2sim
 pip install -e .
+
+wget https://dl.fbaipublicfiles.com/habitat/ReplicaCAD/hab2_bench_assets.zip -P data
+cd data && unzip -q hab2_bench_assets.zip -d hab2_bench_assets
+rm hab2_bench_assets.zip
+
+cd ..
+python -m mani_skill2.utils.download_asset ycb
 ```
 
 Install tensor2robot and roboticstransformer:
@@ -24,9 +31,9 @@ cd {this_repo}/robotics_transformer
 pip install -r requirements.txt
 ```
 
-Install other packages:
+Install this package:
 ```
-pip install tensorflow_datasets rlds tf_agents dm-reverb[tensorflow] apache_beam tfp-nightly matplotlib IPython
+pip install -e .
 ```
 
 Download RT-1 Checkpoint:
