@@ -6,6 +6,7 @@ tf_agents
 dm-reverb[tensorflow]
 apache_beam
 tfp-nightly
+transforms3d
 matplotlib
 IPython
 mediapy

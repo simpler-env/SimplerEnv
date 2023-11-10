@@ -30,7 +30,7 @@ def demo(fix_root_link, balance_passive_force):
     # robot: sapien.Articulation = loader.load("/home/xuanlin/real2sim/ManiSkill2/mani_skill2/assets/descriptions/mobile_panda_single_arm.urdf")
     # robot.set_root_pose(sapien.Pose([0, 0, 0], [1, 0, 0, 0]))
 
-    robot: sapien.Articulation = loader.load("/home/xuanlin/real2sim/ManiSkill2_real2sim/mani_skill2/assets/descriptions/googlerobot_description/google_robot_meta_sim_fix_wheel_fix_fingertip.urdf")
+    robot: sapien.Articulation = loader.load("/home/xuanlin/Real2Sim/ManiSkill2_real2sim/mani_skill2/assets/descriptions/googlerobot_description/google_robot_meta_sim_fix_wheel_fix_fingertip.urdf")
     print(robot.get_links())
     robot.set_root_pose(sapien.Pose([0, 0, 0], [1, 0, 0, 0]))
 

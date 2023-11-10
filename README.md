@@ -33,6 +33,7 @@ pip install -r requirements.txt
 
 Install this package:
 ```
+cd {this_repo}
 pip install -e .
 ```
 
