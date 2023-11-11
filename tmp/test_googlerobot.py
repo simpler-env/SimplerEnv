@@ -32,7 +32,7 @@ def demo(fix_root_link, balance_passive_force):
 
     robot: sapien.Articulation = loader.load("/home/xuanlin/Real2Sim/ManiSkill2_real2sim/mani_skill2/assets/descriptions/googlerobot_description/google_robot_meta_sim_fix_wheel_fix_fingertip.urdf")
     print(robot.get_links())
-    robot.set_root_pose(sapien.Pose([0, 0, 0], [1, 0, 0, 0]))
+    robot.set_root_pose(sapien.Pose([0, 0, 0.06205], [1, 0, 0, 0]))
 
     # Set initial joint positions
     # robot.set_qpos(np.zeros(15))
@@ -87,7 +87,7 @@ def demo(fix_root_link, balance_passive_force):
 
 
 def main():
-    demo(fix_root_link=True,
+    demo(fix_root_link=False,
          balance_passive_force=True)
 
 
@@ -106,13 +106,11 @@ if __name__ == '__main__':
        [-1.79e+00,  1.79e+00],
        [-4.49e+00,  1.35e+00],
        [-1.00e-04,  1.30e+00], # gripper plus = close
-       [ 0.00e+00,  1.20e+00],
        [-1.00e-04,  1.30e+00],
-       [ 0.00e+00,  1.20e+00],
        [-3.79e+00,  2.22e+00],
        [-1.17e+00,  1.17e+00]], dtype=float32)
     robot.get_active_joints()
         ['joint_wheel_left', 'joint_wheel_right', 'joint_torso', 'joint_shoulder', 
         'joint_bicep', 'joint_elbow', 'joint_forearm', 'joint_wrist', 'joint_gripper', 
-        'joint_finger_right', 'joint_finger_tip_right', 'joint_finger_left', 'joint_finger_tip_left', 'joint_head_pan', 'joint_head_tilt']
+        'joint_finger_right', 'joint_finger_left', 'joint_head_pan', 'joint_head_tilt']
     """

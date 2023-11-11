@@ -29,7 +29,9 @@ class RT1Inference:
         self.observation = None
         self.tfa_time_step = None
         self.policy_state = None
+        self.task_description = None
         self.task_description_embedding = None
+        self.time_step = 0
 
     def _initialize_model(self):
         # Perform one step of inference using dummy input to trace the tensoflow graph
@@ -47,6 +49,7 @@ class RT1Inference:
         )  # {'seq_idx': shape (1,1,1,1,1), 'action_tokens': shape [1,15,11,1,1], 'context_image_tokens' (1,15,81,1,512)}
         # Run inference using the policy
         action = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
+        self.time_step = 0
 
     def _resize_image(self, image):
         image = tf.image.resize_with_pad(
@@ -57,20 +60,27 @@ class RT1Inference:
 
     def reset(self, task_description):
         self._initialize_model()
+        self.task_description = task_description
         self.task_description_embedding = self.lang_embed_model([task_description])[0]
 
     def step(self, image):
         image = self._resize_image(image)
         self.observation["image"] = image
+        # if self.time_step == 0:
         self.observation["natural_language_embedding"] = self.task_description_embedding
+        self.observation["natural_language_instruction"] = tf.constant(self.task_description, dtype=tf.string)
 
         self.tfa_time_step = ts.transition(
             self.observation, reward=np.zeros((), dtype=np.float32)
         )
         policy_step = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
         action = policy_step.action # keys: ['base_displacement_vector', 'rotation_delta', 'world_vector', 'base_displacement_ve...l_rotation', 'gripper_closedness_action', 'terminate_episode']
+        if tf.abs(action['gripper_closedness_action'][0]) < 0.01:
+            action['gripper_closedness_action'][0] = 0.0 # regard small gripper actions as 0
+        
         self.policy_state = policy_step.state
-
+        self.time_step += 1
+        
         return action
 
     def visualize_epoch(self, predicted_actions, images):
