@@ -44,8 +44,8 @@ def main(env_name):
         elif env_name in ['GraspSingleYCBInScene-v0', 'GraspSingleYCBSomeInScene-v0']:
             task_description = f"pick {obj_name}"
         elif env_name in ['GraspSingleYCBFruitInScene-v0']:
-            task_description = f"pick fruit"
-        elif env_name == 'GraspSingleYCBCanInScene-v0':
+            task_description = "pick fruit"
+        elif env_name in ['GraspSingleYCBCanInScene-v0', 'GraspSingleYCBCanInScene-v0']:
             task_description = "pick can"
         elif env_name == 'GraspSingleYCBBoxInScene-v0':
             task_description = "pick box"
@@ -59,6 +59,7 @@ def main(env_name):
         rt1_model.reset(task_description)
     
         timestep = 0
+        success = "failure"
         # Step the environment
         while not (predicted_terminated or truncated):
             if timestep % action_repeat == 0:
@@ -89,6 +90,9 @@ def main(env_name):
                         ]
                     )
                 )
+                if terminated:
+                    # For now, if at any step the episode is successful, we consider it a success
+                    success = "success"
             else:
                 obs, reward, terminated, truncated, info = env.step(
                     np.concatenate(
@@ -104,7 +108,7 @@ def main(env_name):
             images.append(image)
             timestep += 1
             
-        write_video(f'results/{env_name}/vis_{epoch_id}.mp4', images, fps=5)
+        write_video(f'results/{env_name}/vis_{epoch_id}_{success}.mp4', images, fps=5)
 
 
 if __name__ == '__main__':
@@ -114,6 +118,6 @@ if __name__ == '__main__':
     # main('GraspSingleYCBInScene-v0')
     # main('GraspSingleYCBSomeInScene-v0')
     # main('GraspSingleYCBFruitInScene-v0')
-    # main('GraspSingleYCBCanInScene-v0')
+    main('GraspSingleYCBCanInScene-v0')
     # main('GraspSingleYCBBoxInScene-v0')
-    main('KnockSingleYCBBoxOverInScene-v0')
+    # main('KnockSingleYCBBoxOverInScene-v0')

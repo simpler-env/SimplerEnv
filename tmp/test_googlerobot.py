@@ -35,7 +35,7 @@ def demo(fix_root_link, balance_passive_force):
     robot.set_root_pose(sapien.Pose([0, 0, 0.06205], [1, 0, 0, 0]))
 
     # Set initial joint positions
-    # robot.set_qpos(np.zeros(15))
+    # robot.set_qpos(np.zeros(13))
     qpos = [-0.2639457174606611,
             0.0831913360274175,
             0.5017611504652179,
@@ -45,7 +45,7 @@ def demo(fix_root_link, balance_passive_force):
             -1.080652960128774,
             0, 0,
             -0.00285961, 0.7851361]
-    # qpos = np.zeros(13)
+    # qpos = np.zeros(11)
     robot.set_qpos(qpos)
     for joint in robot.get_active_joints():
         joint.set_drive_property(stiffness=1e5, damping=1e3)
