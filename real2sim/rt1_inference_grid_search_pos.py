@@ -14,6 +14,11 @@ def main(env_name):
     obj_init_x_range = np.linspace(-0.4, -0.1, 7)
     obj_init_y_range = np.linspace(0.0, 0.4, 9)
     
+    if 'YCB' in env_name:
+        asset_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/mani_skill2_ycb/'
+    else:
+        asset_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/custom/'
+    
     # Build RT-1 Model
     rt1_model = RT1Inference()
     
@@ -23,14 +28,14 @@ def main(env_name):
                 for obj_init_y in obj_init_y_range:
                     # Create environment
                     env = gym.make(env_name,
-                                control_mode='arm_pd_ee_target_delta_pose_base_gripper_finger_pd_joint_delta_pos',
-                                # control_mode='arm_pd_ee_target_delta_pose_base_gripper_finger_pd_joint_target_delta_pos',
+                                control_mode='arm_pd_ee_target_delta_pose_base_gripper_pd_joint_delta_pos',
+                                # control_mode='arm_pd_ee_target_delta_pose_base_gripper_pd_joint_target_delta_pos',
                                 obs_mode='rgbd',
                                 robot='google_robot_static',
                                 sim_freq=510,
                                 control_freq=3 * action_repeat,
                                 max_episode_steps=50 * action_repeat,
-                                asset_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/mani_skill2_ycb/',
+                                asset_root=asset_root,
                                 scene_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/hab2_bench_assets/',
                                 obj_init_rand_rot_z_enabled=False,
                                 obj_init_rand_rot_range=0,
@@ -57,6 +62,8 @@ def main(env_name):
                         task_description = "pick fruit"
                     elif env_name in ['GraspSingleYCBCanInScene-v0', 'GraspSingleYCBTomatoCanInScene-v0']:
                         task_description = "pick can"
+                    elif env_name == 'GraspSingleCokeCanInScene-v0':
+                        task_description = "pick coke can"
                     elif env_name == 'GraspSingleYCBBoxInScene-v0':
                         task_description = "pick box"
                     elif env_name == 'KnockSingleYCBBoxOverInScene-v0':

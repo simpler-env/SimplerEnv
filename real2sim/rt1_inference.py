@@ -10,15 +10,19 @@ from real2sim.utils.visualization import write_video
 def main(env_name):
     action_repeat = 5 # render intermediate steps and possibly delay gripper execution
     # Create environment
+    if 'YCB' in env_name:
+        asset_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/mani_skill2_ycb/'
+    else:
+        asset_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/custom/'
     env = gym.make(env_name,
-                   control_mode='arm_pd_ee_target_delta_pose_base_gripper_finger_pd_joint_delta_pos',
-                   # control_mode='arm_pd_ee_target_delta_pose_base_gripper_finger_pd_joint_target_delta_pos',
+                   control_mode='arm_pd_ee_target_delta_pose_base_gripper_pd_joint_target_delta_pos',
+                   # control_mode='arm_pd_ee_target_delta_pose_base_gripper_pd_joint_target_delta_pos',
                    obs_mode='rgbd',
                    robot='google_robot_static',
                    sim_freq=510,
                    control_freq=3 * action_repeat,
                    max_episode_steps=50 * action_repeat,
-                   asset_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/mani_skill2_ycb/',
+                   asset_root=asset_root,
                    scene_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/hab2_bench_assets/',
     )
                 #    # Enable Ray Tracing
@@ -47,6 +51,8 @@ def main(env_name):
             task_description = "pick fruit"
         elif env_name in ['GraspSingleYCBCanInScene-v0', 'GraspSingleYCBCanInScene-v0']:
             task_description = "pick can"
+        elif env_name == 'GraspSingleCokeCanInScene-v0':
+            task_description = "pick coke can"
         elif env_name == 'GraspSingleYCBBoxInScene-v0':
             task_description = "pick box"
         elif env_name == 'KnockSingleYCBBoxOverInScene-v0':
@@ -98,7 +104,8 @@ def main(env_name):
                     np.concatenate(
                         [np.zeros(3), # same target as previous step
                         np.zeros(3), # same target as previous step
-                        action['gripper_closedness_action']
+                        np.zeros(1), # same target as previous step
+                        # action['gripper_closedness_action']
                         # np.zeros(1) if timestep % action_repeat < (action_repeat // 2) else action['gripper_closedness_action'],
                         ]
                     )
@@ -118,6 +125,7 @@ if __name__ == '__main__':
     # main('GraspSingleYCBInScene-v0')
     # main('GraspSingleYCBSomeInScene-v0')
     # main('GraspSingleYCBFruitInScene-v0')
-    main('GraspSingleYCBCanInScene-v0')
+    # main('GraspSingleYCBCanInScene-v0')
+    main('GraspSingleCokeCanInScene-v0')
     # main('GraspSingleYCBBoxInScene-v0')
     # main('KnockSingleYCBBoxOverInScene-v0')
