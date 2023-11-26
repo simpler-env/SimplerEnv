@@ -7,7 +7,7 @@ from transforms3d.euler import euler2axangle
 from real2sim.rt1.rt1_model import RT1Inference
 from real2sim.utils.visualization import write_video
 
-def main(env_name):
+def main(env_name, scene_name):
     action_repeat = 5 # render intermediate steps and possibly delay gripper execution
     # Create environment
     if 'YCB' in env_name:
@@ -16,7 +16,6 @@ def main(env_name):
         asset_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/custom/'
     env = gym.make(env_name,
                    control_mode='arm_pd_ee_target_delta_pose_base_gripper_pd_joint_target_delta_pos',
-                   # control_mode='arm_pd_ee_target_delta_pose_base_gripper_pd_joint_target_delta_pos',
                    obs_mode='rgbd',
                    robot='google_robot_static',
                    sim_freq=510,
@@ -24,6 +23,7 @@ def main(env_name):
                    max_episode_steps=50 * action_repeat,
                    asset_root=asset_root,
                    scene_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/hab2_bench_assets/',
+                   scene_name=scene_name
     )
                 #    # Enable Ray Tracing
                 #    shader_dir="rt",
@@ -49,7 +49,7 @@ def main(env_name):
             task_description = f"pick {obj_name}"
         elif env_name in ['GraspSingleYCBFruitInScene-v0']:
             task_description = "pick fruit"
-        elif env_name in ['GraspSingleYCBCanInScene-v0', 'GraspSingleYCBCanInScene-v0']:
+        elif env_name in ['GraspSingleYCBCanInScene-v0', 'GraspSingleYCBTomatoCanInScene-v0']:
             task_description = "pick can"
         elif env_name == 'GraspSingleCokeCanInScene-v0':
             task_description = "pick coke can"
@@ -115,17 +115,20 @@ def main(env_name):
             images.append(image)
             timestep += 1
             
-        write_video(f'results/{env_name}/vis_{epoch_id}_{success}.mp4', images, fps=5)
+        write_video(f'results/{scene_name}/{env_name}/vis_{epoch_id}_{success}.mp4', images, fps=5)
 
 
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     os.environ['DISPLAY'] = ''
     # main('PickSingleYCBIntoBowl-v0')
-    # main('GraspSingleYCBInScene-v0')
-    # main('GraspSingleYCBSomeInScene-v0')
-    # main('GraspSingleYCBFruitInScene-v0')
-    # main('GraspSingleYCBCanInScene-v0')
-    main('GraspSingleCokeCanInScene-v0')
-    # main('GraspSingleYCBBoxInScene-v0')
-    # main('KnockSingleYCBBoxOverInScene-v0')
+    # main('GraspSingleYCBInScene-v0', 'Baked_sc1_staging_table83_82cm')
+    # main('GraspSingleYCBSomeInScene-v0', 'Baked_sc1_staging_table83_82cm')
+    # main('GraspSingleYCBFruitInScene-v0', 'Baked_sc1_staging_table83_82cm')
+    # main('GraspSingleYCBCanInScene-v0', 'Baked_sc1_staging_table83_82cm')
+    # main('GraspSingleYCBBoxInScene-v0', 'Baked_sc1_staging_table83_82cm')
+    # main('KnockSingleYCBBoxOverInScene-v0', 'Baked_sc1_staging_table83_82cm')
+
+    main('GraspSingleCokeCanInScene-v0', 'Baked_sc1_staging_table83_82cm')
+    # main('GraspSingleCokeCanInScene-v0', 'Baked_sc1_staging_objaverse_cabinet1_1')
+    # main('GraspSingleCokeCanInScene-v0', 'Baked_sc1_staging_table_616385')

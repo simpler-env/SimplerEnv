@@ -7,6 +7,13 @@ Create an anaconda environment:
 conda create -n real2sim python=3.9
 ```
 
+Clone this repo:
+```
+git clone https://github.com/xuanlinli17/real2sim --recurse-submodules
+cd robotics_transformer
+git-lfs pull
+```
+
 Install ManiSkill2:
 ```
 cd {this_repo}/ManiSkill2_real2sim
@@ -19,6 +26,8 @@ rm hab2_bench_assets.zip
 cd ..
 python -m mani_skill2.utils.download_asset ycb
 ```
+
+
 
 Install tensor2robot and roboticstransformer:
 ```

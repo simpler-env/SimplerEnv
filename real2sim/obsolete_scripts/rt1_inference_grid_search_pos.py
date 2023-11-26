@@ -7,9 +7,9 @@ from transforms3d.euler import euler2axangle
 from real2sim.rt1.rt1_model import RT1Inference
 from real2sim.utils.visualization import write_video
 
-def main(env_name):
+def main(env_name, scene_name):
     action_repeat = 5 # render intermediate steps and possibly delay gripper execution
-    robot_init_x_range = np.linspace(0.30, 0.50, 5)
+    robot_init_x_range = np.linspace(0.30, 0.70, 5)
     robot_init_y_range = np.linspace(0.0, 0.4, 5)
     obj_init_x_range = np.linspace(-0.4, -0.1, 7)
     obj_init_y_range = np.linspace(0.0, 0.4, 9)
@@ -28,8 +28,7 @@ def main(env_name):
                 for obj_init_y in obj_init_y_range:
                     # Create environment
                     env = gym.make(env_name,
-                                control_mode='arm_pd_ee_target_delta_pose_base_gripper_pd_joint_delta_pos',
-                                # control_mode='arm_pd_ee_target_delta_pose_base_gripper_pd_joint_target_delta_pos',
+                                control_mode='arm_pd_ee_target_delta_pose_base_gripper_pd_joint_target_delta_pos',
                                 obs_mode='rgbd',
                                 robot='google_robot_static',
                                 sim_freq=510,
@@ -37,6 +36,7 @@ def main(env_name):
                                 max_episode_steps=50 * action_repeat,
                                 asset_root=asset_root,
                                 scene_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/hab2_bench_assets/',
+                                scene_name=scene_name,
                                 obj_init_rand_rot_z_enabled=False,
                                 obj_init_rand_rot_range=0,
                                 obj_init_fixed_xy_pos=np.array([obj_init_x, obj_init_y]),
@@ -115,7 +115,8 @@ def main(env_name):
                                 np.concatenate(
                                     [np.zeros(3), # same target as previous step
                                     np.zeros(3), # same target as previous step
-                                    action['gripper_closedness_action']
+                                    np.zeros(1), # same target as previous step
+                                    # action['gripper_closedness_action']
                                     # np.zeros(1) if timestep % action_repeat < (action_repeat // 2) else action['gripper_closedness_action'],
                                     ]
                                 )
@@ -125,10 +126,11 @@ def main(env_name):
                         images.append(image)
                         timestep += 1
                         
-                    write_video(f'results/{env_name}/rob_{robot_init_x}_{robot_init_y}/{success}_obj_{obj_init_x}_{obj_init_y}.mp4', images, fps=5)
+                    write_video(f'results/{scene_name}/{env_name}_grid_search/rob_{robot_init_x}_{robot_init_y}/{success}_obj_{obj_init_x}_{obj_init_y}.mp4', images, fps=5)
 
 
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     os.environ['DISPLAY'] = ''
-    main('GraspSingleYCBTomatoCanInScene-v0')
+    # main('GraspSingleYCBTomatoCanInScene-v0', 'Baked_sc1_staging_table83_82cm')
+    main('GraspSingleCokeCanInScene-v0', 'Baked_sc1_staging_table_616385')
