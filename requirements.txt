@@ -11,3 +11,15 @@ matplotlib
 IPython
 mediapy
 coacd
+piexif
+configargparse
+kornia
+lpips
+ninja
+imageio
+PyOpenGL
+glfw
+xatlas
+gdown
+scikit-learn
+plyfile

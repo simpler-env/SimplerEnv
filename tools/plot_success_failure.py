@@ -26,6 +26,8 @@ def main():
         elif 'failure' in fname:
             failure.append([x, y])
     
+    print("**Success Rate: {}**".format(len(success) / (len(success) + len(failure))))
+    
     plt.figure()
     if len(success) > 0:
         plt.plot(np.array(success)[:, 1], np.array(success)[:, 0], 'o', color='green', label='success')

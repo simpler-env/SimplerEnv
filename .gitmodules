@@ -7,3 +7,12 @@
 [submodule "tensor2robot"]
 	path = tensor2robot
 	url = git@github.com:xuanlinli17/tensor2robot
+[submodule "TensoRF"]
+	path = TensoRF
+	url = https://github.com/xuanlinli17/TensoRF
+[submodule "diff_dmc"]
+	path = diff_dmc
+	url = https://github.com/SarahWeiii/diff_dmc.git
+[submodule "diffrec_ddmc"]
+	path = diffrec_ddmc
+	url = https://github.com/SarahWeiii/diffrec_ddmc

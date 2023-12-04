@@ -14,6 +14,7 @@ def main(env_name, scene_name):
         asset_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/mani_skill2_ycb/'
     else:
         asset_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/custom/'
+    rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/google_table_top_1.png'
     env = gym.make(env_name,
                    control_mode='arm_pd_ee_target_delta_pose_base_gripper_pd_joint_target_delta_pos',
                    obs_mode='rgbd',
@@ -23,7 +24,10 @@ def main(env_name, scene_name):
                    max_episode_steps=50 * action_repeat,
                    asset_root=asset_root,
                    scene_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/hab2_bench_assets/',
-                   scene_name=scene_name
+                   scene_name=scene_name,
+                   camera_cfgs={"add_segmentation": True},
+                   rgb_overlay_path=rgb_overlay_path,
+                   rgb_overlay_cameras=['overhead_camera'],
     )
                 #    # Enable Ray Tracing
                 #    shader_dir="rt",
@@ -115,7 +119,7 @@ def main(env_name, scene_name):
             images.append(image)
             timestep += 1
             
-        write_video(f'results/{scene_name}/{env_name}/vis_{epoch_id}_{success}.mp4', images, fps=5)
+        write_video(f'results_tmp/old/{scene_name}/{env_name}/vis_{epoch_id}_{success}.mp4', images, fps=5)
 
 
 if __name__ == '__main__':
@@ -123,12 +127,12 @@ if __name__ == '__main__':
     os.environ['DISPLAY'] = ''
     # main('PickSingleYCBIntoBowl-v0')
     # main('GraspSingleYCBInScene-v0', 'Baked_sc1_staging_table83_82cm')
-    # main('GraspSingleYCBSomeInScene-v0', 'Baked_sc1_staging_table83_82cm')
+    main('GraspSingleYCBSomeInScene-v0', 'Baked_sc1_staging_table83_82cm')
     # main('GraspSingleYCBFruitInScene-v0', 'Baked_sc1_staging_table83_82cm')
     # main('GraspSingleYCBCanInScene-v0', 'Baked_sc1_staging_table83_82cm')
     # main('GraspSingleYCBBoxInScene-v0', 'Baked_sc1_staging_table83_82cm')
     # main('KnockSingleYCBBoxOverInScene-v0', 'Baked_sc1_staging_table83_82cm')
 
-    main('GraspSingleCokeCanInScene-v0', 'Baked_sc1_staging_table83_82cm')
+    # main('GraspSingleCokeCanInScene-v0', 'Baked_sc1_staging_table83_82cm')
     # main('GraspSingleCokeCanInScene-v0', 'Baked_sc1_staging_objaverse_cabinet1_1')
     # main('GraspSingleCokeCanInScene-v0', 'Baked_sc1_staging_table_616385')
