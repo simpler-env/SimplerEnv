@@ -77,6 +77,7 @@ def demo(fix_root_link, balance_passive_force):
                 )
                 robot.set_qf(qf)
             print("target qpos", qpos)
+            print("current qpos", robot.get_qpos())
             robot.set_drive_target(qpos)
             scene.step()
             # if tmp > 0 and tmp % 1 == 0:
@@ -87,7 +88,7 @@ def demo(fix_root_link, balance_passive_force):
 
 
 def main():
-    demo(fix_root_link=False,
+    demo(fix_root_link=True,
          balance_passive_force=True)
 
 

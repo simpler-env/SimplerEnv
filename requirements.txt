@@ -5,6 +5,7 @@ rlds
 tf_agents
 dm-reverb[tensorflow]
 apache_beam
+tfds-nightly
 tfp-nightly
 transforms3d
 matplotlib
@@ -23,3 +24,8 @@ xatlas
 gdown
 scikit-learn
 plyfile
+scikit-image
+omegaconf
+pytorch_lightning
+lightning
+cmapy

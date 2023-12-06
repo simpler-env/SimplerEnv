@@ -60,8 +60,12 @@ class RT1Inference:
 
     def reset(self, task_description):
         self._initialize_model()
-        self.task_description = task_description
-        self.task_description_embedding = self.lang_embed_model([task_description])[0]
+        if task_description is not None:
+            self.task_description = task_description
+            self.task_description_embedding = self.lang_embed_model([task_description])[0]
+        else:
+            self.task_description = ''
+            self.task_description_embedding = tf.zeros((512,), dtype=tf.float32)
 
     def step(self, image):
         image = self._resize_image(image)
