@@ -16,3 +16,6 @@
 [submodule "diffrec_ddmc"]
 	path = diffrec_ddmc
 	url = https://github.com/SarahWeiii/diffrec_ddmc
+[submodule "instant-nsr-pl"]
+	path = instant-nsr-pl
+	url = https://github.com/xuanlinli17/instant-nsr-pl
