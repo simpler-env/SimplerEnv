@@ -144,6 +144,7 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
             # video_path = f'{ckpt_path_basename}/{scene_name}/{env_name}_fix_robot_grid_search_obj_radius001_lowerdmp45v13_gripperforce200_15_60/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{success}_obj_{obj_init_x}_{obj_init_y}.mp4'
             # video_path = f'{ckpt_path_basename}/{scene_name}/{env_name}_fix_robot_grid_search_obj_default_actscale03_radius001_gripper200_15_60/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{success}_obj_{obj_init_x}_{obj_init_y}.mp4'
             # video_path = f'{ckpt_path_basename}/{scene_name}/{env_name}_fix_robot_grid_search_obj_altinitqpos3/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{success}_obj_{obj_init_x}_{obj_init_y}.mp4'
+            # video_path = f'{ckpt_path_basename}/{scene_name}/{env_name}_fix_robot_grid_search_obj_norotscale/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{success}_obj_{obj_init_x}_{obj_init_y}.mp4'
             video_path = f'{ckpt_path_basename}/{scene_name}/{env_name}_fix_robot_grid_search_obj/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{success}_obj_{obj_init_x}_{obj_init_y}.mp4'
             if not tmp_exp:
                 video_path = 'results/' + video_path

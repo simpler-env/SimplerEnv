@@ -83,9 +83,9 @@ class SAM:
                 ).permute(2, 0, 1).contiguous()
 
                 output = self.model([{
-                    'image': processed_image,
+                    'image': processed_image.bfloat16(),
                     'boxes': self.resize_transform.apply_boxes_torch(
-                        torch.as_tensor(box, device=self.device), image_shape
+                        torch.as_tensor(box, device=self.device).bfloat16(), image_shape
                     ),
                     'original_size': image_shape,
                 }], multimask_output=False)[0]

@@ -54,10 +54,67 @@ unzip rt_1_x_tf_trained_for_002272480_step.zip
 rm rt_1_x_tf_trained_for_002272480_step.zip
 ```
 
+<!-- Install latest torch (>=2.2.1):
+```
+pip install --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu121
+```
+
+```
+pip install git+https://github.com/pytorch-labs/segment-anything-fast.git
+``` -->
+
 
 **Reconstructing mesh from multi-view images**
 
 Install `segment_anything`
+
+<!-- ```
+git clone https://github.com/bennyguo/instant-nsr-pl
+pip install torch_efficient_distloss nerfacc==0.3.3 PyMCubes omegaconf pyransac3d
+pip install git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
+``` -->
+
+Install `instant-nsr-pl`
+
+```
+git clone https://github.com/bennyguo/instant-nsr-pl
+conda create -n instant_nsr_pl python=3.9
+conda activate instant_nsr_pl
+cd {this_repo}/instant-nsr-pl
+# Attention: torch must match your local cuda version; the following command assumes you have cuda11.8
+pip install torch==2.0.0 torchvision==0.15.1 --index-url https://download.pytorch.org/whl/cu118
+pip install -r requirements.txt
+pip install git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
+```
+
+
+```
+conda activate real2sim
+video_dir=/hdd/object_videos/coke_can/
+
+# If you have a video,
+python tools/mesh_reconstruction/video_to_image.py --folder ${video_dir} --video-frame -1 --skip-frame 5
+# If you have a series of images,
+python tools/mesh_reconstruction/rename_images.py --folder ${video_dir}/extracted_images
+
+# Then,
+python tools/mesh_reconstruction/generate_seg_mask.py --input-dir ${video_dir}/extracted_images/ \
+  --output-dir ${video_dir} --prompt "coke can" --export-format colmap
+python tools/mesh_reconstruction/remove_image_floaters.py --folder ${video_dir}/colmap/ --threshold 8000
+
+cd {this_repo}/instant-nsr-pl
+python scripts/imgs2poses.py ${video_dir}/colmap --masks-path ${video_dir}/colmap/masks
+
+conda activate instant_nsr_pl
+python launch.py --config configs/nerf-colmap.yaml --gpu 0 --train dataset.root_dir=/hdd/xuanlin/object_videos/coke_can/colmap/ \
+    dataset.apply_mask=True dataset.load_data_on_gpu=True dataset.img_downscale=5 tag=coke_can_1 model.radius=1.0 trainer.max_steps=20000
+# train NeuS with mask
+python launch.py --config configs/neus-colmap.yaml --gpu 0 --train dataset.root_dir=/hdd/xuanlin/object_videos/coke_can/colmap/ \
+    dataset.apply_mask=True dataset.load_data_on_gpu=True dataset.img_downscale=5 tag=coke_can_1 system.loss.lambda_mask=0.1 model.radius=1.0
+```
+
+
+**TODO**
 
 ```
 cd {this_repo}
@@ -76,6 +133,8 @@ pip install -e .
 
 cd {this_repo}
 ```
+
+
 
 ```
 python tools/mesh_reconstruction/video_to_image.py --folder /hdd/lightstage/lightstage.nrp-nautilus.io/xuanlin/coke --video-frame 0
