@@ -50,15 +50,13 @@ def main():
             if seg_pixels >= args.min_seg_pixels:
                 masked_image = image.copy().astype(np.uint8)
                 masked_image[mask == 0] = 0
-                if args.export_format == 'nerfsynthetic':
-                    Image.fromarray(mask).save(os.path.join(args.output_dir, 'nerf_synthetic', 'seg', image_name[:-4] + '.jpg.png'))
-                    Image.fromarray(masked_image).save(os.path.join(args.output_dir, 'nerf_synthetic', 'seg_image', 'images', image_name[:-4] + '.jpg'))
-                    Image.fromarray(masked_image).save(os.path.join(args.output_dir, 'nerf_synthetic', 'seg_image', 'train', image_name[:-4] + '.jpg'))
-                    Image.fromarray(masked_image).save(os.path.join(args.output_dir, 'nerf_synthetic', 'seg_image', 'test', image_name[:-4] + '.jpg'))
+                if args.export_format == 'nerf_synthetic':
+                    Image.fromarray(mask).save(os.path.join(args.output_dir, 'nerf_synthetic', 'seg', image_name[:-4] + '.png'))
+                    Image.fromarray(masked_image).save(os.path.join(args.output_dir, 'nerf_synthetic', 'seg_image', 'images', image_name[:-4] + '.png'))
                     masked_image_rgba = np.concatenate([masked_image, mask[..., None]], axis=-1)
                     assert masked_image_rgba.shape[-1] == 4
-                    Image.fromarray(masked_image_rgba).save(os.path.join(args.output_dir, 'nerf_synthetic', 'seg_image', 'train', image_name[:-4] + '.jpg.png'))
-                    Image.fromarray(masked_image_rgba).save(os.path.join(args.output_dir, 'nerf_synthetic', 'seg_image', 'test', image_name[:-4] + '.jpg.png'))
+                    Image.fromarray(masked_image_rgba).save(os.path.join(args.output_dir, 'nerf_synthetic', 'seg_image', 'train', image_name[:-4] + '.png'))
+                    Image.fromarray(masked_image_rgba).save(os.path.join(args.output_dir, 'nerf_synthetic', 'seg_image', 'test', image_name[:-4] + '.png'))
                 elif args.export_format == 'colmap':
                     Image.fromarray(mask[:, :, None].repeat(3, axis=-1)).save(os.path.join(args.output_dir, 'colmap', 'masks', image_name[:-4] + '.png'))
                     Image.fromarray(masked_image).save(os.path.join(args.output_dir, 'colmap', 'images', image_name[:-4] + '.png'))

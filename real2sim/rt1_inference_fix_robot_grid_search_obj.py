@@ -15,7 +15,7 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
          rgb_overlay_path=None, tmp_exp=False,
          control_freq=3, sim_freq=510, action_repeat=5,
          instruction_override=None,
-         action_scale=0.3):
+         action_scale=1.0):
     robot_init_x = robot_init_x if robot_init_x is not None else 0.31 # hardcoded
     robot_init_y = robot_init_y if robot_init_y is not None else 0.188 # hardcoded
     obj_init_x_range = obj_init_x_range if obj_init_x_range is not None else np.linspace(-0.35, -0.1, 10)
@@ -27,13 +27,14 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
         asset_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/custom/'
     
     # Build RT-1 Model
-    rt1_model = RT1Inference(saved_model_path=ckpt_path)
+    rt1_model = RT1Inference(saved_model_path=ckpt_path, action_scale=action_scale)
     
     for obj_init_x in obj_init_x_range:
         for obj_init_y in obj_init_y_range:
             # Create environment
             env = gym.make(env_name,
-                        control_mode='arm_pd_ee_target_delta_pose_base_gripper_pd_joint_target_delta_pos',
+                        # control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_pos',
+                        control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_target_pos',
                         obs_mode='rgbd',
                         robot='google_robot_static',
                         sim_freq=sim_freq,
@@ -95,46 +96,28 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
             success = "failure"
             # Step the environment
             while not (predicted_terminated or truncated):
+                cur_gripper_pose_at_robot_base = env.agent.robot.pose.inv() * env.tcp.pose
+                cur_gripper_closedness = env.agent.get_gripper_closedness()
+                
                 if timestep % action_repeat == 0:
-                    action = rt1_model.step(image)
-                    predicted_actions.append(action)
-                    print(timestep, action)
+                    raw_action, action = rt1_model.step(image, cur_gripper_pose_at_robot_base, cur_gripper_closedness)
+                    predicted_actions.append(raw_action)
+                    print(timestep, raw_action)
                     predicted_terminated = bool(action['terminate_episode'][0] > 0)
-                    
-                    # If action['rotation_delta'] is already in axis-angle:
-                    # obs, reward, terminated, truncated, info = env.step(
-                    #     np.concatenate(
-                    #         [action['world_vector'] * action_scale, 
-                    #         action['rotation_delta'] * action_scale, 
-                    #         action['gripper_closedness_action']
-                    #         ]
-                    #     )
-                    # )
-                    
-                    # If action['rotation_delta'] is in Euler rpy:
-                    action_rotation_euler = action['rotation_delta']
-                    action_rotation_ax, action_rotation_angle = euler2axangle(*action_rotation_euler, axes='sxyz')
-                    action_rotation_axangle = action_rotation_ax * action_rotation_angle
-                    obs, reward, terminated, truncated, info = env.step(
-                        np.concatenate(
-                            [action['world_vector'] * action_scale, 
-                            action_rotation_axangle * action_scale,
-                            action['gripper_closedness_action']
-                            ]
-                        )
-                    )
-                    if terminated:
-                        # For now, if at any step the episode is successful, we consider it a success
-                        success = "success"
                 else:
-                    obs, reward, terminated, truncated, info = env.step(
-                        np.concatenate(
-                            [np.zeros(3), # same target as previous step
-                            np.zeros(3), # same target as previous step
-                            np.zeros(1), # same target as previous step
-                            ]
-                        )
+                    action = rt1_model.step_repeat_last_goal(cur_gripper_pose_at_robot_base, cur_gripper_closedness)
+                
+                obs, reward, terminated, truncated, info = env.step(
+                    np.concatenate(
+                        [action['world_vector'], 
+                        action['rot_axangle'],
+                        action['gripper_closedness_action']
+                        ]
                     )
+                )
+                if terminated:
+                    # For now, if at any step the episode is successful, we consider it a success
+                    success = "success"
                 image = obs['image']['overhead_camera']['rgb']
                 images.append(image)
                 timestep += 1
@@ -159,7 +142,8 @@ if __name__ == '__main__':
     rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/google_table_top_1.png'
     # env_name = 'GraspSingleUpRightCokeCanInScene-v0'
     # env_name = 'GraspSingleCokeCanInScene-v0'
-    env_name = 'GraspSingleUpRightOpenedCokeCanInScene-v0'
+    env_name = 'GraspSingleVerticalCokeCanInScene-v0'
+    # env_name = 'GraspSingleUpRightOpenedCokeCanInScene-v0'
     # env_name = 'GraspSingleCokeCanWithDistractorInScene-v0'
     # env_name = 'GraspSingleOpenedCokeCanInScene-v0'
     # env_name = 'GraspSinglePepsiCanInScene-v0'
@@ -179,38 +163,38 @@ if __name__ == '__main__':
     # main(env_name, 'Baked_sc1_staging_table83_82cm', rgb_overlay_path=rgb_overlay_path)
     
     rob_init_quat = (Pose(q=[0, 0, 0, 1]) * Pose(q=euler2quat(0, 0, -0.01))).q
-    # main(env_name, 'Baked_sc1_staging_table83_82cm', ckpt_path=rt1_main_ckpt_path)
-    # main(env_name, 'Baked_sc1_staging_table_616385', ckpt_path=rt1_main_ckpt_path,
-    #      robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
-    #      # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10),
-    #      rgb_overlay_path=rgb_overlay_path)
-    # main(env_name, 'Baked_sc1_staging_table_616385', ckpt_path=rt1_main_ckpt_path,
-    #      robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
-    #      # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10)
-    #     )
-    # main(env_name, 'Baked_sc1_staging_table_616385', ckpt_path=rt1_main_ckpt_path)
-    # main(env_name, 'Baked_sc1_staging_objaverse_cabinet1', ckpt_path=rt1_main_ckpt_path)
-    
-    
-    
-    # main(env_name, 'Baked_sc1_staging_table83_82cm')
-    # main(env_name, 'Baked_sc1_staging_table_616385', 
-    #      robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
-    #      # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10),
-    #      rgb_overlay_path=rgb_overlay_path)
-    # main(env_name, 'Baked_sc1_staging_table_616385', 
-    #      robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
-    #      # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10)
-    #     )
-    # main(env_name, 'Baked_sc1_staging_table_616385')
-    # main(env_name, 'Baked_sc1_staging_objaverse_cabinet1')
-    
-    
-    main(env_name, 'Baked_sc1_staging_table_616385', 
-         ckpt_path='/home/xuanlin/Real2Sim/robotics_transformer/trained_checkpoints/rt1main/',
+    main(env_name, 'Baked_sc1_staging_table83_82cm', ckpt_path=rt1_main_ckpt_path)
+    main(env_name, 'Baked_sc1_staging_table_616385', ckpt_path=rt1_main_ckpt_path,
          robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
          # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10),
-         rgb_overlay_path=rgb_overlay_path, 
-         tmp_exp=True,
-         sim_freq=510, control_freq=3, action_repeat=5, action_scale=0.3) # instruction_override='pick can')
-         # sim_freq=500, control_freq=5, action_repeat=4)
+         rgb_overlay_path=rgb_overlay_path)
+    main(env_name, 'Baked_sc1_staging_table_616385', ckpt_path=rt1_main_ckpt_path,
+         robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
+         # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10)
+        )
+    main(env_name, 'Baked_sc1_staging_table_616385', ckpt_path=rt1_main_ckpt_path)
+    main(env_name, 'Baked_sc1_staging_objaverse_cabinet1', ckpt_path=rt1_main_ckpt_path)
+    
+    
+    
+    main(env_name, 'Baked_sc1_staging_table83_82cm')
+    main(env_name, 'Baked_sc1_staging_table_616385', 
+         robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
+         # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10),
+         rgb_overlay_path=rgb_overlay_path)
+    main(env_name, 'Baked_sc1_staging_table_616385', 
+         robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
+         # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10)
+        )
+    main(env_name, 'Baked_sc1_staging_table_616385')
+    main(env_name, 'Baked_sc1_staging_objaverse_cabinet1')
+    
+    
+    # main(env_name, 'Baked_sc1_staging_table_616385', 
+    #      ckpt_path='/home/xuanlin/Real2Sim/robotics_transformer/trained_checkpoints/rt1main/',
+    #      robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
+    #      # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10),
+    #      rgb_overlay_path=rgb_overlay_path, 
+    #      tmp_exp=True,
+    #      sim_freq=510, control_freq=3, action_repeat=5, action_scale=0.3) # instruction_override='pick can')
+    #      # sim_freq=500, control_freq=5, action_repeat=4)

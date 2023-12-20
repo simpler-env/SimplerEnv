@@ -63,6 +63,11 @@ pip install --pre torch torchvision --index-url https://download.pytorch.org/whl
 pip install git+https://github.com/pytorch-labs/segment-anything-fast.git
 ``` -->
 
+**SysID**
+```
+pip install git+https://github.com/nathanrooy/simulated-annealing
+```
+
 
 **Reconstructing mesh from multi-view images**
 
@@ -132,6 +137,27 @@ cd diff_dmc/dmc_cuda
 pip install -e .
 
 cd {this_repo}
+```
+
+
+```
+video_dir=/hdd/object_videos/coke_can/
+python tools/mesh_reconstruction/generate_seg_mask.py --input-dir ${video_dir}/extracted_images/ \
+  --output-dir ${video_dir} --prompt "coke can" --export-format nerf_synthetic
+cd ${video_dir}/nerf_synthetic/seg_image
+python {this_repo}/TensoRF/dataLoader/colmap2nerf.py --run_colmap \
+  --images ./train --masks ../seg --out ./transforms_train.json  --colmap_matcher exhaustive  --aabb_scale 1
+python {this_repo}/TensoRF/dataLoader/colmap2nerf.py \
+  --images ./test --masks ../seg --out ./transforms_test.json  --colmap_matcher exhaustive  --aabb_scale 1
+
+# Train TensoRF
+cd {this_repo}/TensoRF
+python train.py --config configs/lego.txt --datadir /hdd/xuanlin/object_videos/coke_can/nerf_synthetic/seg_image/ --dataset_name own_data \
+  --expname tensorf_coke_VM_t12_6_2_mlp3x64 --data_dim_color 12 --featureC 64 --view_pe 6 --fea_pe 2 --batch_size 4096
+
+cd {this_repo}/diffrec_ddmc
+python train.py --config configs/nerf.txt --ref_mesh /hdd/xuanlin/object_videos/coke_can/nerf_synthetic/seg_image/ --base_model /home/xuanlin/Real2Sim/TensoRF/log/tensorf_coke_VM_t12_6_2_mlp3x64/tensorf_coke_VM_t12_6_2_mlp3x64.th --mesh_scale 3.0 --out_dir nerf_coke_tensorVM_preload_10k_t12_6_2_3x64_dmc256_wd --tex_dim 12 --feape 2 --viewpe 6 --display "all_tex" "gb_pos" "wo" --iter 10000 --batch 1 --learning_rate_1 0.0005 --learning_rate_2 0.0005 --lock_pos 0 --model_type pretrained_tensorf_rast --tex_type tensorVM_preload --dmtet_grid 256 --lr_decay 0.1 --sdf_grad_weight 0 --sdf_sparse_weight 0 --shader_internal_dims 64 --normal_smooth_weight 0 --multires 0
+
 ```
 
 
