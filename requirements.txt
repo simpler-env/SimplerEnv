@@ -29,3 +29,11 @@ omegaconf
 pytorch_lightning
 lightning
 cmapy
+dlimp @ git+https://github.com/kvablack/dlimp@d08da3852c149548aaa8551186d619d87375df08
+plotly
+distrax
+flax
+ml_collections
+wandb
+einops
+motion-planning

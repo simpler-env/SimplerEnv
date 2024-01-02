@@ -19,3 +19,6 @@
 [submodule "instant-nsr-pl"]
 	path = instant-nsr-pl
 	url = https://github.com/xuanlinli17/instant-nsr-pl
+[submodule "octo"]
+	path = octo
+	url = https://github.com/octo-models/octo

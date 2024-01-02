@@ -26,25 +26,27 @@ def dataset2path(dataset_name):
 
 
 def main(dset_iter, iter_num, episode_id, set_actual_reached=False, 
-         control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_pos'):
+         control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_pos'):
+         # control_mode='arm_pd_ee_delta_pose_align_gripper_pd_joint_pos'):
+         # control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_pos'):
     for _ in range(iter_num):
         episode = next(dset_iter)
     print("episode tfds id", episode['tfds_id'])
-    episode_steps = list(episode['steps'])
+    episode_steps = list(episode['steps'])[1:] # removing first step
     pred_actions, gt_actions, images = [], [], []
     
     language_instruction = episode_steps[0]['observation']['natural_language_instruction']
     print(language_instruction)
     
-    sim_freq, control_freq, action_repeat = 510, 3, 5
+    sim_freq, control_freq = 510, 3
     action_scale = 1.0
     env = gym.make('PickCube-v0',
                         control_mode=control_mode,
                         obs_mode='rgbd',
                         robot='google_robot_static',
                         sim_freq=sim_freq,
-                        control_freq=control_freq * action_repeat,
-                        max_episode_steps=50 * action_repeat,
+                        control_freq=control_freq,
+                        max_episode_steps=50,
                         camera_cfgs={"add_segmentation": True},
                         rgb_overlay_path=f'/home/xuanlin/Downloads/{episode_id}_0_cleanup.png',
                         rgb_overlay_cameras=['overhead_camera'],
@@ -57,11 +59,34 @@ def main(dset_iter, iter_num, episode_id, set_actual_reached=False,
     images.append(obs['image']['overhead_camera']['rgb'])
     ee_poses_at_base.append(env.agent.robot.pose.inv() * env.tcp.pose)
     
+    last_action_world_vector = np.zeros(3)
+    last_action_rotation_ax = np.zeros(3)
+    last_action_rotation_angle = 0.0
+    
     for i in range(len(episode_steps) - 1):
         episode_step = episode_steps[i] # episode_step['observation']['base_pose_tool_reached'] = [xyz, quat xyzw]
         gt_images.append(episode_step['observation']['image'])
         next_episode_step = episode_steps[i + 1]
+        
         current_pose_at_robot_base = env.agent.robot.pose.inv() * env.tcp.pose
+        
+        if i == 0:
+            # move tcp pose in environment to the gt tcp pose wrt robot base
+            this_xyz = episode_step['observation']['base_pose_tool_reached'][:3]
+            this_xyzw = episode_step['observation']['base_pose_tool_reached'][3:]
+            this_pose_at_robot_base = Pose(p=np.array(this_xyz), q=np.concatenate([this_xyzw[-1:], this_xyzw[:-1]]))
+            for _ in range(20):
+                delta_tcp_pose = Pose(
+                    p=this_pose_at_robot_base.p - current_pose_at_robot_base.p,
+                    q=(this_pose_at_robot_base * current_pose_at_robot_base.inv()).q,
+                )
+                action_translation = delta_tcp_pose.p
+                action_rot_ax, action_rot_angle = quat2axangle(np.array(delta_tcp_pose.q, dtype=np.float64))
+                action_rotation = action_rot_ax * action_rot_angle
+                action = np.concatenate([action_translation, action_rotation, [0]])
+                env.step(action)
+                current_pose_at_robot_base = env.agent.robot.pose.inv() * env.tcp.pose
+        
         if not set_actual_reached:
             gt_action_world_vector = episode_step['action']['world_vector']
             gt_action_rotation_delta = np.asarray(episode_step['action']['rotation_delta'], dtype=np.float64)
@@ -101,30 +126,37 @@ def main(dset_iter, iter_num, episode_id, set_actual_reached=False,
                             ],
                         ).astype(np.float64)
         
+        # debug
+        this_xyz = episode_step['observation']['base_pose_tool_reached'][:3]
+        this_xyzw = episode_step['observation']['base_pose_tool_reached'][3:]
+        this_pose_at_robot_base = Pose(p=np.array(this_xyz), q=np.concatenate([this_xyzw[-1:], this_xyzw[:-1]]))
+        print("this step reached qpos from dataset", env.agent.controller.controllers['arm'].compute_ik(this_pose_at_robot_base))
+        tmp = Pose(p=this_pose_at_robot_base.p + gt_action_world_vector * action_scale,
+                                           q=(Pose(q=axangle2quat(gt_action_rotation_ax, gt_action_rotation_angle)) 
+                                              * Pose(q=this_pose_at_robot_base.q)).q
+            )
+        print("next step qpos from dataset qpos inferred from action", env.agent.controller.controllers['arm'].compute_ik(tmp))
+        tmp = Pose(p=this_pose_at_robot_base.p + last_action_world_vector * action_scale,
+                                           q=(Pose(q=axangle2quat(last_action_rotation_ax, last_action_rotation_angle)) 
+                                              * Pose(q=this_pose_at_robot_base.q)).q
+            )
+        print("next step qpos from dataset qpos inferred from last action", env.agent.controller.controllers['arm'].compute_ik(tmp))
+        last_action_world_vector = gt_action_world_vector
+        last_action_rotation_ax = gt_action_rotation_ax
+        last_action_rotation_angle = gt_action_rotation_angle
+        print("this step reached qpos from simulation", env.agent.controller.controllers['arm'].compute_ik(current_pose_at_robot_base))
+        print("next step qpos from simulation qpos inferred from action", env.agent.controller.controllers['arm'].compute_ik(target_tcp_pose_at_base))
+        
+        
+        
         obs, reward, terminated, truncated, info = env.step(action) 
         images.append(obs['image']['overhead_camera']['rgb'])
         ee_poses_at_base.append(env.agent.robot.pose.inv() * env.tcp.pose)
         arm_ctrl_mode, gripper_ctrl_mode = control_mode.split('gripper')
-        for _ in range(action_repeat - 1):
-            interp_action = action.copy()
-            if 'target' in arm_ctrl_mode:
-                interp_action[:6] *= 0
-            else:
-                cur_tcp_pose_at_base = env.agent.robot.pose.inv() * env.tcp.pose
-                delta_tcp_pose_at_base = target_tcp_pose_at_base * cur_tcp_pose_at_base.inv()
-                interp_action[:3] = target_tcp_pose_at_base.p - cur_tcp_pose_at_base.p
-                interp_rot_ax, interp_rot_angle = quat2axangle(np.array(delta_tcp_pose_at_base.q, dtype=np.float64))
-                interp_action[3:6] = interp_rot_ax * interp_rot_angle
-                
-            if 'target' in gripper_ctrl_mode:
-                interp_action[6:] *= 0
-            obs, reward, terminated, truncated, info = env.step(interp_action)
-            images.append(obs['image']['overhead_camera']['rgb'])
-            ee_poses_at_base.append(env.agent.robot.pose.inv() * env.tcp.pose)
             
     # for i, ee_pose in enumerate(ee_poses_at_base):
     #     print(i, "ee pose wrt robot base", ee_pose)
-    gt_images = [gt_images[np.clip((i - 1) // action_repeat + 1, 0, len(gt_images) - 1)] for i in range(len(images))]
+    gt_images = [gt_images[np.clip(i, 0, len(gt_images) - 1)] for i in range(len(images))]
     for i in range(len(images)):
         images[i] = np.concatenate([images[i], cv2.resize(np.asarray(gt_images[i]), (images[i].shape[1], images[i].shape[0]))], axis=1)
     if not set_actual_reached:
@@ -135,6 +167,8 @@ def main(dset_iter, iter_num, episode_id, set_actual_reached=False,
     
 
 if __name__ == '__main__':
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    os.environ['DISPLAY'] = ''
     dataset_name = DATASETS[0]
     dset = tfds.builder_from_directory(builder_dir=dataset2path(dataset_name))
     

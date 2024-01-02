@@ -37,7 +37,6 @@ class RT1Inference:
         self.task_description = None
         self.task_description_embedding = None
         
-        self.goal_gripper_pose_at_robot_base = None
         self.goal_gripper_closedness = np.array([0.0])
         self.time_step = 0
 
@@ -59,7 +58,6 @@ class RT1Inference:
         action = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
         
         self.time_step = 0
-        self.goal_gripper_pose_at_robot_base = None
         self.goal_gripper_closedness = np.array([0.0])
 
     def _resize_image(self, image):
@@ -78,7 +76,7 @@ class RT1Inference:
             self.task_description = ''
             self.task_description_embedding = tf.zeros((512,), dtype=tf.float32)
 
-    def step(self, image, cur_gripper_pose_at_robot_base, cur_gripper_closedness):
+    def step(self, image, cur_gripper_closedness):
         image = self._resize_image(image)
         self.observation["image"] = image
         # if self.time_step == 0:
@@ -96,7 +94,7 @@ class RT1Inference:
         # process raw_action to obtain the action to be sent to the environment
         action = {}
         action['world_vector'] = raw_action['world_vector'] * self.action_scale
-        action_rotation_delta = np.asarray(raw_action['rotation_delta'], dtype=np.float64) # this rotation_delta is in fact in axis-angle representation
+        action_rotation_delta = np.asarray(raw_action['rotation_delta'], dtype=np.float64) # this rotation_delta is in fact in axis-angle representation (not rpy)
         action_rotation_angle = np.linalg.norm(action_rotation_delta)
         action_rotation_ax = action_rotation_delta / action_rotation_angle if action_rotation_angle > 1e-6 else np.array([0., 1., 0.])
         action['rot_axangle'] = action_rotation_ax * action_rotation_angle * self.action_scale
@@ -107,32 +105,13 @@ class RT1Inference:
             action['gripper_closedness_action'] = self.goal_gripper_closedness # repeat last target gripper joint position
             
         action['terminate_episode'] = raw_action['terminate_episode']
-        
-        # update goal gripper pose
-        self.goal_gripper_pose_at_robot_base = Pose(
-            p=cur_gripper_pose_at_robot_base.p + action['world_vector'],
-            q=(Pose(q=axangle2quat(action_rotation_ax, action_rotation_angle)) 
-               * Pose(q=cur_gripper_pose_at_robot_base.q)).q
-        )
-        
+                
         self.policy_state = policy_step.state
         self.time_step += 1
         
         return raw_action, action
     
-    def step_repeat_last_goal(self, cur_gripper_pose_at_robot_base, cur_gripper_closedness):
-        # produce an action that reaches self.goal_gripper_pose_at_robot_base
-        action = {}
-        action['world_vector'] = (self.goal_gripper_pose_at_robot_base.p - cur_gripper_pose_at_robot_base.p) * self.action_scale
-        delta_gripper_pose_at_robot_base = self.goal_gripper_pose_at_robot_base * cur_gripper_pose_at_robot_base.inv()
-        interp_rot_ax, interp_rot_angle = quat2axangle(np.array(delta_gripper_pose_at_robot_base.q, dtype=np.float64))
-        action['rot_axangle'] = interp_rot_ax * interp_rot_angle * self.action_scale
-        action['gripper_closedness_action'] = self.goal_gripper_closedness # repeat the goal gripper joint position
-        
-        return action
-        
-
-    def visualize_epoch(self, predicted_raw_actions, images):
+    def visualize_epoch(self, predicted_raw_actions, images, save_path):
         images = [self._resize_image(image) for image in images]
         predicted_action_name_to_values_over_time = defaultdict(list)
         figure_layout = [
@@ -183,4 +162,4 @@ class RT1Inference:
         axs["image"].set_xlabel("Time in one episode (subsampled)")
 
         plt.legend()
-        plt.show()
+        plt.savefig(save_path)

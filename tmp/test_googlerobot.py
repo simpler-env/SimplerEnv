@@ -67,6 +67,7 @@ def demo(fix_root_link, balance_passive_force):
     )) # SAPIEN uses ros camera convention; the rotation matrix of link_camera is in opencv convention, so we need to transform it to ros convention
 
     # tmp = 0
+    tcp_link = [x for x in robot.get_links() if x.name == 'link_gripper_tcp'][0]
     while not viewer.closed:
         print(robot.get_qpos())
         for _ in range(4):  # render every 4 steps
@@ -76,8 +77,9 @@ def demo(fix_root_link, balance_passive_force):
                     coriolis_and_centrifugal=True, 
                 )
                 robot.set_qf(qf)
-            print("target qpos", qpos)
-            print("current qpos", robot.get_qpos())
+            # print("target qpos", qpos)
+            # print("current qpos", robot.get_qpos())
+            print("tcp pose wrt robot base", robot.pose.inv() * tcp_link.pose)
             robot.set_drive_target(qpos)
             scene.step()
             # if tmp > 0 and tmp % 1 == 0:

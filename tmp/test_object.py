@@ -81,7 +81,7 @@ def demo(model_dir):
 
 
 def main():
-    demo('/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/custom/models/opened_coke_can')
+    demo('/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/custom/models/coke_can_long')
     
 if __name__ == '__main__':
     main()

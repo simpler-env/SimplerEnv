@@ -54,6 +54,13 @@ unzip rt_1_x_tf_trained_for_002272480_step.zip
 rm rt_1_x_tf_trained_for_002272480_step.zip
 ```
 
+Octo:
+```
+cd {this_repo}/octo
+pip install --upgrade "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+pip install -e .
+```
+
 <!-- Install latest torch (>=2.2.1):
 ```
 pip install --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu121
@@ -66,6 +73,15 @@ pip install git+https://github.com/pytorch-labs/segment-anything-fast.git
 **SysID**
 ```
 pip install git+https://github.com/nathanrooy/simulated-annealing
+```
+
+**Export custom model**
+```
+test_object.py: x axis should be point towards the can symbol; y axis should point up
+
+Blender export:
+Collada: x forward y up
+obj: x forward y up
 ```
 
 

@@ -22,9 +22,10 @@ if __name__ == '__main__':
         line = [x.strip() for x in line]
         arm_stiffness = obtain_arr(','.join(line[1].split(',')[:-1]))
         arm_damping = obtain_arr(','.join(line[2].split(',')[:-1]))
-        avg_err = eval(line[3].split(',')[0].strip())
-        per_traj_err = obtain_arr(line[4].strip())
-        results.append((avg_err, (arm_stiffness, arm_damping), per_traj_err))
+        misc = [eval(line[i].split(',')[0].strip()) for i in range(3, len(line) - 2)]
+        avg_err = eval(line[-2].split(',')[0].strip())
+        per_traj_err = obtain_arr(line[-1].strip())
+        results.append((avg_err, (arm_stiffness, arm_damping), misc, per_traj_err))
         
     results = sorted(results, key=lambda x: x[0])
     for result in results[:10]:
