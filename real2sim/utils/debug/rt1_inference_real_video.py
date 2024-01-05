@@ -2,6 +2,7 @@ import numpy as np
 import os
 import tensorflow as tf
 import mediapy as media
+import cv2
 
 from real2sim.rt1.rt1_model import RT1Inference
 from real2sim.utils.visualization import write_video
@@ -21,6 +22,7 @@ def main(input_video, impainting_img_path, instruction,
         obs_mode='rgbd',
         robot='google_robot_static',
         sim_freq=540,
+        max_episode_steps=60,
         control_freq=control_freq,
         camera_cfgs={"add_segmentation": True},
         rgb_overlay_path=impainting_img_path,
@@ -42,10 +44,17 @@ def main(input_video, impainting_img_path, instruction,
 
     timestep = 0
     # Step the environment
-    while timestep < len(input_video) - 1:
+    if input_video is not None:
+        loop_criterion = lambda timestep: timestep < len(input_video) - 1
+    else:
+        loop_criterion = lambda timestep: not truncated
+    while loop_criterion(timestep):
         cur_gripper_closedness = env.agent.get_gripper_closedness()
         
-        raw_action, action = rt1_model.step(input_video[timestep], cur_gripper_closedness)
+        if input_video is not None:
+            raw_action, action = rt1_model.step(input_video[timestep], cur_gripper_closedness)
+        else:
+            raw_action, action = rt1_model.step(image, cur_gripper_closedness)
         predicted_actions.append(raw_action)
         print(timestep, raw_action)
         predicted_terminated = bool(action['terminate_episode'][0] > 0)
@@ -63,8 +72,13 @@ def main(input_video, impainting_img_path, instruction,
         images.append(image)
         timestep += 1
 
-    for i in range(len(images)):
-        images[i] = np.concatenate([images[i], input_video[i]], axis=1)
+    if input_video is not None:
+        for i in range(len(images)):
+            images[i] = np.concatenate(
+                [cv2.resize(images[i], (input_video[i].shape[1], input_video[i].shape[0])), 
+                input_video[i]], 
+                axis=1
+            )
     video_path = f'/home/xuanlin/Downloads/debug.mp4'
     write_video(video_path, images, fps=5)
 
@@ -72,11 +86,17 @@ def main(input_video, impainting_img_path, instruction,
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     os.environ['DISPLAY'] = ''
-    mp4_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/debug/rt1_real_vertical_coke_can_1.mp4'
-    impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/debug/rt1_real_vertical_coke_can_1_cleanup.png'
+    # mp4_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/debug/rt1_real_vertical_coke_can_1.mp4'
+    # impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/debug/rt1_real_vertical_coke_can_1_cleanup.png'
+    mp4_path = None
+    impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_vertical_coke_can_eval_1_cleanup.png'
     instruction = 'pick coke can'
+    ckpt_path = '/home/xuanlin/Real2Sim/rt1_xid45615428_000315000/' # 'rt_1_x_tf_trained_for_002272480_step'
     
-    input_video = media.read_video(mp4_path)
+    if mp4_path is not None:
+        input_video = media.read_video(mp4_path)
+    else:
+        input_video = None
     
     gpus = tf.config.list_physical_devices('GPU')
     tf.config.set_logical_device_configuration(

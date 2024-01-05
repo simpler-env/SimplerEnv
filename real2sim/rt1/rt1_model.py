@@ -79,9 +79,8 @@ class RT1Inference:
     def step(self, image, cur_gripper_closedness):
         image = self._resize_image(image)
         self.observation["image"] = image
-        # if self.time_step == 0:
         self.observation["natural_language_embedding"] = self.task_description_embedding
-        self.observation["natural_language_instruction"] = tf.constant(self.task_description, dtype=tf.string)
+        # self.observation["natural_language_instruction"] = tf.constant(self.task_description, dtype=tf.string)
 
         self.tfa_time_step = ts.transition(
             self.observation, reward=np.zeros((), dtype=np.float32)

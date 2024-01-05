@@ -34,7 +34,7 @@ def main():
                         device=args.device)
     
     for image_name in os.listdir(args.input_dir):
-        if image_name.endswith('.jpg'):
+        if image_name.split('.')[-1].lower() in ['jpg', 'jpeg', 'png']:
             image = cv2.cvtColor(cv2.imread(os.path.join(args.input_dir, image_name)), cv2.COLOR_BGR2RGB)
             image = np.asarray(image)
             
@@ -64,7 +64,7 @@ def main():
                 # np.save(os.path.join(args.output_dir, 'nerf_synthetic', 'seg', image_name[:-4]), mask)
 
 if __name__ == '__main__':
-    # main()
+    main()
     
     # from pathlib import Path
     # dir_name = '/hdd/object_videos/coke_can/colmap/masks'
@@ -85,18 +85,18 @@ if __name__ == '__main__':
         #     Image.fromarray(img).save(Path(dir_name).parent / 'train' / (image_name[:-4] + '.jpg.png'))
         #     Image.fromarray(img).save(Path(dir_name).parent / 'test' / (image_name[:-4] + '.jpg.png'))
         
-    from pathlib import Path
-    import os
-    dir_name = '/hdd/object_videos/coke_can_old_2/tmp'
-    for image_name in sorted(os.listdir(dir_name)):
-        if image_name.endswith('.jpg') and int(image_name.split('.jpg')[0]) % 2 == 0:
-            os.remove(os.path.join(dir_name, image_name))
+    # from pathlib import Path
+    # import os
+    # dir_name = '/hdd/object_videos/coke_can_old_2/tmp'
+    # for image_name in sorted(os.listdir(dir_name)):
+    #     if image_name.endswith('.jpg') and int(image_name.split('.jpg')[0]) % 2 == 0:
+    #         os.remove(os.path.join(dir_name, image_name))
     
-    from pathlib import Path
-    dir_name = '/hdd/object_videos/coke_can_old_2/tmp'
-    img_id = 0
-    for image_name in sorted(os.listdir(dir_name)):
-        if image_name.endswith('.jpg'):
-            img = Image.open(os.path.join(dir_name, image_name))
-            img.save(os.path.join(dir_name, f'{img_id}.jpg'))
-            img_id += 1
+    # from pathlib import Path
+    # dir_name = '/hdd/object_videos/coke_can_old_2/tmp'
+    # img_id = 0
+    # for image_name in sorted(os.listdir(dir_name)):
+    #     if image_name.endswith('.jpg'):
+    #         img = Image.open(os.path.join(dir_name, image_name))
+    #         img.save(os.path.join(dir_name, f'{img_id}.jpg'))
+    #         img_id += 1

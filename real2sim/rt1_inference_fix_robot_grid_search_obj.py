@@ -7,15 +7,17 @@ from sapien.core import Pose
 
 from real2sim.rt1.rt1_model import RT1Inference
 from real2sim.utils.visualization import write_video
-from real2sim.utils.env_builder import build_maniskill2_env
+from real2sim.utils.env.env_builder import build_maniskill2_env
 
 def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
+         additional_env_build_kwargs={},
          robot_init_x=None, robot_init_y=None, robot_init_quat=[0, 0, 0, 1], 
          obj_init_x_range=None, obj_init_y_range=None,
          rgb_overlay_path=None, tmp_exp=False,
          control_freq=3, sim_freq=513,
          instruction=None,
-         action_scale=1.0):
+         action_scale=1.0,
+         env_save_name=None):
     robot_init_x = robot_init_x if robot_init_x is not None else 0.31 # hardcoded
     robot_init_y = robot_init_y if robot_init_y is not None else 0.188 # hardcoded
     obj_init_x_range = obj_init_x_range if obj_init_x_range is not None else np.linspace(-0.35, -0.1, 10)
@@ -36,6 +38,7 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
                         env_name,
                         # control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_pos',
                         control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_pos',
+                        # control_mode='arm_pd_ee_delta_pose_align_gripper_pd_joint_target_pos',
                         # control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_target_pos',
                         # control_mode='arm_pd_ee_target_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_pos',
                         obs_mode='rgbd',
@@ -46,32 +49,37 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
                         asset_root=asset_root,
                         scene_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/hab2_bench_assets/',
                         scene_name=scene_name,
-                        obj_init_rand_rot_z_enabled=False,
-                        obj_init_rand_rot_range=0,
-                        obj_init_fixed_xy_pos=np.array([obj_init_x, obj_init_y]),
-                        obj_init_fixed_z_rot=None,
-                        robot_init_fixed_xy_pos=np.array([robot_init_x, robot_init_y]),
-                        robot_init_fixed_rot_quat=robot_init_quat,
                         camera_cfgs={"add_segmentation": True},
                         rgb_overlay_path=rgb_overlay_path,
                         rgb_overlay_cameras=['overhead_camera'],
                         instruction=instruction,
+                        **additional_env_build_kwargs,
                         # Enable Ray Tracing
                         # shader_dir="rt",
                         # render_config={"rt_samples_per_pixel": 8, "rt_use_denoiser": True},
             )
+            env_reset_options = {
+                'obj_init_options': {
+                    'init_xy': np.array([obj_init_x, obj_init_y]),
+                },
+                'robot_init_options': {
+                    'init_xy': np.array([robot_init_x, robot_init_y]),
+                    'init_rot_quat': robot_init_quat,
+                }
+            }
             
             # Reset and initialize environment
             predicted_actions = []
             images = []
-            obs, _ = env.reset()
+            obs, _ = env.reset(options=env_reset_options)
             rt1_model.reset(task_description)
             
             image = obs['image']['overhead_camera']['rgb']
             images.append(image)
-            predicted_terminated, terminated, truncated = False, False, False
+            predicted_terminated, done, truncated = False, False, False
                
             timestep = 0
+            n_success= 0
             success = "failure"
             if 'Grasp' in env_name:
                 consecutive_grasp = False
@@ -85,7 +93,7 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
                 print(timestep, raw_action)
                 predicted_terminated = bool(action['terminate_episode'][0] > 0)
                 
-                obs, reward, terminated, truncated, info = env.step(
+                obs, reward, done, truncated, info = env.step(
                     np.concatenate(
                         [action['world_vector'], 
                         action['rot_axangle'],
@@ -93,10 +101,9 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
                         ]
                     )
                 )
-                # print(info)
-                # print(env.obj.pose)
-                if terminated:
-                    # For now, if at any step the episode is successful, we consider it a success
+                
+                n_success += int(info['success'])
+                if predicted_terminated and info['success']:
                     success = "success"
                 if 'Grasp' in env_name:
                     if info['consecutive_grasp']:
@@ -107,13 +114,21 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
                 images.append(image)
                 timestep += 1
 
+            if truncated and n_success >= 15:
+                success = "success"
+            
+            # save video
+            if env_save_name is None:
+                env_save_name = env_name
             ckpt_path_basename = ckpt_path if ckpt_path[-1] != '/' else ckpt_path[:-1]
             ckpt_path_basename = ckpt_path_basename.split('/')[-1]
             video_name = f'{success}_obj_{obj_init_x}_{obj_init_y}'
             if 'Grasp' in env_name:
                 video_name = video_name + f'_consgrasp{consecutive_grasp}_grasp{grasped}'
             video_name = video_name + '.mp4'
-            video_path = f'{ckpt_path_basename}/{scene_name}/scanned_coke_can_dec27/delta_pose_align_interpolate_by_planner_contvel_v2_lowfric/{env_name}_fix_robot_grid_search_obj/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{video_name}'
+            video_path = f'{ckpt_path_basename}/{scene_name}/scanned_coke_can_dec27/delta_pose_align_interpolate_by_planner_contvel_v2/{env_save_name}_fix_robot_grid_search_obj/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{video_name}'
+            # video_path = f'{ckpt_path_basename}/{scene_name}/delta_pose_align_interpolate_by_planner_contvel_v2/{env_save_name}_fix_robot_grid_search_obj/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{video_name}'
+            # video_path = f'{ckpt_path_basename}/{scene_name}/very_long_coke_can_debug/delta_pose_align_interpolate_by_planner_contvel_v2/{env_save_name}_fix_robot_grid_search_obj/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{video_name}'
             if not tmp_exp:
                 video_path = 'results/' + video_path
             else:
@@ -122,19 +137,12 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
 
 
 if __name__ == '__main__':
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '1'
     os.environ['DISPLAY'] = ''
-    # rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/google_table_top_1.png'
-    # env_name = 'GraspSingleUpRightCokeCanInScene-v0'
-    # env_name = 'GraspSingleCokeCanInScene-v0'
-    env_name = 'GraspSingleVerticalCokeCanInScene-v0'
-    # env_name = 'GraspSingleUpRightOpenedCokeCanInScene-v0'
-    # env_name = 'GraspSingleCokeCanWithDistractorInScene-v0'
-    # env_name = 'GraspSingleOpenedCokeCanInScene-v0'
-    # env_name = 'GraspSinglePepsiCanInScene-v0'
-    # env_name = 'GraspSingleUpRightPepsiCanInScene-v0'
-    # env_name = 'GraspSingleYCBSomeInScene-v0'
+    rt1_x_ckpt_path = '/home/xuanlin/Real2Sim/rt_1_x_tf_trained_for_002272480_step'
     rt1_main_ckpt_path = '/home/xuanlin/Real2Sim/robotics_transformer/trained_checkpoints/rt1main/'
+    rt1_best_ckpt_path = '/home/xuanlin/Real2Sim/rt1_xid45615428_000315000/'
+    rt1_poor_ckpt_path = '/home/xuanlin/Real2Sim/rt1poor_xid77467904_000058240'
     
     gpus = tf.config.list_physical_devices('GPU')
     tf.config.set_logical_device_configuration(
@@ -152,69 +160,33 @@ if __name__ == '__main__':
     #          obj_init_x_range=obj_init_x_range, obj_init_y_range=obj_init_y_range,
     #          robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat)
         
-    # # google robot pick coke can reproduce real
+    # google robot pick coke can reproduce real
     robot_init_x, robot_init_y = 0.38, 0.2 # 0.188
-    # rob_init_quat = (Pose(q=[0, 0, 0, 1]) * Pose(q=euler2quat(0, 0, 0.003))).q
     rob_init_quat = Pose(q=[0, 0, 0, 1]).q
-    obj_init_x_range = np.linspace(-0.35, -0.1, 5)
-    obj_init_y_range = np.linspace(0.0, 0.4, 5)
+    obj_init_x_range = np.linspace(-0.35, -0.12, 5)
+    obj_init_y_range = np.linspace(-0.04, 0.44, 5)
     rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/google_coke_can_real_eval_1.jpg'
-    for env_name in ['GraspSingleVerticalLightCokeCanInScene-v0', 'GraspSingleLRSwitchLightCokeCanInScene-v0', 'GraspSingleUpRightOpenedLightCokeCanInScene-v0']:
-        main(env_name, 'google_pick_coke_can_1_v3', rgb_overlay_path=rgb_overlay_path,
-             obj_init_x_range=obj_init_x_range, obj_init_y_range=obj_init_y_range,
-             robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat)
-    # for env_name in ['GraspSingleVerticalLightCokeCanInScene-v0', 'GraspSingleLRSwitchLightCokeCanInScene-v0', 'GraspSingleUpRightOpenedLightCokeCanInScene-v0']:
-    #     main(env_name, 'google_pick_coke_can_1_v3', rgb_overlay_path=rgb_overlay_path, ckpt_path=rt1_main_ckpt_path,
-    #          obj_init_x_range=obj_init_x_range, obj_init_y_range=obj_init_y_range,
-    #          robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat)
+    
+    env_names = ['GraspSingleOpenedCokeCanInScene-v0'] * 3
+    save_env_names = ['GraspSingleUpRightOpenedCokeCanInScene-v0', 'GraspSingleVerticalOpenedCokeCanInScene-v0', 'GraspSingleLRSwitchOpenedCokeCanInScene-v0']
+    additional_kwargs_list = [
+        {'upright': True},
+        {'laid_vertically': True},
+        {'lr_switch': True},
+    ]
+    for ckpt_path in [rt1_x_ckpt_path, rt1_best_ckpt_path, rt1_poor_ckpt_path]:
+        for env_name, additional_kwargs in zip(env_names, additional_kwargs_list):
+            main(env_name, 'google_pick_coke_can_1_v3', 
+                additional_env_build_kwargs=additional_kwargs,
+                ckpt_path=ckpt_path,
+                rgb_overlay_path=rgb_overlay_path,
+                obj_init_x_range=obj_init_x_range, obj_init_y_range=obj_init_y_range,
+                robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat)
     
     # debug
-    # for env_name in ['GraspSingleVerticalLightCokeCanInScene-v0']:
-    #     main(env_name, 'google_pick_coke_can_1_v3', rgb_overlay_path=rgb_overlay_path,
+    # for env_name in ['GraspSingleOpenedCokeCanInScene-v0']:
+    #     main(env_name, 'google_pick_coke_can_1_v3', 
+    #          additional_env_build_kwargs={'upright': True},
+    #          rgb_overlay_path=rgb_overlay_path,
     #          obj_init_x_range=[-0.1625], obj_init_y_range=[0.0],
     #          robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat)
-    
-    
-    """
-    # main('GraspSingleYCBTomatoCanInScene-v0', 'Baked_sc1_staging_table83_82cm')
-    # main(env_name, 'Baked_sc1_staging_table_616385', rgb_overlay_path=rgb_overlay_path)
-    # main(env_name, 'Baked_sc1_staging_objaverse_cabinet1', rgb_overlay_path=rgb_overlay_path)
-    # main(env_name, 'Baked_sc1_staging_table83_82cm', rgb_overlay_path=rgb_overlay_path)
-    
-    rob_init_quat = (Pose(q=[0, 0, 0, 1]) * Pose(q=euler2quat(0, 0, -0.01))).q
-    main(env_name, 'Baked_sc1_staging_table83_82cm', ckpt_path=rt1_main_ckpt_path)
-    main(env_name, 'Baked_sc1_staging_table_616385', ckpt_path=rt1_main_ckpt_path,
-         robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
-         # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10),
-         rgb_overlay_path=rgb_overlay_path)
-    main(env_name, 'Baked_sc1_staging_table_616385', ckpt_path=rt1_main_ckpt_path,
-         robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
-         # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10)
-        )
-    main(env_name, 'Baked_sc1_staging_table_616385', ckpt_path=rt1_main_ckpt_path)
-    main(env_name, 'Baked_sc1_staging_objaverse_cabinet1', ckpt_path=rt1_main_ckpt_path)
-    
-    
-    
-    main(env_name, 'Baked_sc1_staging_table83_82cm')
-    main(env_name, 'Baked_sc1_staging_table_616385', 
-         robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
-         # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10),
-         rgb_overlay_path=rgb_overlay_path)
-    main(env_name, 'Baked_sc1_staging_table_616385', 
-         robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
-         # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10)
-        )
-    main(env_name, 'Baked_sc1_staging_table_616385')
-    main(env_name, 'Baked_sc1_staging_objaverse_cabinet1')
-    
-    
-    # main(env_name, 'Baked_sc1_staging_table_616385', 
-    #      ckpt_path='/home/xuanlin/Real2Sim/robotics_transformer/trained_checkpoints/rt1main/',
-    #      robot_init_x=0.32, robot_init_y=0.188, robot_init_quat=rob_init_quat, 
-    #      # obj_init_x_range=np.linspace(-0.25, -0.1, 5), obj_init_y_range=np.linspace(0.0, 0.4, 10),
-    #      rgb_overlay_path=rgb_overlay_path, 
-    #      tmp_exp=True,
-    #      sim_freq=510, control_freq=3, action_repeat=5, action_scale=0.3) # instruction='pick can')
-    #      # sim_freq=500, control_freq=5, action_repeat=4)
-    """

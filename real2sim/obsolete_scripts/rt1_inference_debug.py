@@ -169,7 +169,7 @@ if __name__ == '__main__':
     obj_init_x_range = [10]
     obj_init_y_range = [10]
     rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_vertical_coke_can_eval_1_cleanup.png'
-    for env_name in ['GraspSingleVerticalLightCokeCanInScene-v0']:
+    for env_name in ['GraspSingleVerticalOpenedCokeCanInScene-v0']:
         main(env_name, 'google_pick_coke_can_1', rgb_overlay_path=rgb_overlay_path,
              obj_init_x_range=obj_init_x_range, obj_init_y_range=obj_init_y_range,
              robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat)

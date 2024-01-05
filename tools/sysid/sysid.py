@@ -19,7 +19,7 @@ def calc_pose_err_single_ep(episode, arm_stiffness, arm_damping, robot, control_
         arm_damping = np.concatenate([arm_damping, [600, 600]])
     
     if robot == 'google_robot_static':
-        sim_freq, control_freq = 504, 3
+        sim_freq, control_freq = 252, 3
     elif robot == 'widowx':
         sim_freq, control_freq = 500, 5
     env = gym.make('PickCube-v0',
@@ -139,7 +139,7 @@ if __name__ == '__main__':
         --log-path /home/xuanlin/Downloads/opt_results_bridge.txt --robot widowx
     """
     
-    os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     os.environ['DISPLAY'] = ''
     
     parser = argparse.ArgumentParser()

@@ -79,9 +79,8 @@ pip install git+https://github.com/nathanrooy/simulated-annealing
 ```
 test_object.py: x axis should be point towards the can symbol; y axis should point up
 
-Blender export:
-Collada: x forward y up
-obj: x forward y up
+Blender export: Blender uses y forward, z up; SAPIEN: x forward, z up
+Collada and obj need to export w/ the same forward & up axis to ensure right collision
 ```
 
 

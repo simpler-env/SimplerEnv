@@ -19,7 +19,7 @@ def main():
     fnames = glob.glob(args.dir + '/*')
     for fname in fnames:
         fname = fname.split('/')[-1].replace('.mp4', '')
-        x, y = [float(num) for num in fname.split('_')[-2:]]
+        x, y = [float(num) for num in fname.split('_')[2:4]]
         x, y = abs(x - robot_x), y - robot_y
         if 'success' in fname:
             success.append([x, y])
