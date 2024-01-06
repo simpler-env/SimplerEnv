@@ -37,7 +37,7 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
             env, task_description = build_maniskill2_env(
                         env_name,
                         # control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_pos',
-                        control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_pos',
+                        control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_pos_interpolate_by_planner',
                         # control_mode='arm_pd_ee_delta_pose_align_gripper_pd_joint_target_pos',
                         # control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_target_pos',
                         # control_mode='arm_pd_ee_target_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_pos',
@@ -134,10 +134,17 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
             else:
                 video_path = 'results_tmp/' + video_path 
             write_video(video_path, images, fps=5)
+            
+            # save action trajectory
+            action_path = video_path.replace('.mp4', '.png')
+            action_root = os.path.dirname(action_path) + '/actions/'
+            os.makedirs(action_root, exist_ok=True)
+            action_path = action_root + os.path.basename(action_path)
+            rt1_model.visualize_epoch(predicted_actions, images, save_path=action_path)
 
 
 if __name__ == '__main__':
-    os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     os.environ['DISPLAY'] = ''
     rt1_x_ckpt_path = '/home/xuanlin/Real2Sim/rt_1_x_tf_trained_for_002272480_step'
     rt1_main_ckpt_path = '/home/xuanlin/Real2Sim/robotics_transformer/trained_checkpoints/rt1main/'
@@ -164,7 +171,7 @@ if __name__ == '__main__':
     robot_init_x, robot_init_y = 0.38, 0.2 # 0.188
     rob_init_quat = Pose(q=[0, 0, 0, 1]).q
     obj_init_x_range = np.linspace(-0.35, -0.12, 5)
-    obj_init_y_range = np.linspace(-0.04, 0.44, 5)
+    obj_init_y_range = np.linspace(-0.02, 0.42, 5)
     rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/google_coke_can_real_eval_1.jpg'
     
     env_names = ['GraspSingleOpenedCokeCanInScene-v0'] * 3
@@ -175,18 +182,29 @@ if __name__ == '__main__':
         {'lr_switch': True},
     ]
     for ckpt_path in [rt1_x_ckpt_path, rt1_best_ckpt_path, rt1_poor_ckpt_path]:
-        for env_name, additional_kwargs in zip(env_names, additional_kwargs_list):
+    # for ckpt_path in [rt1_best_ckpt_path, rt1_poor_ckpt_path]:
+    # for ckpt_path in [rt1_x_ckpt_path]:
+        for env_name, save_env_name, additional_kwargs in zip(env_names, save_env_names, additional_kwargs_list):
             main(env_name, 'google_pick_coke_can_1_v3', 
                 additional_env_build_kwargs=additional_kwargs,
                 ckpt_path=ckpt_path,
                 rgb_overlay_path=rgb_overlay_path,
                 obj_init_x_range=obj_init_x_range, obj_init_y_range=obj_init_y_range,
-                robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat)
+                robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat,
+                env_save_name=save_env_name)
     
     # debug
-    # for env_name in ['GraspSingleOpenedCokeCanInScene-v0']:
-    #     main(env_name, 'google_pick_coke_can_1_v3', 
-    #          additional_env_build_kwargs={'upright': True},
-    #          rgb_overlay_path=rgb_overlay_path,
-    #          obj_init_x_range=[-0.1625], obj_init_y_range=[0.0],
-    #          robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat)
+    # env_names = ['GraspSingleOpenedCokeCanInScene-v0']
+    # save_env_names = ['GraspSingleUpRightOpenedCokeCanInScene-v0']
+    # additional_kwargs_list = [
+    #     {'upright': True},
+    # ]
+    # for ckpt_path in [rt1_best_ckpt_path]:
+    #     for env_name, save_env_name, additional_kwargs in zip(env_names, save_env_names, additional_kwargs_list):
+    #         main(env_name, 'google_pick_coke_can_1_v3', 
+    #             additional_env_build_kwargs={'upright': True},
+    #             ckpt_path=ckpt_path,
+    #             # rgb_overlay_path=rgb_overlay_path,
+    #             obj_init_x_range=[-0.12], obj_init_y_range=[-0.02],
+    #             robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat,
+    #             env_save_name=save_env_name)

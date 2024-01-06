@@ -75,17 +75,12 @@ def main(dset_iter, iter_num, episode_id, set_actual_reached=False,
             this_xyz = episode_step['observation']['base_pose_tool_reached'][:3]
             this_xyzw = episode_step['observation']['base_pose_tool_reached'][3:]
             this_pose_at_robot_base = Pose(p=np.array(this_xyz), q=np.concatenate([this_xyzw[-1:], this_xyzw[:-1]]))
-            for _ in range(20):
-                delta_tcp_pose = Pose(
-                    p=this_pose_at_robot_base.p - current_pose_at_robot_base.p,
-                    q=(this_pose_at_robot_base * current_pose_at_robot_base.inv()).q,
-                )
-                action_translation = delta_tcp_pose.p
-                action_rot_ax, action_rot_angle = quat2axangle(np.array(delta_tcp_pose.q, dtype=np.float64))
-                action_rotation = action_rot_ax * action_rot_angle
-                action = np.concatenate([action_translation, action_rotation, [0]])
-                env.step(action)
-                current_pose_at_robot_base = env.agent.robot.pose.inv() * env.tcp.pose
+            controller = env.agent.controller.controllers['arm']
+            cur_qpos = env.agent.robot.get_qpos()
+            init_arm_qpos = controller.compute_ik(this_pose_at_robot_base)
+            cur_qpos[controller.joint_indices] = init_arm_qpos
+            env.agent.reset(cur_qpos)
+            current_pose_at_robot_base = env.agent.robot.pose.inv() * env.tcp.pose
         
         if not set_actual_reached:
             gt_action_world_vector = episode_step['action']['world_vector']
