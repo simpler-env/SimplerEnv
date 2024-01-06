@@ -37,7 +37,9 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
             env, task_description = build_maniskill2_env(
                         env_name,
                         # control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_pos',
-                        control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_pos_interpolate_by_planner',
+                        # control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_pos',
+                        # control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_pos_interpolate_by_planner',
+                        control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner',
                         # control_mode='arm_pd_ee_delta_pose_align_gripper_pd_joint_target_pos',
                         # control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_target_pos',
                         # control_mode='arm_pd_ee_target_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_pos',
@@ -188,10 +190,18 @@ if __name__ == '__main__':
             main(env_name, 'google_pick_coke_can_1_v3', 
                 additional_env_build_kwargs=additional_kwargs,
                 ckpt_path=ckpt_path,
+                obj_init_x_range=obj_init_x_range, obj_init_y_range=obj_init_y_range,
+                robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat,
+                env_save_name=save_env_name)
+            
+            main(env_name, 'google_pick_coke_can_1_v3', 
+                additional_env_build_kwargs=additional_kwargs,
+                ckpt_path=ckpt_path,
                 rgb_overlay_path=rgb_overlay_path,
                 obj_init_x_range=obj_init_x_range, obj_init_y_range=obj_init_y_range,
                 robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat,
                 env_save_name=save_env_name)
+            
     
     # debug
     # env_names = ['GraspSingleOpenedCokeCanInScene-v0']
@@ -199,12 +209,13 @@ if __name__ == '__main__':
     # additional_kwargs_list = [
     #     {'upright': True},
     # ]
-    # for ckpt_path in [rt1_best_ckpt_path]:
+    # # for ckpt_path in [rt1_best_ckpt_path]:
+    # for ckpt_path in [rt1_x_ckpt_path]:
     #     for env_name, save_env_name, additional_kwargs in zip(env_names, save_env_names, additional_kwargs_list):
     #         main(env_name, 'google_pick_coke_can_1_v3', 
     #             additional_env_build_kwargs={'upright': True},
     #             ckpt_path=ckpt_path,
     #             # rgb_overlay_path=rgb_overlay_path,
-    #             obj_init_x_range=[-0.12], obj_init_y_range=[-0.02],
+    #             obj_init_x_range=[-0.235], obj_init_y_range=[-0.02],
     #             robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat,
     #             env_save_name=save_env_name)

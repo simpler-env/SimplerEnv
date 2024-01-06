@@ -97,11 +97,19 @@ class RT1Inference:
         action_rotation_angle = np.linalg.norm(action_rotation_delta)
         action_rotation_ax = action_rotation_delta / action_rotation_angle if action_rotation_angle > 1e-6 else np.array([0., 1., 0.])
         action['rot_axangle'] = action_rotation_ax * action_rotation_angle * self.action_scale
+        
+        # gripper_pd_joint_target_pos:
+        # if np.abs(raw_action['gripper_closedness_action'][0]) > 0:
+        #     action['gripper_closedness_action'] = cur_gripper_closedness + raw_action['gripper_closedness_action']
+        #     self.goal_gripper_closedness = action['gripper_closedness_action'] # update gripper joint position goal
+        # else:
+        #     action['gripper_closedness_action'] = self.goal_gripper_closedness # repeat last target gripper joint position
+        
+        # gripper pd_joint_target_delta_pos_interpolate_by_planner:
         if np.abs(raw_action['gripper_closedness_action'][0]) > 0:
-            action['gripper_closedness_action'] = cur_gripper_closedness + raw_action['gripper_closedness_action']
-            self.goal_gripper_closedness = action['gripper_closedness_action'] # update gripper joint position goal
+            action['gripper_closedness_action'] = raw_action['gripper_closedness_action'] # update gripper joint position goal
         else:
-            action['gripper_closedness_action'] = self.goal_gripper_closedness # repeat last target gripper joint position
+            action['gripper_closedness_action'] = np.array([0.0]) # repeat last target gripper joint position
             
         action['terminate_episode'] = raw_action['terminate_episode']
                 
