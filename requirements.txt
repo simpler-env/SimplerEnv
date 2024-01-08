@@ -37,3 +37,4 @@ ml_collections
 wandb
 einops
 motion-planning
+ruckig

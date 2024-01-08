@@ -108,7 +108,7 @@ def calc_pose_err(dset, arm_stiffness, arm_damping, robot, control_mode, log_pat
     errs = []
     processes = []
     
-    pool = mp.Pool(16)
+    pool = mp.Pool(min(len(dset), 18))
     for episode in dset:
         processes.append(
             pool.apply_async(
@@ -139,7 +139,7 @@ if __name__ == '__main__':
         --log-path /home/xuanlin/Downloads/opt_results_bridge.txt --robot widowx
     """
     
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '1'
     os.environ['DISPLAY'] = ''
     
     parser = argparse.ArgumentParser()
@@ -180,12 +180,23 @@ if __name__ == '__main__':
         # init_stiffness = [900.0, 1200.0, 956.2135773317326, 924.9766943646305, 400.0, 430.0, 200.0]
         # init_damping = [743.4368714060297, 900.0, 700.0, 607.9657371455355, 432.91780633579725, 237.57304830746313, 205.07035572526215]
         
-        stiffness_high = np.array([1800, 1750, 1050, 950, 1230, 510, 540])
-        stiffness_low = np.array([1700, 1650, 950, 850, 1130, 430, 460])
-        damping_high = np.array([1400, 1400, 830, 730, 770, 330, 430])
-        damping_low = np.array([1080, 1080, 650, 560, 580, 200, 330])
-        init_stiffness = np.array([1782.5851493481744, 1738.6434151085218, 997.5501066431713, 890.4105045728527, 1171.2472093419863, 440.72751756329257, 480.0])
-        init_damping = np.array([1180.0, 1180.0, 736.767239210762, 655.1044083824427, 660.0, 280.17797526946987, 396.9140558064961])
+        stiffness_high = np.array([1800, 1750, 1050, 960, 1230, 450, 480])
+        stiffness_low = np.array([1700, 1650, 950, 930, 1180, 410, 450])
+        damping_high = np.array([1110, 1100, 800, 750, 730, 310, 360])
+        damping_low = np.array([980, 900, 700, 610, 610, 220, 250])
+        # stiffness_high = np.array([1900, 1850, 1150, 1000, 1280, 500, 530])
+        # stiffness_low = np.array([1500, 1550, 850, 800, 1030, 380, 380])
+        # damping_high = np.array([1200, 1200, 850, 780, 780, 350, 380])
+        # damping_low = np.array([830, 830, 630, 550, 500, 190, 230])
+        init_stiffness = np.array([1700.0, 1737.0471680861954, 979.975871856535, 930.0, 1212.154500274304, 432.96500923932535, 468.0013365498738])
+        init_damping = np.array([1059.9791902443303, 1010.4720585373592, 767.2803161582076, 680.0, 674.9946964336588, 274.613381336198, 340.532560578637])
+        
+        # stiffness_high = np.array([1800, 1800, 1050, 950, 1300, 630, 550])
+        # stiffness_low = np.array([1700, 1700, 950, 850, 1200, 580, 500])
+        # damping_high = np.array([1300, 1300, 760, 660, 650, 350, 530])
+        # damping_low = np.array([300, 300, 230, 230, 160, 100, 180])
+        # init_stiffness = np.array([1735.8948480824674, 1754.3342187522323, 1007.9762036720238, 872.5638913272953, 1277.700676022463, 608.0856938168192, 530.0])
+        # init_damping = np.array([1000.0, 1042.8696312830125, 606.8732757029185, 552.2718719738202, 528.0029778895791, 275.6999553621622, 530.0])
         
         # stiffness_high = np.array([2000, 2200, 1700, 1400, 860, 730, 730])
         # stiffness_low = np.array([1200, 1400, 1300, 1000, 630, 530, 530])

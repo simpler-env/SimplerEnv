@@ -76,6 +76,34 @@ class RT1Inference:
             self.task_description = ''
             self.task_description_embedding = tf.zeros((512,), dtype=tf.float32)
 
+    @staticmethod
+    def _small_action_filter(raw_action, arm_movement=False, gripper=True):
+        # small action filtering
+        if arm_movement:
+            raw_action['world_vector'] = tf.where(
+                tf.abs(raw_action['world_vector']) < 5e-3, tf.zeros_like(raw_action['world_vector']), raw_action['world_vector']
+            )
+            raw_action['rotation_delta'] = tf.where(
+                tf.abs(raw_action['rotation_delta']) < 5e-3, tf.zeros_like(raw_action['rotation_delta']), raw_action['rotation_delta']
+            )
+            raw_action['base_displacement_vector'] = tf.where(
+                raw_action['base_displacement_vector'] < 5e-3, 
+                tf.zeros_like(raw_action['base_displacement_vector']), 
+                raw_action['base_displacement_vector']
+            )
+            raw_action['base_displacement_vertical_rotation'] = tf.where(
+                raw_action['base_displacement_vertical_rotation'] < 1e-2,
+                tf.zeros_like(raw_action['base_displacement_vertical_rotation']),
+                raw_action['base_displacement_vertical_rotation']
+            )
+        if gripper:
+            raw_action['gripper_closedness_action'] = tf.where(
+                tf.abs(raw_action['gripper_closedness_action']) < 1e-2,
+                tf.zeros_like(raw_action['gripper_closedness_action']),
+                raw_action['gripper_closedness_action']
+            )
+        return raw_action
+        
     def step(self, image, cur_gripper_closedness):
         image = self._resize_image(image)
         self.observation["image"] = image
@@ -87,12 +115,11 @@ class RT1Inference:
         )
         policy_step = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
         raw_action = policy_step.action # keys: ['base_displacement_vector', 'rotation_delta', 'world_vector', 'base_displacement_ve...l_rotation', 'gripper_closedness_action', 'terminate_episode']
-        if tf.abs(raw_action['gripper_closedness_action'][0]) < 0.01:
-            raw_action['gripper_closedness_action'][0] = 0.0 # regard small gripper actions as 0
+        raw_action = self._small_action_filter(raw_action, arm_movement=False, gripper=True)
         
         # process raw_action to obtain the action to be sent to the environment
         action = {}
-        action['world_vector'] = raw_action['world_vector'] * self.action_scale
+        action['world_vector'] = np.asarray(raw_action['world_vector'], dtype=np.float64) * self.action_scale
         action_rotation_delta = np.asarray(raw_action['rotation_delta'], dtype=np.float64) # this rotation_delta is in fact in axis-angle representation (not rpy)
         action_rotation_angle = np.linalg.norm(action_rotation_delta)
         action_rotation_ax = action_rotation_delta / action_rotation_angle if action_rotation_angle > 1e-6 else np.array([0., 1., 0.])
@@ -107,7 +134,7 @@ class RT1Inference:
         
         # gripper pd_joint_target_delta_pos_interpolate_by_planner:
         if np.abs(raw_action['gripper_closedness_action'][0]) > 0:
-            action['gripper_closedness_action'] = raw_action['gripper_closedness_action'] # update gripper joint position goal
+            action['gripper_closedness_action'] = np.asarray(raw_action['gripper_closedness_action'], dtype=np.float64) # update gripper joint position goal
         else:
             action['gripper_closedness_action'] = np.array([0.0]) # repeat last target gripper joint position
             

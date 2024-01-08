@@ -40,7 +40,8 @@ if __name__ == '__main__':
     dset_iter = iter(dset)
     iter_episode_id = -1
     if dataset_name == 'fractal20220817_data':
-        episode_ids = [2, 4, 5, 9, 11, 805, 1257, 1495, 1539, 1991, 2398, 3289]
+        # episode_ids = [2, 4, 5, 9, 11, 805, 1257, 1495, 1539, 1991, 2398, 3289]
+        episode_ids = [2, 4, 5, 9, 11, 14, 28, 34, 36, 37, 38, 805, 1257, 1495, 1539, 1991, 2398, 3289]
     elif dataset_name == 'bridge':
         episode_ids = list(range(12))
     else:

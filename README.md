@@ -81,6 +81,8 @@ test_object.py: x axis should be point towards the can symbol; y axis should poi
 
 Blender export: Blender uses y forward, z up; SAPIEN: x forward, z up
 Collada and obj need to export w/ the same forward & up axis to ensure right collision
+
+Make mesh a (local) convex hull to reduce "slipping" behaviors
 ```
 
 
