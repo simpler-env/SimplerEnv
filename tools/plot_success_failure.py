@@ -18,6 +18,8 @@ def main():
     
     fnames = glob.glob(args.dir + '/*')
     for fname in fnames:
+        if fname[-4:] != '.mp4':
+            continue
         fname = fname.split('/')[-1].replace('.mp4', '')
         x, y = [float(num) for num in fname.split('_')[2:4]]
         x, y = abs(x - robot_x), y - robot_y
