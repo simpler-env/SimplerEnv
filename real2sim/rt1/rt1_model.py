@@ -134,9 +134,9 @@ class RT1Inference:
         
         # gripper pd_joint_target_delta_pos_interpolate_by_planner:
         if np.abs(raw_action['gripper_closedness_action'][0]) > 0:
-            action['gripper_closedness_action'] = np.asarray(raw_action['gripper_closedness_action'], dtype=np.float64) # update gripper joint position goal
+            action['gripper'] = np.asarray(raw_action['gripper_closedness_action'], dtype=np.float64) # update gripper joint position goal
         else:
-            action['gripper_closedness_action'] = np.array([0.0]) # repeat last target gripper joint position
+            action['gripper'] = np.array([0.0]) # repeat last target gripper joint position
             
         action['terminate_episode'] = raw_action['terminate_episode']
                 

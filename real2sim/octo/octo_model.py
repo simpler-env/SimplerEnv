@@ -89,7 +89,7 @@ class OctoInference:
         action_rotation_axangle = action_rotation_ax * action_rotation_angle
         action['rot_axangle'] = action_rotation_axangle * self.action_scale
         
-        action['open_gripper'] = 2.0 * raw_action['open_gripper'] - 1.0
+        action['gripper'] = 2.0 * raw_action['open_gripper'] - 1.0
         
         self.time_step += 1
         

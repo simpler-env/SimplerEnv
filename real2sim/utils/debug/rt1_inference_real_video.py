@@ -92,9 +92,9 @@ if __name__ == '__main__':
     # impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_vertical_coke_can_eval_1_cleanup.png'
     impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_vertical_coke_can_d4_cleanup.png'
     instruction = 'pick coke can'
-    # ckpt_path = '/home/xuanlin/Real2Sim/rt_1_x_tf_trained_for_002272480_step/'
+    ckpt_path = '/home/xuanlin/Real2Sim/rt_1_x_tf_trained_for_002272480_step/'
     # ckpt_path = '/home/xuanlin/Real2Sim/robotics_transformer/trained_checkpoints/rt1main/'
-    ckpt_path = '/home/xuanlin/Real2Sim/rt1_xid45615428_000315000/'
+    # ckpt_path = '/home/xuanlin/Real2Sim/rt1_xid45615428_000315000/'
     # ckpt_path = '/home/xuanlin/Real2Sim/rt1poor_xid77467904_000058240/'
     
     if mp4_path is not None:
@@ -107,4 +107,4 @@ if __name__ == '__main__':
         gpus[0],
         [tf.config.LogicalDeviceConfiguration(memory_limit=4096)])
 
-    main(input_video, impainting_img_path, instruction)
+    main(input_video, impainting_img_path, instruction, ckpt_path)
