@@ -131,8 +131,8 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
             if 'Grasp' in env_name:
                 video_name = video_name + f'_consgrasp{consecutive_grasp}_grasp{grasped}'
             video_name = video_name + '.mp4'
-            # video_path = f'{ckpt_path_basename}/{scene_name}/scanned_coke_can_dec27/delta_pose_align_interpolate_by_planner_contvel_v2/{env_save_name}_fix_robot_grid_search_obj/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{video_name}'
-            video_path = f'{ckpt_path_basename}/{scene_name}/scanned_coke_can_dec27_overlay1png/delta_pose_align_interpolate_by_planner_contvel_v2/{env_save_name}_fix_robot_grid_search_obj/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{video_name}'
+            video_path = f'{ckpt_path_basename}/{scene_name}/scanned_coke_can_dec27/delta_pose_align_interpolate_by_planner_contvel_v2/{env_save_name}_fix_robot_grid_search_obj/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{video_name}'
+            # video_path = f'{ckpt_path_basename}/{scene_name}/scanned_coke_can_dec27_overlay1png/delta_pose_align_interpolate_by_planner_contvel_v2/{env_save_name}_fix_robot_grid_search_obj/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{video_name}'
             # video_path = f'{ckpt_path_basename}/{scene_name}/delta_pose_align_interpolate_by_planner_contvel_v2/{env_save_name}_fix_robot_grid_search_obj/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{video_name}'
             # video_path = f'{ckpt_path_basename}/{scene_name}/very_long_coke_can_debug/delta_pose_align_interpolate_by_planner_contvel_v2/{env_save_name}_fix_robot_grid_search_obj/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path is not None}/{video_name}'
             if not tmp_exp:
@@ -155,7 +155,8 @@ if __name__ == '__main__':
     rt1_x_ckpt_path = '/home/xuanlin/Real2Sim/rt_1_x_tf_trained_for_002272480_step'
     rt1_main_ckpt_path = '/home/xuanlin/Real2Sim/robotics_transformer/trained_checkpoints/rt1main/'
     rt1_best_ckpt_path = '/home/xuanlin/Real2Sim/rt1_xid45615428_000315000/'
-    rt1_poor_ckpt_path = '/home/xuanlin/Real2Sim/rt1poor_xid77467904_000058240'
+    # rt1_poor_ckpt_path = '/home/xuanlin/Real2Sim/rt1poor_xid77467904_000058240'
+    rt1_poor_ckpt_path = '/home/xuanlin/Real2Sim/rt1poorearly_77467904_000010080/'
     
     gpus = tf.config.list_physical_devices('GPU')
     tf.config.set_logical_device_configuration(
@@ -182,22 +183,52 @@ if __name__ == '__main__':
     obj_init_x_range = np.linspace(-0.35, -0.12, 5)
     obj_init_y_range = np.linspace(-0.02, 0.42, 5)
     rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/google_coke_can_real_eval_1.png' # 1.png / 1.jpg
-    
-    # rob_init_quat = (Pose(q=euler2quat(0, 0, 0.03)) * Pose(q=[0, 0, 0, 1])).q
-    # obj_init_x_range = np.linspace(-0.35, -0.12, 5)
-    # obj_init_y_range = np.linspace(-0.02, 0.42, 5)
-    # rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/google_coke_can_real_eval_2.png'
-    
-    env_names = ['GraspSingleOpenedCokeCanInScene-v0'] * 3
-    save_env_names = ['GraspSingleUpRightOpenedCokeCanInScene-v0', 'GraspSingleVerticalOpenedCokeCanInScene-v0', 'GraspSingleLRSwitchOpenedCokeCanInScene-v0']
+        
+    env_names = ['GraspSingleOpenedCokeCanInScene-v0'] * 2
+    save_env_names = ['GraspSingleUpRightOpenedCokeCanInScene-v0', 'GraspSingleLRSwitchOpenedCokeCanInScene-v0']
     additional_kwargs_list = [
         {'upright': True},
-        {'laid_vertically': True},
         {'lr_switch': True},
     ]
-    for ckpt_path in [rt1_x_ckpt_path, rt1_best_ckpt_path, rt1_poor_ckpt_path]:
+    # for ckpt_path in [rt1_x_ckpt_path, rt1_best_ckpt_path, rt1_poor_ckpt_path]:
     # for ckpt_path in [rt1_best_ckpt_path, rt1_poor_ckpt_path]:
     # for ckpt_path in [rt1_x_ckpt_path]:
+    for ckpt_path in [rt1_poor_ckpt_path]:
+        for env_name, save_env_name, additional_kwargs in zip(env_names, save_env_names, additional_kwargs_list):           
+            main(env_name, scene_name, 
+                additional_env_build_kwargs=additional_kwargs,
+                control_freq=control_freq, sim_freq=sim_freq, max_episode_steps=max_episode_steps,
+                ckpt_path=ckpt_path,
+                rgb_overlay_path=rgb_overlay_path,
+                obj_init_x_range=obj_init_x_range, obj_init_y_range=obj_init_y_range,
+                robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat,
+                env_save_name=save_env_name)
+            
+            main(env_name, scene_name, 
+                additional_env_build_kwargs=additional_kwargs,
+                control_freq=control_freq, sim_freq=sim_freq, max_episode_steps=max_episode_steps,
+                ckpt_path=ckpt_path,
+                obj_init_x_range=obj_init_x_range, obj_init_y_range=obj_init_y_range,
+                robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat,
+                env_save_name=save_env_name)
+            
+            
+            
+    rob_init_quat = (Pose(q=euler2quat(0, 0, 0.03)) * Pose(q=[0, 0, 0, 1])).q
+    obj_init_x_range = np.linspace(-0.35, -0.12, 5)
+    obj_init_y_range = np.linspace(-0.02, 0.42, 5)
+    rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/google_coke_can_real_eval_2.png'
+    
+    env_names = ['GraspSingleOpenedCokeCanInScene-v0'] * 1
+    save_env_names = ['GraspSingleVerticalOpenedCokeCanInScene-v0']
+    additional_kwargs_list = [
+        {'laid_vertically': True},
+    ]
+    
+    # for ckpt_path in [rt1_x_ckpt_path, rt1_best_ckpt_path, rt1_poor_ckpt_path]:
+    # for ckpt_path in [rt1_best_ckpt_path, rt1_poor_ckpt_path]:
+    # for ckpt_path in [rt1_x_ckpt_path]:
+    for ckpt_path in [rt1_poor_ckpt_path]:
         for env_name, save_env_name, additional_kwargs in zip(env_names, save_env_names, additional_kwargs_list):           
             main(env_name, scene_name, 
                 additional_env_build_kwargs=additional_kwargs,
