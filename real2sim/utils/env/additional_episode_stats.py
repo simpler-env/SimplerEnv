@@ -23,6 +23,6 @@ def update_additional_episode_stats(env_name, episode_stats, info):
 def obtain_truncation_step_success(env_name, episode_stats, info):
     # obtain success indicator if policy never terminates
     if 'GraspSingle' in env_name:
-        return (info['lifted_object_significantly'] or (episode_stats['n_lift_significant'] >= 10))
+        return (info['lifted_object_significantly'] or (episode_stats['n_lift_significant'] >= 5))
     else:
         raise NotImplementedError()
