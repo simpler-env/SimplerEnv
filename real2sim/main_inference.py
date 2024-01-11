@@ -23,25 +23,28 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
          rgb_overlay_path=None, tmp_exp=False,
          control_freq=3, sim_freq=513, max_episode_steps=80,
          instruction=None,
-         action_scale=1.0):
+         action_scale=1.0, enable_raytracing=False):
     
     # Create environment
+    kwargs = dict(
+        obs_mode='rgbd',
+        robot=robot_name,
+        sim_freq=sim_freq,
+        control_mode=control_mode,
+        control_freq=control_freq,
+        max_episode_steps=max_episode_steps,
+        scene_name=scene_name,
+        camera_cfgs={"add_segmentation": True},
+        rgb_overlay_path=rgb_overlay_path,
+        instruction=instruction,
+    )
+    if enable_raytracing:
+        kwargs['shader_dir'] = 'rt'
+        kwargs['render_config'] = {"rt_samples_per_pixel": 128, "rt_use_denoiser": True}
     env, task_description = build_maniskill2_env(
                 env_name,
-                obs_mode='rgbd',
-                robot=robot_name,
-                sim_freq=sim_freq,
-                control_mode=control_mode,
-                control_freq=control_freq,
-                max_episode_steps=max_episode_steps,
-                scene_name=scene_name,
-                camera_cfgs={"add_segmentation": True},
-                rgb_overlay_path=rgb_overlay_path,
-                instruction=instruction,
                 **additional_env_build_kwargs,
-                # Enable Ray Tracing
-                # shader_dir="rt",
-                # render_config={"rt_samples_per_pixel": 8, "rt_use_denoiser": True},
+                **kwargs,
     )
     env_reset_options = {
         'obj_init_options': {
@@ -135,6 +138,7 @@ if __name__ == '__main__':
     parser.add_argument('--ckpt-path', type=str, required=True)
     parser.add_argument('--env-name', type=str, required=True)
     parser.add_argument('--scene-name', type=str, default='google_pick_coke_can_1_v4')
+    parser.add_argument('--enable-raytracing', action='store_true')
     parser.add_argument('--robot', type=str, default='google_robot_static')
     parser.add_argument('--gpu-id', type=int, default=0)
     parser.add_argument('--action-scale', type=float, default=1.0)
@@ -158,6 +162,7 @@ if __name__ == '__main__':
         "Note that the quotation marks are necessary and that no white space "
         "is allowed.",
     )
+    parser.add_argument("--tmp-exp", action='store_true', help="debug flag")
     
     args = parser.parse_args()
     
@@ -205,7 +210,8 @@ if __name__ == '__main__':
                              additional_env_build_kwargs=additional_env_build_kwargs,
                              rgb_overlay_path=args.rgb_overlay_path,
                              control_freq=control_freq, sim_freq=sim_freq, max_episode_steps=max_episode_steps,
-                             action_scale=args.action_scale)
+                             action_scale=args.action_scale, tmp_exp=args.tmp_exp,
+                             enable_raytracing=args.enable_raytracing)
     
 """
 # control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_pos',
