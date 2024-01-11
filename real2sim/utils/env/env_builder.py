@@ -28,6 +28,9 @@ def build_maniskill2_env(env_name, instruction=None, **kwargs):
         task_description = "pick box"
     elif env_name == 'KnockSingleYCBBoxOverInScene-v0':
         task_description = "knock box over"
+    elif env_name == 'OpenDrawerCustomInScene-v0':
+        # TODO: add other drawers
+        task_description = "open top drawer"
     else:
         raise NotImplementedError()
     

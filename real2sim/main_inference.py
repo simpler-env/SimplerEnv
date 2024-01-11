@@ -7,7 +7,10 @@ from transforms3d.euler import euler2axangle, euler2quat
 from sapien.core import Pose
 
 from real2sim.rt1.rt1_model import RT1Inference
-from real2sim.octo.octo_model import OctoInference
+try:
+    from real2sim.octo.octo_model import OctoInference
+except ImportError:
+    print("Octo is not correctly imported.")
 from real2sim.utils.visualization import write_video
 from real2sim.utils.env.env_builder import build_maniskill2_env, get_robot_control_mode
 from real2sim.utils.env.additional_episode_stats import (
@@ -19,11 +22,14 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
          robot_init_x, robot_init_y, robot_init_quat, 
          obj_init_x, obj_init_y,
          control_mode,
-         additional_env_build_kwargs={},
+         additional_env_build_kwargs=None,
          rgb_overlay_path=None, tmp_exp=False,
          control_freq=3, sim_freq=513, max_episode_steps=80,
          instruction=None,
          action_scale=1.0, enable_raytracing=False):
+    
+    if additional_env_build_kwargs is None:
+        additional_env_build_kwargs = {}
     
     # Create environment
     kwargs = dict(
