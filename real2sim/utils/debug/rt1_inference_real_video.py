@@ -17,7 +17,7 @@ def main(input_video, impainting_img_path, instruction,
     # Create environment
     env, instruction = build_maniskill2_env(
         'PickCube-v0',
-        control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_pos',
+        control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner',
         # control_mode='arm_pd_ee_delta_pose_align_gripper_pd_joint_target_pos',
         obs_mode='rgbd',
         robot='google_robot_static',
@@ -63,7 +63,7 @@ def main(input_video, impainting_img_path, instruction,
             np.concatenate(
                 [action['world_vector'], 
                 action['rot_axangle'],
-                action['gripper_closedness_action']
+                action['gripper']
                 ]
             )
         )
@@ -90,12 +90,14 @@ if __name__ == '__main__':
     # impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/debug/rt1_real_vertical_coke_can_1_cleanup.png'
     mp4_path = None
     # impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_vertical_coke_can_eval_1_cleanup.png'
-    impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_vertical_coke_can_d4_cleanup.png'
+    # impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_vertical_coke_can_d4_cleanup.png'
+    impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_standing_coke_can_c0_cleanup.png'
     instruction = 'pick coke can'
-    ckpt_path = '/home/xuanlin/Real2Sim/rt_1_x_tf_trained_for_002272480_step/'
+    # ckpt_path = '/home/xuanlin/Real2Sim/rt_1_x_tf_trained_for_002272480_step/'
     # ckpt_path = '/home/xuanlin/Real2Sim/robotics_transformer/trained_checkpoints/rt1main/'
     # ckpt_path = '/home/xuanlin/Real2Sim/rt1_xid45615428_000315000/'
     # ckpt_path = '/home/xuanlin/Real2Sim/rt1poor_xid77467904_000058240/'
+    ckpt_path = '/home/xuanlin/Real2Sim/xid77467904_000400120/'
     
     if mp4_path is not None:
         input_video = media.read_video(mp4_path)

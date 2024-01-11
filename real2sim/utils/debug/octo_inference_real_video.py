@@ -61,7 +61,7 @@ def main(input_video, impainting_img_path, instruction,
             np.concatenate(
                 [action['world_vector'], 
                 action['rot_axangle'],
-                action['open_gripper']
+                action['gripper']
                 ]
             )
         )

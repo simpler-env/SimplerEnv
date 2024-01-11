@@ -15,7 +15,7 @@ def dataset2path(dataset_name):
     return f'gs://gresearch/robotics/{dataset_name}/{version}'
 
 if __name__ == '__main__':
-    dataset_name = DATASETS[0]
+    dataset_name = DATASETS[1]
     dset = tfds.builder_from_directory(builder_dir=dataset2path(dataset_name))
     
     dset = dset.as_dataset(split='train[:40]', read_config=tfds.ReadConfig(add_tfds_id=True))
