@@ -3,7 +3,7 @@ import os
 import tensorflow as tf
 import argparse
 
-from transforms3d.euler import euler2axangle, euler2quat
+from transforms3d.euler import euler2axangle, euler2quat, quat2euler
 from sapien.core import Pose
 
 from real2sim.rt1.rt1_model import RT1Inference
@@ -23,7 +23,8 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
          rgb_overlay_path=None, tmp_exp=False,
          control_freq=3, sim_freq=513, max_episode_steps=80,
          instruction=None,
-         action_scale=1.0, enable_raytracing=False):
+         action_scale=1.0, enable_raytracing=False,
+         additional_env_save_tags=None):
     
     # Create environment
     kwargs = dict(
@@ -103,6 +104,8 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
     env_save_name = env_name
     for k, v in additional_env_build_kwargs.items():
         env_save_name = env_save_name + f'_{k}_{v}'
+    if additional_env_save_tags is not None:
+        env_save_name = env_save_name + f'_{additional_env_save_tags}'
     ckpt_path_basename = ckpt_path if ckpt_path[-1] != '/' else ckpt_path[:-1]
     ckpt_path_basename = ckpt_path_basename.split('/')[-1]
     video_name = f'{success}_obj_{obj_init_x}_{obj_init_y}'
@@ -113,7 +116,8 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
         rgb_overlay_path_str = os.path.splitext(os.path.basename(rgb_overlay_path))[0]
     else:
         rgb_overlay_path_str = 'None'
-    video_path = f'{ckpt_path_basename}/{scene_name}/{control_mode}/{env_save_name}/rob_{robot_init_x}_{robot_init_y}_rgb_overlay_{rgb_overlay_path_str}/{video_name}'
+    r, p, y = quat2euler(robot_init_quat)
+    video_path = f'{ckpt_path_basename}/{scene_name}/{control_mode}/{env_save_name}/rob_{robot_init_x}_{robot_init_y}_rot_{r:.3f}_{p:.3f}_{y:.3f}_rgb_overlay_{rgb_overlay_path_str}/{video_name}'
     if not tmp_exp:
         video_path = 'results/' + video_path
     else:
@@ -137,6 +141,7 @@ if __name__ == '__main__':
     parser.add_argument('--policy-model', type=str, default='rt1', choices=['rt1', 'octo-base', 'octo-small'])
     parser.add_argument('--ckpt-path', type=str, required=True)
     parser.add_argument('--env-name', type=str, required=True)
+    parser.add_argument('--additional-env-save-tags', type=str, default=None, help='Additional tags to save the environment eval results')
     parser.add_argument('--scene-name', type=str, default='google_pick_coke_can_1_v4')
     parser.add_argument('--enable-raytracing', action='store_true')
     parser.add_argument('--robot', type=str, default='google_robot_static')
@@ -211,7 +216,8 @@ if __name__ == '__main__':
                              rgb_overlay_path=args.rgb_overlay_path,
                              control_freq=control_freq, sim_freq=sim_freq, max_episode_steps=max_episode_steps,
                              action_scale=args.action_scale, tmp_exp=args.tmp_exp,
-                             enable_raytracing=args.enable_raytracing)
+                             enable_raytracing=args.enable_raytracing,
+                             additional_env_save_tags=args.additional_env_save_tags)
     
 """
 # control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_pos',
