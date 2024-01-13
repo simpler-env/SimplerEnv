@@ -45,14 +45,18 @@ def put_text_on_image(
 
 def merge_videos(input_dir: Path, output_path:str= None):
     video_paths = []
-    for video_path in input_dir.glob("*/*.mp4"):
+    for video_path in input_dir.glob("**/*.mp4"):
         video_paths.append(video_path)
         # print(video_path)
 
     # video_clips = []
     video_clips = {}
-    robot_init_xs = set()
-    robot_init_ys = set()
+    if 'obj' in video_paths[0].stem.split('_'):
+        pos_variation_mode = 'obj'
+    else:
+        pos_variation_mode = 'robot'
+    init_xs = set()
+    init_ys = set()
     max_duration = 0
     for video_path in video_paths:
         # robot initial poses
@@ -61,19 +65,37 @@ def merge_videos(input_dir: Path, output_path:str= None):
         # hardcoded
         robot_init_x = round(float(dirname_elems[1]), 3)
         robot_init_y = round(float(dirname_elems[2]), 3)
-        robot_init_xs.add(robot_init_x)
-        robot_init_ys.add(robot_init_y)
-
+        
         basename = video_path.stem
         basename_elems = basename.split("_")
         # hardcoded
         success = basename_elems[0]
-        qpos = round(float(basename_elems[-1]), 3)
+        if pos_variation_mode == 'obj':
+            obj_init_x = round(float(basename_elems[2]), 3)
+            obj_init_y = round(float(basename_elems[3]), 3)
+        try:
+            qpos = round(float(basename_elems[-1]), 3)
+        except:
+            if pos_variation_mode == 'obj':
+                qpos = (obj_init_x, obj_init_y)
+            else:
+                qpos = None
+            
+        if pos_variation_mode == 'robot':
+            init_x, init_y = robot_init_x, robot_init_y
+            init_xs.add(robot_init_x)
+            init_ys.add(robot_init_y)
+        elif pos_variation_mode == 'obj':
+            init_x, init_y = obj_init_x, obj_init_y
+            init_xs.add(obj_init_x)
+            init_ys.add(obj_init_y)
+        else:
+            raise NotImplementedError()
 
         video_clip = VideoFileClip(str(video_path))
         max_duration = max(max_duration, video_clip.duration)
         # video_clips.append(video_clip)
-        video_clips[(robot_init_x, robot_init_y)] = (video_clip, success, qpos)
+        video_clips[(init_x, init_y)] = (video_clip, success, qpos)
 
     def add_text_to_clip(get_frame, t, text_fn, start=0):
         frame = np.array(get_frame(t))
@@ -82,14 +104,14 @@ def merge_videos(input_dir: Path, output_path:str= None):
         return frame
 
     final_clip_array = []
-    for robot_init_x in sorted(robot_init_xs):
+    for init_x in sorted(init_xs):
         final_clip_array.append([])
-        for robot_init_y in sorted(robot_init_ys):
-            video_clip: VideoFileClip = video_clips[(robot_init_x, robot_init_y)][0]
+        for init_y in sorted(init_ys):
+            video_clip: VideoFileClip = video_clips[(init_x, init_y)][0]
             video_clip = video_clip.set_duration(max_duration)
 
-            success = video_clips[(robot_init_x, robot_init_y)][1]
-            qpos = video_clips[(robot_init_x, robot_init_y)][2]
+            success = video_clips[(init_x, init_y)][1]
+            qpos = video_clips[(init_x, init_y)][2]
             text_fn = partial(
                 put_text_on_image,
                 lines=["success: " + success, "qpos: " + str(qpos)],
