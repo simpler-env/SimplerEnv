@@ -1,6 +1,6 @@
 import mani_skill2.envs, gymnasium as gym
 
-def build_maniskill2_env(env_name, instruction=None, **kwargs):
+def build_maniskill2_env(env_name, **kwargs):
     if kwargs.get('rgb_overlay_path', None) is not None:
         if kwargs['robot'] == 'google_robot_static':
             kwargs['rgb_overlay_cameras'] = ['overhead_camera']
@@ -10,11 +10,12 @@ def build_maniskill2_env(env_name, instruction=None, **kwargs):
             raise NotImplementedError()
     env = gym.make(env_name, **kwargs)
     
+    return env
+
+def get_maniskill2_env_instruction(env, env_name, **kwargs):
     # Get task description
-    obj_name = ' '.join(env.obj.name.split('_')[1:])
-    if instruction is not None:
-        task_description = instruction
-    elif env_name in ['GraspSingleYCBInScene-v0', 'GraspSingleYCBSomeInScene-v0']:
+    if env_name in ['GraspSingleYCBInScene-v0', 'GraspSingleYCBSomeInScene-v0']:
+        obj_name = ' '.join(env.obj.name.split('_')[1:])
         task_description = f"pick {obj_name}"
     elif env_name in ['GraspSingleYCBFruitInScene-v0']:
         task_description = "pick fruit"
@@ -28,6 +29,8 @@ def build_maniskill2_env(env_name, instruction=None, **kwargs):
         task_description = "pick box"
     elif env_name == 'KnockSingleYCBBoxOverInScene-v0':
         task_description = "knock box over"
+    elif env_name == 'MoveNearGoogleInScene-v0':
+        task_description = env.get_language_instruction()
     elif env_name == 'OpenDrawerCustomInScene-v0':
         # TODO: add other drawers
         task_description = "open top drawer"
@@ -36,7 +39,7 @@ def build_maniskill2_env(env_name, instruction=None, **kwargs):
     
     print(task_description)
     
-    return env, task_description
+    return task_description
 
 def get_robot_control_mode(robot_name):
     if robot_name == 'google_robot_static':

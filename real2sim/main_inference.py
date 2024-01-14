@@ -12,7 +12,7 @@ try:
 except ImportError:
     print("Octo is not correctly imported.")
 from real2sim.utils.visualization import write_video
-from real2sim.utils.env.env_builder import build_maniskill2_env, get_robot_control_mode
+from real2sim.utils.env.env_builder import build_maniskill2_env, get_maniskill2_env_instruction, get_robot_control_mode
 from real2sim.utils.env.additional_episode_stats import (
     initialize_additional_episode_stats, update_additional_episode_stats, obtain_truncation_step_success
 )
@@ -20,8 +20,8 @@ from real2sim.utils.io import DictAction
 
 def main(model, ckpt_path, robot_name, env_name, scene_name, 
          robot_init_x, robot_init_y, robot_init_quat, 
-         obj_init_x, obj_init_y,
          control_mode,
+         obj_init_x=None, obj_init_y=None, obj_episode_id=None,
          additional_env_build_kwargs=None,
          rgb_overlay_path=None, tmp_exp=False,
          control_freq=3, sim_freq=513, max_episode_steps=80,
@@ -43,35 +43,50 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
         scene_name=scene_name,
         camera_cfgs={"add_segmentation": True},
         rgb_overlay_path=rgb_overlay_path,
-        instruction=instruction,
     )
     if enable_raytracing:
         kwargs['shader_dir'] = 'rt'
         kwargs['render_config'] = {"rt_samples_per_pixel": 128, "rt_use_denoiser": True}
-    env, task_description = build_maniskill2_env(
-                env_name,
-                **additional_env_build_kwargs,
-                **kwargs,
-    )
     env_reset_options = {
-        'obj_init_options': {
-            'init_xy': np.array([obj_init_x, obj_init_y]),
-        },
         'robot_init_options': {
             'init_xy': np.array([robot_init_x, robot_init_y]),
             'init_rot_quat': robot_init_quat,
         }
     }
-    
-    # Reset and initialize environment
+    if obj_init_x is not None:
+        assert obj_init_y is not None
+        obj_variation_mode = 'xy'
+        env_reset_options['obj_init_options'] = {
+            'init_xy': np.array([obj_init_x, obj_init_y]),
+        }
+    else:
+        assert obj_episode_id is not None
+        obj_variation_mode = 'episode'
+        env_reset_options['obj_init_options'] = {
+            'episode_id': obj_episode_id,
+        }
+        
+    # Build and initialize environment
+    env = build_maniskill2_env(
+        env_name,
+        **additional_env_build_kwargs,
+        **kwargs,
+    )
     obs, _ = env.reset(options=env_reset_options)
+    # Obtain language instruction
+    if instruction is not None:
+        task_description = instruction
+    else:
+        task_description = get_maniskill2_env_instruction(env, env_name)
+    # Initialize logging
     image = obs['image']['overhead_camera']['rgb']
     images = [image]
     predicted_actions = []
     predicted_terminated, done, truncated = False, False, False
-    
-    model.reset(task_description)
     additional_episode_stats = initialize_additional_episode_stats(env_name)
+    
+    # Initialize model
+    model.reset(task_description)
         
     timestep = 0
     success = "failure"
@@ -114,7 +129,10 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
         env_save_name = env_save_name + f'_{additional_env_save_tags}'
     ckpt_path_basename = ckpt_path if ckpt_path[-1] != '/' else ckpt_path[:-1]
     ckpt_path_basename = ckpt_path_basename.split('/')[-1]
-    video_name = f'{success}_obj_{obj_init_x}_{obj_init_y}'
+    if obj_variation_mode == 'xy':
+        video_name = f'{success}_obj_{obj_init_x}_{obj_init_y}'
+    elif obj_variation_mode == 'episode':
+        video_name = f'{success}_obj_episode_{obj_episode_id}'
     for k, v in additional_episode_stats.items():
         video_name = video_name + f'_{k}_{v}'
     video_name = video_name + '.mp4'
@@ -163,6 +181,8 @@ if __name__ == '__main__':
     parser.add_argument('--robot-init-rot-quat-center', type=float, nargs=4, default=[1, 0, 0, 0], help="[x, y, z, w]")
     parser.add_argument('--robot-init-rot-rpy-range', type=float, nargs=9, default=[0, 0, 1, 0, 0, 1, 0, 0, 1], 
                         help="[rmin, rmax, rnum, pmin, pmax, pnum, ymin, ymax, ynum]")
+    parser.add_argument('--obj-variation-mode', type=str, default='xy', choices=['xy', 'episode'], help="Whether to vary the xy position of a single object, or to vary predetermined episodes")
+    parser.add_argument('--obj-episode-range', type=int, nargs=2, default=[0, 60], help="[start, end]")
     parser.add_argument('--obj-init-x-range', type=float, nargs=3, default=[-0.35, -0.12, 5], help="[xmin, xmax, num]")
     parser.add_argument('--obj-init-y-range', type=float, nargs=3, default=[-0.02, 0.42, 5], help="[ymin, ymax, num]")
     
@@ -191,8 +211,9 @@ if __name__ == '__main__':
     control_freq, sim_freq, max_episode_steps = args.control_freq, args.sim_freq, args.max_episode_steps
     robot_init_xs = parse_range_tuple(args.robot_init_x_range)
     robot_init_ys = parse_range_tuple(args.robot_init_y_range)
-    obj_init_xs = parse_range_tuple(args.obj_init_x_range)
-    obj_init_ys = parse_range_tuple(args.obj_init_y_range)
+    if args.obj_variation_mode == 'xy':
+        obj_init_xs = parse_range_tuple(args.obj_init_x_range)
+        obj_init_ys = parse_range_tuple(args.obj_init_y_range)
     robot_init_quats = []
     for r in parse_range_tuple(args.robot_init_rot_rpy_range[:3]):
         for p in parse_range_tuple(args.robot_init_rot_rpy_range[3:6]):
@@ -212,18 +233,31 @@ if __name__ == '__main__':
     for robot_init_x in robot_init_xs:
         for robot_init_y in robot_init_ys:
             for robot_init_quat in robot_init_quats:
-                for obj_init_x in obj_init_xs:
-                    for obj_init_y in obj_init_ys:
+                kwargs = dict(
+                    additional_env_build_kwargs=additional_env_build_kwargs,
+                    rgb_overlay_path=args.rgb_overlay_path,
+                    control_freq=control_freq, sim_freq=sim_freq, max_episode_steps=max_episode_steps,
+                    action_scale=args.action_scale, tmp_exp=args.tmp_exp,
+                    enable_raytracing=args.enable_raytracing,
+                    additional_env_save_tags=args.additional_env_save_tags
+                )
+                if args.obj_variation_mode == 'xy':
+                    for obj_init_x in obj_init_xs:
+                        for obj_init_y in obj_init_ys:
+                            main(model, args.ckpt_path, args.robot, args.env_name, args.scene_name, 
+                                robot_init_x, robot_init_y, robot_init_quat, 
+                                control_mode,
+                                obj_init_x=obj_init_x, obj_init_y=obj_init_y,
+                                **kwargs)
+                elif args.obj_variation_mode == 'episode':
+                    for obj_episode_id in range(args.obj_episode_range[0], args.obj_episode_range[1]):
                         main(model, args.ckpt_path, args.robot, args.env_name, args.scene_name, 
-                             robot_init_x, robot_init_y, robot_init_quat, 
-                             obj_init_x, obj_init_y,
-                             control_mode,
-                             additional_env_build_kwargs=additional_env_build_kwargs,
-                             rgb_overlay_path=args.rgb_overlay_path,
-                             control_freq=control_freq, sim_freq=sim_freq, max_episode_steps=max_episode_steps,
-                             action_scale=args.action_scale, tmp_exp=args.tmp_exp,
-                             enable_raytracing=args.enable_raytracing,
-                             additional_env_save_tags=args.additional_env_save_tags)
+                            robot_init_x, robot_init_y, robot_init_quat, 
+                            control_mode,
+                            obj_episode_id=obj_episode_id,
+                            **kwargs)
+                else:
+                    raise NotImplementedError()
     
 """
 # control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_pos',
