@@ -135,7 +135,7 @@ def main(env_name, scene_name, ckpt_path='rt_1_x_tf_trained_for_002272480_step',
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     os.environ['DISPLAY'] = ''
-    # rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/google_table_top_1.png'
+    # rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_table_top_1.png'
     # env_name = 'GraspSingleUpRightCokeCanInScene-v0'
     # env_name = 'GraspSingleCokeCanInScene-v0'
     env_name = 'GraspSingleVerticalCokeCanInScene-v0'
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     # rob_init_quat = (Pose(q=[0, 0, 0, 1]) * Pose(q=euler2quat(0, 0, -0.01))).q
     # obj_init_x_range = np.linspace(-0.35, -0.1, 5)
     # obj_init_y_range = np.linspace(0.0, 0.4, 5)
-    # rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/google_table_top_1.png'
+    # rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_table_top_1.png'
     # for env_name in ['GraspSingleVerticalCokeCanInScene-v0', 'GraspSingleCokeCanInScene-v0', 'GraspSingleUpRightOpenedCokeCanInScene-v0']:
     #     main(env_name, 'Baked_sc1_staging_table_616385', rgb_overlay_path=rgb_overlay_path,
     #          obj_init_x_range=obj_init_x_range, obj_init_y_range=obj_init_y_range,

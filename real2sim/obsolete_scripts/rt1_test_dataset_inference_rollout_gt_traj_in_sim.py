@@ -26,7 +26,7 @@ def dataset2path(dataset_name):
 
 
 def main(dset_iter, iter_num, episode_id, set_actual_reached=False, 
-         control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_pos'):
+         control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner'):
          # control_mode='arm_pd_ee_delta_pose_align_gripper_pd_joint_pos'):
          # control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_pos'):
     for _ in range(iter_num):
@@ -90,8 +90,8 @@ def main(dset_iter, iter_num, episode_id, set_actual_reached=False,
             gt_action_rotation_angle = np.linalg.norm(gt_action_rotation_delta)
             gt_action_rotation_ax = gt_action_rotation_delta / gt_action_rotation_angle if gt_action_rotation_angle > 1e-6 else np.array([0., 1., 0.])
             gt_action_rotation_axangle = gt_action_rotation_ax * gt_action_rotation_angle
-            gt_action_gripper_closedness_action = env.agent.get_gripper_closedness() + episode_step['action']['gripper_closedness_action']
-            target_gripper_closedness_action = gt_action_gripper_closedness_action
+            # gt_action_gripper_closedness_action = env.agent.get_gripper_closedness() + episode_step['action']['gripper_closedness_action']
+            gt_action_gripper_closedness_action = episode_step['action']['gripper_closedness_action']
             # print(i, "gripper", env.agent.get_gripper_closedness(), episode_step['action']['gripper_closedness_action'])
             target_tcp_pose_at_base = Pose(p=current_pose_at_robot_base.p + gt_action_world_vector * action_scale,
                                            q=(Pose(q=axangle2quat(gt_action_rotation_ax, gt_action_rotation_angle)) 
@@ -108,7 +108,6 @@ def main(dset_iter, iter_num, episode_id, set_actual_reached=False,
             gt_action_rotation_ax, gt_action_rotation_angle = quat2axangle(np.array(target_delta_pose_at_robot_base.q, dtype=np.float64))
             gt_action_rotation_axangle = gt_action_rotation_ax * gt_action_rotation_angle
             gt_action_gripper_closedness_action = env.agent.get_gripper_closedness() + episode_step['action']['gripper_closedness_action']
-            target_gripper_closedness_action = gt_action_gripper_closedness_action
             
             target_tcp_pose_at_base = Pose(p=gt_action_world_vector * action_scale, 
                                            q=axangle2quat(gt_action_rotation_ax, gt_action_rotation_angle)) * current_pose_at_robot_base
@@ -162,7 +161,7 @@ def main(dset_iter, iter_num, episode_id, set_actual_reached=False,
     
 
 if __name__ == '__main__':
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '1'
     os.environ['DISPLAY'] = ''
     dataset_name = DATASETS[0]
     dset = tfds.builder_from_directory(builder_dir=dataset2path(dataset_name))

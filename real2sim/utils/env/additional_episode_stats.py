@@ -9,6 +9,7 @@ def initialize_additional_episode_stats(env_name):
         episode_stats = {
             'all_obj_keep_height': False,
             'moved_correct_obj': False,
+            'moved_wrong_obj': False,
             'near_tgt_obj': False,
             'is_closest_to_tgt': False,
         }

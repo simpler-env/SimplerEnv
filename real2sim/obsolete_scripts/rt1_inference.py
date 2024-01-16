@@ -14,7 +14,7 @@ def main(env_name, scene_name):
         asset_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/mani_skill2_ycb/'
     else:
         asset_root='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/custom/'
-    rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/google_table_top_1.png'
+    rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_table_top_1.png'
     env = gym.make(env_name,
                    control_mode='arm_pd_ee_target_delta_pose_base_gripper_pd_joint_target_delta_pos',
                    obs_mode='rgbd',

@@ -36,7 +36,7 @@ def main():
                 obj_init_fixed_z_rot=None,
                 robot_init_fixed_xy_pos=np.array([robot_init_x, robot_init_y]),
                 camera_cfgs={"add_segmentation": True},
-                rgb_overlay_path='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/google_table_top_1.png',
+                rgb_overlay_path='/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_table_top_1.png',
                 rgb_overlay_cameras=['overhead_camera'],
                 robot_init_fixed_rot_quat=(Pose(q=[0, 0, 0, 1]) * Pose(q=euler2quat(0, 0, -0.01))).q,
                 # shader_dir="rt",
