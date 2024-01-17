@@ -13,7 +13,7 @@ def main(input_video, impainting_img_path, instruction,
          control_freq=5):
     
     # Create environment
-    env, instruction = build_maniskill2_env(
+    env = build_maniskill2_env(
         'PickCube-v0',
         control_mode='arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos',
         obs_mode='rgbd',
@@ -24,7 +24,6 @@ def main(input_video, impainting_img_path, instruction,
         camera_cfgs={"add_segmentation": True},
         rgb_overlay_path=impainting_img_path,
         rgb_overlay_cameras=['3rd_view_camera'],
-        instruction=instruction
     )
     print(instruction)
     

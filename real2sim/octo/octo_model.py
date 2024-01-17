@@ -13,12 +13,15 @@ from collections import deque
 class OctoInference:
     def __init__(
         self,
-        model_type="octo-small",
+        model_type="octo-base",
         dataset_id='bridge_dataset',
         image_size=256,
         action_scale=1.0,
         horizon=2,
+        pred_action_horizon=4,
         exec_horizon=1,
+        action_ensemble=True,
+        action_ensemble_temp=1.0,
     ):
         os.environ['TOKENIZERS_PARALLELISM'] = 'false'
         self.model_type = f"hf://rail-berkeley/{model_type}"
@@ -30,12 +33,16 @@ class OctoInference:
         self.image_size = image_size
         self.action_scale = action_scale
         self.horizon = horizon
+        self.pred_action_horizon = pred_action_horizon
         self.exec_horizon = exec_horizon
+        self.action_ensemble = action_ensemble
+        self.action_ensemble_temp = action_ensemble_temp
         
         self.goal_gripper_pose_at_robot_base = None
         self.goal_gripper_closedness = np.array([0.0])
         self.task = None
         self.image_history = deque(maxlen=self.horizon)
+        self.action_history = deque(maxlen=self.pred_action_horizon)
         self.num_image_history = 0
         self.time_step = 0
 
@@ -59,10 +66,11 @@ class OctoInference:
     def reset(self, task_description):
         self.task = self.model.create_tasks(texts=[task_description])
         self.image_history.clear()
+        self.action_history.clear()
         self.num_image_history = 0
         self.time_step = 0
 
-    def step(self, image):
+    def step(self, image, *args, **kwargs):
         image = self._resize_image(image)
         self._add_image_to_history(image)
         images, pad_mask = self._obtain_image_history_and_mask()
@@ -71,8 +79,28 @@ class OctoInference:
             'image_primary': images,
             'pad_mask': pad_mask
         }
+        
         norm_raw_actions = self.model.sample_actions(input_observation, self.task, rng=jax.random.PRNGKey(0))
         norm_raw_actions = norm_raw_actions[0]   # remove batch, becoming (action_pred_horizon, action_dim)
+        
+        if self.action_ensemble:
+            self.action_history.append(norm_raw_actions)
+            num_actions = len(self.action_history)
+            curr_act_preds = np.stack(
+                [
+                    pred_actions[i]
+                    for (i, pred_actions) in zip(
+                        range(num_actions - 1, -1, -1), self.action_history
+                    )
+                ]
+            )
+            # more recent predictions get exponentially *less* weight than older predictions
+            weights = np.exp(-self.action_ensemble_temp * np.arange(num_actions))
+            weights = weights / weights.sum()
+            # compute the weighted average across all predictions for this timestep
+            norm_raw_actions = np.sum(weights[:, None] * curr_act_preds, axis=0)
+            norm_raw_actions = norm_raw_actions[None] # [1, 7]
+            
         raw_actions = norm_raw_actions * self.action_std + self.action_mean
         raw_action = {
             "world_vector": np.array(raw_actions[0, :3]),
@@ -90,6 +118,7 @@ class OctoInference:
         action['rot_axangle'] = action_rotation_axangle * self.action_scale
         
         action['gripper'] = 2.0 * raw_action['open_gripper'] - 1.0
+        action['terminate_episode'] = np.array([0.0])
         
         self.time_step += 1
         

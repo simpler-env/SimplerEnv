@@ -16,6 +16,7 @@ from real2sim.utils.env.env_builder import build_maniskill2_env, get_maniskill2_
 from real2sim.utils.env.additional_episode_stats import (
     initialize_additional_episode_stats, update_additional_episode_stats, obtain_truncation_step_success
 )
+from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
 from real2sim.utils.io import DictAction
 
 def main(model, ckpt_path, robot_name, env_name, scene_name, 
@@ -79,7 +80,7 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
     else:
         task_description = get_maniskill2_env_instruction(env, env_name)
     # Initialize logging
-    image = obs['image']['overhead_camera']['rgb']
+    image = get_image_from_maniskill2_obs_dict(obs, robot_name)
     images = [image]
     predicted_actions = []
     predicted_terminated, done, truncated = False, False, False
@@ -112,7 +113,7 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
         if predicted_terminated and info['success']:
             success = "success"
         
-        image = obs['image']['overhead_camera']['rgb']
+        image = get_image_from_maniskill2_obs_dict(obs, robot_name)
         images.append(image)
         timestep += 1
         print(info)
@@ -163,7 +164,7 @@ def parse_range_tuple(t):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--policy-model', type=str, default='rt1', choices=['rt1', 'octo-base', 'octo-small'])
-    parser.add_argument('--ckpt-path', type=str, required=True)
+    parser.add_argument('--ckpt-path', type=str, default=None)
     parser.add_argument('--env-name', type=str, required=True)
     parser.add_argument('--additional-env-save-tags', type=str, default=None, help='Additional tags to save the environment eval results')
     parser.add_argument('--scene-name', type=str, default='google_pick_coke_can_1_v4')
@@ -207,7 +208,7 @@ if __name__ == '__main__':
             [tf.config.LogicalDeviceConfiguration(memory_limit=4096)])
       
     # env args
-    control_mode = get_robot_control_mode(args.robot)
+    control_mode = get_robot_control_mode(args.robot, args.policy_model)
     control_freq, sim_freq, max_episode_steps = args.control_freq, args.sim_freq, args.max_episode_steps
     robot_init_xs = parse_range_tuple(args.robot_init_x_range)
     robot_init_ys = parse_range_tuple(args.robot_init_y_range)
@@ -223,8 +224,10 @@ if __name__ == '__main__':
     
     # policy
     if args.policy_model == 'rt1':
+        assert args.ckpt_path is not None
         model = RT1Inference(saved_model_path=args.ckpt_path, action_scale=args.action_scale)
     elif 'octo' in args.policy_model:
+        args.ckpt_path = args.policy_model # octo models are loaded through huggingface, which does not require ckpt_path, so ckpt_path is only used for logging purpose
         model = OctoInference(model_type=args.policy_model, action_scale=args.action_scale)
     else:
         raise NotImplementedError()

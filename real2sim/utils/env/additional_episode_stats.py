@@ -17,6 +17,13 @@ def initialize_additional_episode_stats(env_name):
         episode_stats = {
             'qpos': 0,
         }
+    elif ('Put' in env_name or 'Stack' in env_name) and ('On' in env_name):
+        episode_stats = {
+            'moved_correct_obj': False,
+            'moved_wrong_obj': False,
+            'is_src_obj_grasped': False,
+            'src_on_target': False,
+        }
     else:
         raise NotImplementedError()
     
@@ -32,6 +39,10 @@ def update_additional_episode_stats(env_name, episode_stats, info):
             episode_stats[k] = info[k] # requires success at the final step
     elif 'OpenDrawer' in env_name:
         episode_stats['qpos'] = '{:.3f}'.format(info['qpos'])
+    elif ('Put' in env_name or 'Stack' in env_name) and ('On' in env_name):
+        for k in ['moved_correct_obj', 'moved_wrong_obj', 'src_on_target']:
+            episode_stats[k] = info[k]
+        episode_stats['is_src_obj_grasped'] = episode_stats['is_src_obj_grasped'] or info['is_src_obj_grasped']
     else:
         raise NotImplementedError()
     
@@ -41,9 +52,5 @@ def obtain_truncation_step_success(env_name, episode_stats, info):
     # obtain success indicator if policy never terminates
     if 'GraspSingle' in env_name:
         return (info['lifted_object_significantly'] or (episode_stats['n_lift_significant'] >= 5))
-    elif 'MoveNear' in env_name:
-        return info['success']
-    elif 'OpenDrawer' in env_name:
-        return info['success']
     else:
-        raise NotImplementedError()
+        return info['success']

@@ -8,6 +8,7 @@ from transforms3d.quaternions import quat2axangle, axangle2quat, mat2quat
 from transforms3d.axangles import mat2axangle
 from sapien.core import Pose
 from copy import deepcopy
+from collections import deque
 import pickle
 import mediapy as media
 import cv2
@@ -28,7 +29,7 @@ def dataset2path(dataset_name):
 
 
 def main(gt_images, actions, traj_name,
-         control_mode='arm_pd_ee_delta_pose_align2_gripper_pd_joint_pos'):
+         control_mode='arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos'):
          # control_mode='arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_target_pos_interpolate_by_planner'):
     sim_freq, control_freq = 510, 5
     action_scale = 1.0
@@ -85,6 +86,7 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     os.environ['DISPLAY'] = ''
     root_traj_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/octo_eval_data_langcondition_Jan12/stack_blocks'
+    # traj_name = '2024-01-12_14-51-08'
     traj_name = '2024-01-12_14-52-20'
     mp4_path = f'{root_traj_path}/{traj_name}_hf.mp4'
     video = media.read_video(mp4_path)
@@ -93,7 +95,31 @@ if __name__ == '__main__':
     pkl_path = f'{root_traj_path}/actions_and_obs_{traj_name}.pkl'
     with open(pkl_path, 'rb') as f:
         actions_and_obs = pickle.load(f)
-    actions = np.array(actions_and_obs['actions'])[:, 0, :]
+    
+    actions = np.array(actions_and_obs['actions'])
+    act_history = deque(maxlen=4)
+    temp = 1.0
+    smoothed_actions = []
+    for action in actions:
+        act_history.append(action)
+        num_actions = len(act_history)
+        curr_act_preds = np.stack(
+            [
+                pred_actions[i]
+                for (i, pred_actions) in zip(
+                    range(num_actions - 1, -1, -1), act_history
+                )
+            ]
+        )
+
+        # more recent predictions get exponentially *less* weight than older predictions
+        weights = np.exp(-temp * np.arange(num_actions))
+        weights = weights / weights.sum()
+        # compute the weighted average across all predictions for this timestep
+        smoothed_actions.append(np.sum(weights[:, None] * curr_act_preds, axis=0))
+    actions = np.array(smoothed_actions)
+
+    
     gt_images = np.array([x[-1]['images'][0] for x in actions_and_obs['obs']])
     gt_images = gt_images[-len(actions):]
     
