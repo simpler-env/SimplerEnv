@@ -32,7 +32,6 @@ def main(dset_iter, iter_num, episode_id, set_actual_reached=False,
         episode = next(dset_iter)
     print("episode tfds id", episode['tfds_id'])
     episode_steps = list(episode['steps'])
-    images = [], []
     
     language_instruction = episode_steps[0]['observation']['natural_language_instruction']
     print(language_instruction)
@@ -80,7 +79,7 @@ def main(dset_iter, iter_num, episode_id, set_actual_reached=False,
         obs, *_ = env.step(action)
         # print(env.agent.robot.get_qpos())
     
-    images.append(obs['image']['3rd_view_camera']['rgb'])
+    images.append(obs['image']['3rd_view_camera_bridge']['rgb'])
     ee_poses_at_base.append(env.agent.robot.pose.inv() * env.tcp.pose)
     
     for i in range(len(episode_steps) - 1):
@@ -156,7 +155,7 @@ def main(dset_iter, iter_num, episode_id, set_actual_reached=False,
                         ).astype(np.float64)
         
         obs, reward, terminated, truncated, info = env.step(action) 
-        images.append(obs['image']['3rd_view_camera']['rgb'])
+        images.append(obs['image']['3rd_view_camera_bridge']['rgb'])
         ee_poses_at_base.append(env.agent.robot.pose.inv() * env.tcp.pose)
         arm_ctrl_mode, gripper_ctrl_mode = control_mode.split('gripper')
         for _ in range(action_repeat - 1):
@@ -173,7 +172,7 @@ def main(dset_iter, iter_num, episode_id, set_actual_reached=False,
             if 'target' in gripper_ctrl_mode:
                 interp_action[6:] *= 0
             obs, reward, terminated, truncated, info = env.step(interp_action)
-            images.append(obs['image']['3rd_view_camera']['rgb'])
+            images.append(obs['image']['3rd_view_camera_bridge']['rgb'])
             ee_poses_at_base.append(env.agent.robot.pose.inv() * env.tcp.pose)
             
     # for i, ee_pose in enumerate(ee_poses_at_base):
