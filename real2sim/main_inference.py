@@ -164,6 +164,7 @@ def parse_range_tuple(t):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--policy-model', type=str, default='rt1', choices=['rt1', 'octo-base', 'octo-small'])
+    parser.add_argument('--policy-setup', type=str, default='google_robot', choices=['google_robot', 'widowx_bridge'])
     parser.add_argument('--ckpt-path', type=str, default=None)
     parser.add_argument('--env-name', type=str, required=True)
     parser.add_argument('--additional-env-save-tags', type=str, default=None, help='Additional tags to save the environment eval results')
@@ -225,10 +226,12 @@ if __name__ == '__main__':
     # policy
     if args.policy_model == 'rt1':
         assert args.ckpt_path is not None
-        model = RT1Inference(saved_model_path=args.ckpt_path, action_scale=args.action_scale)
+        model = RT1Inference(saved_model_path=args.ckpt_path, action_scale=args.action_scale,
+                             policy_setup=args.policy_setup)
     elif 'octo' in args.policy_model:
         args.ckpt_path = args.policy_model # octo models are loaded through huggingface, which does not require ckpt_path, so ckpt_path is only used for logging purpose
-        model = OctoInference(model_type=args.policy_model, action_scale=args.action_scale)
+        model = OctoInference(model_type=args.policy_model, action_scale=args.action_scale,
+                              policy_setup=args.policy_setup)
     else:
         raise NotImplementedError()
     

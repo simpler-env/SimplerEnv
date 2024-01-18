@@ -81,7 +81,7 @@ def demo(model_dir):
 
 
 def main():
-    demo('/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/custom/models/opened_pepsi_can')
+    demo('/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/custom/models/bridge_spoon_generated_modified')
     
 if __name__ == '__main__':
     main()

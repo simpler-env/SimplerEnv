@@ -10,6 +10,7 @@ from tf_agents.trajectories import time_step as ts
 import tensorflow_hub as hub
 
 from sapien.core import Pose
+from transforms3d.euler import euler2axangle
 from transforms3d.quaternions import axangle2quat, quat2axangle
 
 class RT1Inference:
@@ -20,6 +21,7 @@ class RT1Inference:
         image_width=320,
         image_height=256,
         action_scale=1.0,
+        policy_setup='google_robot',
     ):
         self.lang_embed_model = hub.load(lang_embed_model_path)
         self.tfa_policy = py_tf_eager_policy.SavedModelPyTFEagerPolicy(
@@ -36,6 +38,26 @@ class RT1Inference:
         self.policy_state = None
         self.task_description = None
         self.task_description_embedding = None
+        
+        self.policy_setup = policy_setup
+        if self.policy_setup == 'google_robot':
+            self.unnormalize_action = False
+            self.action_mean = None
+            self.action_std = None
+            self.invert_gripper_action = False
+            self.action_rotation_mode = 'axis_angle'
+        elif self.policy_setup == 'widowx_bridge':
+            self.unnormalize_action = True
+            self.action_mean = np.array([
+                0.00021161, 0.00012614, -0.00017022, -0.00015062, -0.00023831, 0.00025646, 0.0
+            ])
+            self.action_std = np.array([
+                0.00963721, 0.0135066, 0.01251861, 0.02806791, 0.03016905, 0.07632624, 1.0
+            ])
+            self.invert_gripper_action = True
+            self.action_rotation_mode = 'rpy'
+        else:
+            raise NotImplementedError()
         
         self.goal_gripper_closedness = np.array([0.0])
         self.time_step = 0
@@ -116,27 +138,49 @@ class RT1Inference:
         policy_step = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
         raw_action = policy_step.action # keys: ['base_displacement_vector', 'rotation_delta', 'world_vector', 'base_displacement_ve...l_rotation', 'gripper_closedness_action', 'terminate_episode']
         raw_action = self._small_action_filter(raw_action, arm_movement=False, gripper=True)
+        if self.unnormalize_action:
+            raw_action['world_vector'] = raw_action['world_vector'] * self.action_std[:3] + self.action_mean[:3]
+            raw_action['rotation_delta'] = raw_action['rotation_delta'] * self.action_std[3:6] + self.action_mean[3:6]
+            raw_action['gripper_closedness_action'] = raw_action['gripper_closedness_action'] * self.action_std[-1] + self.action_mean[-1]
         
         # process raw_action to obtain the action to be sent to the environment
         action = {}
         action['world_vector'] = np.asarray(raw_action['world_vector'], dtype=np.float64) * self.action_scale
-        action_rotation_delta = np.asarray(raw_action['rotation_delta'], dtype=np.float64) # this rotation_delta is in fact in axis-angle representation (not rpy)
-        action_rotation_angle = np.linalg.norm(action_rotation_delta)
-        action_rotation_ax = action_rotation_delta / action_rotation_angle if action_rotation_angle > 1e-6 else np.array([0., 1., 0.])
-        action['rot_axangle'] = action_rotation_ax * action_rotation_angle * self.action_scale
+        if self.action_rotation_mode == 'axis_angle':
+            action_rotation_delta = np.asarray(raw_action['rotation_delta'], dtype=np.float64)
+            action_rotation_angle = np.linalg.norm(action_rotation_delta)
+            action_rotation_ax = action_rotation_delta / action_rotation_angle if action_rotation_angle > 1e-6 else np.array([0., 1., 0.])
+            action['rot_axangle'] = action_rotation_ax * action_rotation_angle * self.action_scale
+        elif self.action_rotation_mode == 'rpy':
+            roll, pitch, yaw = np.asarray(raw_action['rotation_delta'], dtype=np.float64)
+            action_rotation_ax, action_rotation_angle = euler2axangle(roll, pitch, yaw)
+            action['rot_axangle'] = action_rotation_ax * action_rotation_angle * self.action_scale
+        else:
+            raise NotImplementedError()
+        
+        raw_gripper_closedness = raw_action['gripper_closedness_action']
+        if self.invert_gripper_action:
+            # for some embodiments, -1 is open gripper, 1 is closed gripper; we uniformize to -1 is closed gripper, 1 is open gripper
+            raw_gripper_closedness = -raw_gripper_closedness
         
         # gripper_pd_joint_target_pos:
         # if np.abs(raw_action['gripper_closedness_action'][0]) > 0:
-        #     action['gripper_closedness_action'] = cur_gripper_closedness + raw_action['gripper_closedness_action']
+        #     action['gripper_closedness_action'] = cur_gripper_closedness + raw_gripper_closedness
         #     self.goal_gripper_closedness = action['gripper_closedness_action'] # update gripper joint position goal
         # else:
         #     action['gripper_closedness_action'] = self.goal_gripper_closedness # repeat last target gripper joint position
         
-        # gripper pd_joint_target_delta_pos_interpolate_by_planner:
-        if np.abs(raw_action['gripper_closedness_action'][0]) > 0:
-            action['gripper'] = np.asarray(raw_action['gripper_closedness_action'], dtype=np.float64) # update gripper joint position goal
+        if self.policy_setup == 'google_robot':
+            # gripper_pd_joint_target_delta_pos_interpolate_by_planner
+            if np.abs(raw_action['gripper_closedness_action'][0]) > 0:
+                action['gripper'] = np.asarray(raw_gripper_closedness, dtype=np.float64) # update gripper joint position goal
+            else:
+                action['gripper'] = np.array([0.0]) # repeat last target gripper joint position
+        elif self.policy_setup == 'widowx_bridge':
+            # gripper_pd_joint_pos
+            action['gripper'] = np.asarray(raw_gripper_closedness, dtype=np.float64)
         else:
-            action['gripper'] = np.array([0.0]) # repeat last target gripper joint position
+            raise NotImplementedError()
             
         action['terminate_episode'] = raw_action['terminate_episode']
                 

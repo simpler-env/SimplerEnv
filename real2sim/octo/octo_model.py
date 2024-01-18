@@ -15,6 +15,7 @@ class OctoInference:
         self,
         model_type="octo-base",
         dataset_id='bridge_dataset',
+        policy_setup='widowx_bridge',
         image_size=256,
         action_scale=1.0,
         horizon=2,
@@ -26,6 +27,8 @@ class OctoInference:
         os.environ['TOKENIZERS_PARALLELISM'] = 'false'
         self.model_type = f"hf://rail-berkeley/{model_type}"
         self.model = OctoModel.load_pretrained(self.model_type)
+        self.policy_setup = policy_setup
+        assert self.policy_setup in ['widowx_bridge']
         
         self.action_mean = self.model.dataset_statistics[dataset_id]['action']['mean']
         self.action_std = self.model.dataset_statistics[dataset_id]['action']['std']
