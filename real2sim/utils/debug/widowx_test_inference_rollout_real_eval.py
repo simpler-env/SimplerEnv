@@ -80,6 +80,7 @@ def main(gt_images, actions, traj_name,
     for i in range(len(images)):
         images[i] = np.concatenate([images[i], cv2.resize(np.asarray(gt_images[i]), (images[i].shape[1], images[i].shape[0]))], axis=1)
     write_video(f'/home/xuanlin/Downloads/tmp_widowx_debug/{traj_name}.mp4', images, fps=5)
+    write_video(f'/home/xuanlin/Downloads/tmp_widowx_debug/{traj_name}_gt.mp4', gt_images, fps=5)
     
 
 if __name__ == '__main__':
@@ -88,6 +89,8 @@ if __name__ == '__main__':
     root_traj_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/octo_eval_data_langcondition_Jan12/stack_blocks'
     # traj_name = '2024-01-12_14-51-08'
     traj_name = '2024-01-12_14-52-20'
+    # root_traj_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/octo_eval_data_langcondition_Jan12/spoon_on_towel'
+    # traj_name = '2024-01-12_14-20-35'
     mp4_path = f'{root_traj_path}/{traj_name}_hf.mp4'
     video = media.read_video(mp4_path)
     video = video[:, video.shape[1] // 2:, :, :]
@@ -98,7 +101,7 @@ if __name__ == '__main__':
     
     actions = np.array(actions_and_obs['actions'])
     act_history = deque(maxlen=4)
-    temp = 1.0
+    temp = 0.0
     smoothed_actions = []
     for action in actions:
         act_history.append(action)
@@ -118,6 +121,10 @@ if __name__ == '__main__':
         # compute the weighted average across all predictions for this timestep
         smoothed_actions.append(np.sum(weights[:, None] * curr_act_preds, axis=0))
     actions = np.array(smoothed_actions)
+    actions[:, -1] = (actions[:, -1] > 0.5)
+    
+    # actions[:, -1]
+    # np.array([x[-1]['state'] for x in actions_and_obs['obs']])[:, -1]
 
     
     gt_images = np.array([x[-1]['images'][0] for x in actions_and_obs['obs']])

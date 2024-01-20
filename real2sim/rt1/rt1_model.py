@@ -12,6 +12,7 @@ import tensorflow_hub as hub
 from sapien.core import Pose
 from transforms3d.euler import euler2axangle
 from transforms3d.quaternions import axangle2quat, quat2axangle
+from real2sim.utils.action.action_ensemble import ActionEnsembler
 
 class RT1Inference:
     def __init__(
@@ -42,25 +43,79 @@ class RT1Inference:
         self.policy_setup = policy_setup
         if self.policy_setup == 'google_robot':
             self.unnormalize_action = False
-            self.action_mean = None
-            self.action_std = None
+            self.unnormalize_action_fxn = None
             self.invert_gripper_action = False
             self.action_rotation_mode = 'axis_angle'
+            self.action_ensembler = None
         elif self.policy_setup == 'widowx_bridge':
             self.unnormalize_action = True
-            self.action_mean = np.array([
-                0.00021161, 0.00012614, -0.00017022, -0.00015062, -0.00023831, 0.00025646, 0.0
-            ])
-            self.action_std = np.array([
-                0.00963721, 0.0135066, 0.01251861, 0.02806791, 0.03016905, 0.07632624, 1.0
-            ])
+            self.unnormalize_action_fxn = self._unnormalize_action_widowx_bridge
             self.invert_gripper_action = True
             self.action_rotation_mode = 'rpy'
+            self.action_ensembler = None
+            # self.action_ensembler = ActionEnsembler(4, 0.0)
         else:
             raise NotImplementedError()
         
         self.goal_gripper_closedness = np.array([0.0])
         self.time_step = 0
+
+    @staticmethod
+    def _rescale_action_with_bound(
+        actions: np.ndarray,
+        low: float,
+        high: float,
+        safety_margin: float = 0,
+        post_scaling_max: float = 1.0,
+        post_scaling_min: float = -1.0,
+    ) -> np.ndarray:
+        """Formula taken from https://stats.stackexchange.com/questions/281162/scale-a-number-between-a-range."""
+        resc_actions = (actions - low) / (high - low) * (
+            post_scaling_max - post_scaling_min
+        ) + post_scaling_min
+        return np.clip(
+            resc_actions,
+            post_scaling_min + safety_margin,
+            post_scaling_max - safety_margin,
+        )
+    
+    def _unnormalize_action_widowx_bridge(self, action):
+        action['world_vector'] = self._rescale_action_with_bound(
+            action['world_vector'],
+            low=-1.75,
+            high=1.75,
+            post_scaling_max=0.05,
+            post_scaling_min=-0.05,
+        )
+        action['rotation_delta'] = self._rescale_action_with_bound(
+            action['rotation_delta'],
+            low=-1.4,
+            high=1.4,
+            post_scaling_max=0.25,
+            post_scaling_min=-0.25,
+        )
+
+        return action
+    
+    # def _unnormalize_action_widowx_bridge(self, action):
+    #     # https://github.com/Asap7772/rt1_eval/blob/2fad77e9bf4def2ef82604d445270f83475e9726/kitchen_eval/rt1_wrapper.py
+    #     # the last dimension is -1.0 because maniskill2 widowx gripper action range normalizes to [-1, 1]
+    #     # see ManiSkill2_real2sim/mani_skill2/agents/configs/widowx/defaults.py
+    #     rescaled_action_min = np.array([-0.05, -0.05, -0.05, -0.25, -0.25, -0.25, -1.0])
+    #     rescaled_action_max = np.array([0.05, 0.05, 0.05, 0.25, 0.25, 0.25, 1.0])
+    #     action_concat = np.concatenate([action['world_vector'], action['rotation_delta'], action['gripper_closedness_action']])
+    #     action_rescaled = (action_concat + 1.0) / 2.0 * (rescaled_action_max - rescaled_action_min) + rescaled_action_min
+        
+    #     if np.any(action_rescaled > rescaled_action_max):
+    #         print('action bounds violated: ', action_rescaled)
+    #     if np.any(action_rescaled < rescaled_action_min):
+    #         print('action bounds violated: ', action_rescaled)
+
+    #     action['world_vector'] = action_rescaled[:3]
+    #     action['rotation_delta'] = action_rescaled[3:6]
+    #     action['gripper_closedness_action'] = action_rescaled[6:]
+        
+    #     return action
 
     def _initialize_model(self):
         # Perform one step of inference using dummy input to trace the tensoflow graph
@@ -99,7 +154,7 @@ class RT1Inference:
             self.task_description_embedding = tf.zeros((512,), dtype=tf.float32)
 
     @staticmethod
-    def _small_action_filter(raw_action, arm_movement=False, gripper=True):
+    def _small_action_filter_google_robot(raw_action, arm_movement=False, gripper=True):
         # small action filtering
         if arm_movement:
             raw_action['world_vector'] = tf.where(
@@ -137,34 +192,49 @@ class RT1Inference:
         )
         policy_step = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
         raw_action = policy_step.action # keys: ['base_displacement_vector', 'rotation_delta', 'world_vector', 'base_displacement_ve...l_rotation', 'gripper_closedness_action', 'terminate_episode']
-        raw_action = self._small_action_filter(raw_action, arm_movement=False, gripper=True)
+        if self.policy_setup == 'google_robot':
+            raw_action = self._small_action_filter_google_robot(raw_action, arm_movement=False, gripper=True)
+        
         if self.unnormalize_action:
-            raw_action['world_vector'] = raw_action['world_vector'] * self.action_std[:3] + self.action_mean[:3]
-            raw_action['rotation_delta'] = raw_action['rotation_delta'] * self.action_std[3:6] + self.action_mean[3:6]
-            raw_action['gripper_closedness_action'] = raw_action['gripper_closedness_action'] * self.action_std[-1] + self.action_mean[-1]
+            raw_action = self.unnormalize_action_fxn(raw_action)
+            
+        # ensemble action if needed
+        ensembled_raw_action = raw_action.copy()
+        if self.action_ensembler is not None:
+            if self.policy_setup == 'widowx_bridge':
+                raw_action_concat = np.concatenate([raw_action['world_vector'], raw_action['rotation_delta'], raw_action['gripper_closedness_action']])
+                raw_action_concat = self.action_ensembler.ensemble_action(raw_action_concat)
+                ensembled_raw_action['world_vector'] = raw_action_concat[:3]
+                ensembled_raw_action['rotation_delta'] = raw_action_concat[3:6]
+                ensembled_raw_action['gripper_closedness_action'] = raw_action_concat[6:]
         
         # process raw_action to obtain the action to be sent to the environment
         action = {}
-        action['world_vector'] = np.asarray(raw_action['world_vector'], dtype=np.float64) * self.action_scale
+        action['world_vector'] = np.asarray(ensembled_raw_action['world_vector'], dtype=np.float64) * self.action_scale
         if self.action_rotation_mode == 'axis_angle':
-            action_rotation_delta = np.asarray(raw_action['rotation_delta'], dtype=np.float64)
+            action_rotation_delta = np.asarray(ensembled_raw_action['rotation_delta'], dtype=np.float64)
             action_rotation_angle = np.linalg.norm(action_rotation_delta)
             action_rotation_ax = action_rotation_delta / action_rotation_angle if action_rotation_angle > 1e-6 else np.array([0., 1., 0.])
             action['rot_axangle'] = action_rotation_ax * action_rotation_angle * self.action_scale
-        elif self.action_rotation_mode == 'rpy':
-            roll, pitch, yaw = np.asarray(raw_action['rotation_delta'], dtype=np.float64)
+        elif self.action_rotation_mode in ['rpy', 'ypr', 'pry']:
+            if self.action_rotation_mode == 'rpy':
+                roll, pitch, yaw = np.asarray(ensembled_raw_action['rotation_delta'], dtype=np.float64)
+            elif self.action_rotation_mode == 'ypr':
+                yaw, pitch, roll = np.asarray(ensembled_raw_action['rotation_delta'], dtype=np.float64)
+            elif self.action_rotation_mode == 'pry':
+                pitch, roll, yaw = np.asarray(ensembled_raw_action['rotation_delta'], dtype=np.float64)
             action_rotation_ax, action_rotation_angle = euler2axangle(roll, pitch, yaw)
             action['rot_axangle'] = action_rotation_ax * action_rotation_angle * self.action_scale
         else:
             raise NotImplementedError()
         
-        raw_gripper_closedness = raw_action['gripper_closedness_action']
+        raw_gripper_closedness = ensembled_raw_action['gripper_closedness_action']
         if self.invert_gripper_action:
             # for some embodiments, -1 is open gripper, 1 is closed gripper; we uniformize to -1 is closed gripper, 1 is open gripper
             raw_gripper_closedness = -raw_gripper_closedness
         
         # gripper_pd_joint_target_pos:
-        # if np.abs(raw_action['gripper_closedness_action'][0]) > 0:
+        # if np.abs(ensembled_raw_action['gripper_closedness_action'][0]) > 0:
         #     action['gripper_closedness_action'] = cur_gripper_closedness + raw_gripper_closedness
         #     self.goal_gripper_closedness = action['gripper_closedness_action'] # update gripper joint position goal
         # else:
@@ -172,17 +242,19 @@ class RT1Inference:
         
         if self.policy_setup == 'google_robot':
             # gripper_pd_joint_target_delta_pos_interpolate_by_planner
-            if np.abs(raw_action['gripper_closedness_action'][0]) > 0:
+            if np.abs(ensembled_raw_action['gripper_closedness_action'][0]) > 0:
                 action['gripper'] = np.asarray(raw_gripper_closedness, dtype=np.float64) # update gripper joint position goal
             else:
                 action['gripper'] = np.array([0.0]) # repeat last target gripper joint position
         elif self.policy_setup == 'widowx_bridge':
-            # gripper_pd_joint_pos
+            # gripper_pd_joint_pos; input raw_gripper_closedness has range of [-1, 1]
             action['gripper'] = np.asarray(raw_gripper_closedness, dtype=np.float64)
+            # binarize gripper action to be -1 or 1
+            action['gripper'] = 2.0 * (action['gripper'] > 0.0) - 1.0
         else:
             raise NotImplementedError()
             
-        action['terminate_episode'] = raw_action['terminate_episode']
+        action['terminate_episode'] = ensembled_raw_action['terminate_episode']
                 
         self.policy_state = policy_step.state
         self.time_step += 1

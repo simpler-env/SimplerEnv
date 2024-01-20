@@ -2,6 +2,7 @@ from collections import defaultdict
 import numpy as np
 import os
 import jax, cv2
+import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from octo.model.octo_model import OctoModel
@@ -9,6 +10,7 @@ from octo.model.octo_model import OctoModel
 from sapien.core import Pose
 from transforms3d.euler import euler2axangle
 from collections import deque
+from real2sim.utils.action.action_ensemble import ActionEnsembler
 
 class OctoInference:
     def __init__(
@@ -22,7 +24,7 @@ class OctoInference:
         pred_action_horizon=4,
         exec_horizon=1,
         action_ensemble=True,
-        action_ensemble_temp=1.0,
+        action_ensemble_temp=0.0,
     ):
         os.environ['TOKENIZERS_PARALLELISM'] = 'false'
         self.model_type = f"hf://rail-berkeley/{model_type}"
@@ -45,12 +47,16 @@ class OctoInference:
         self.goal_gripper_closedness = np.array([0.0])
         self.task = None
         self.image_history = deque(maxlen=self.horizon)
-        self.action_history = deque(maxlen=self.pred_action_horizon)
+        self.action_ensembler = ActionEnsembler(self.pred_action_horizon, self.action_ensemble_temp)
         self.num_image_history = 0
         self.time_step = 0
 
     def _resize_image(self, image):
-        image = cv2.resize(image, (self.image_size, self.image_size))
+        # image = cv2.resize(image, (self.image_size, self.image_size))
+        image = tf.image.resize(
+            image, size=(self.image_size, self.image_size), method="lanczos3", antialias=True
+        )
+        image = tf.cast(tf.clip_by_value(tf.round(image), 0, 255), tf.uint8).numpy()
         return image
         
     def _add_image_to_history(self, image):
@@ -69,7 +75,7 @@ class OctoInference:
     def reset(self, task_description):
         self.task = self.model.create_tasks(texts=[task_description])
         self.image_history.clear()
-        self.action_history.clear()
+        self.action_ensembler.reset()
         self.num_image_history = 0
         self.time_step = 0
 
@@ -87,28 +93,14 @@ class OctoInference:
         norm_raw_actions = norm_raw_actions[0]   # remove batch, becoming (action_pred_horizon, action_dim)
         
         if self.action_ensemble:
-            self.action_history.append(norm_raw_actions)
-            num_actions = len(self.action_history)
-            curr_act_preds = np.stack(
-                [
-                    pred_actions[i]
-                    for (i, pred_actions) in zip(
-                        range(num_actions - 1, -1, -1), self.action_history
-                    )
-                ]
-            )
-            # more recent predictions get exponentially *less* weight than older predictions
-            weights = np.exp(-self.action_ensemble_temp * np.arange(num_actions))
-            weights = weights / weights.sum()
-            # compute the weighted average across all predictions for this timestep
-            norm_raw_actions = np.sum(weights[:, None] * curr_act_preds, axis=0)
+            norm_raw_actions = self.action_ensembler.ensemble_action(norm_raw_actions)
             norm_raw_actions = norm_raw_actions[None] # [1, 7]
             
-        raw_actions = norm_raw_actions * self.action_std + self.action_mean
+        raw_actions = norm_raw_actions * self.action_std[None] + self.action_mean[None]
         raw_action = {
             "world_vector": np.array(raw_actions[0, :3]),
             "rotation_delta": np.array(raw_actions[0, 3:6]),
-            "open_gripper": np.array(raw_actions[0, 6:7]),
+            "open_gripper": np.array(raw_actions[0, 6:7]), # range [0, 1]; 1 = open; 0 = close
         }
         
         # process raw_action to obtain the action to be sent to the environment
@@ -120,7 +112,7 @@ class OctoInference:
         action_rotation_axangle = action_rotation_ax * action_rotation_angle
         action['rot_axangle'] = action_rotation_axangle * self.action_scale
         
-        action['gripper'] = 2.0 * raw_action['open_gripper'] - 1.0
+        action['gripper'] = 2.0 * (raw_action['open_gripper'] > 0.5) - 1.0 # binarize gripper action to be -1 or 1
         action['terminate_episode'] = np.array([0.0])
         
         self.time_step += 1
@@ -154,3 +146,16 @@ class OctoInference:
         axs['image'].set_xlabel('Time in one episode (subsampled)')
         plt.legend()
         plt.savefig(save_path)
+        
+
+
+
+"""
+Bridge:
+self.action_mean = np.array([
+    0.00021161, 0.00012614, -0.00017022, -0.00015062, -0.00023831, 0.00025646, 0.0
+])
+self.action_std = np.array([
+    0.00963721, 0.0135066, 0.01251861, 0.02806791, 0.03016905, 0.07632624, 1.0
+])
+"""

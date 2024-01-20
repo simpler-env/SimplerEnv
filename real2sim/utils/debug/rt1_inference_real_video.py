@@ -15,7 +15,7 @@ def main(input_video, impainting_img_path, instruction,
     rt1_model = RT1Inference(saved_model_path=ckpt_path, action_scale=1.0)
     
     # Create environment
-    env, instruction = build_maniskill2_env(
+    env = build_maniskill2_env(
         'PickCube-v0',
         control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner',
         # control_mode='arm_pd_ee_delta_pose_align_gripper_pd_joint_target_pos',

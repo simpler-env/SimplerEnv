@@ -35,6 +35,7 @@ python -m mani_skill2.utils.download_asset ycb # choose no when prompted to remo
 Install this package:
 ```
 cd {this_repo}
+pip install tensorflow==2.15.0
 pip install -e .
 ```
 

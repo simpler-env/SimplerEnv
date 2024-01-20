@@ -23,6 +23,7 @@ def initialize_additional_episode_stats(env_name):
             'moved_wrong_obj': False,
             'is_src_obj_grasped': False,
             'src_on_target': False,
+            'num_success': 0,
         }
     else:
         raise NotImplementedError()
@@ -43,6 +44,7 @@ def update_additional_episode_stats(env_name, episode_stats, info):
         for k in ['moved_correct_obj', 'moved_wrong_obj', 'src_on_target']:
             episode_stats[k] = info[k]
         episode_stats['is_src_obj_grasped'] = episode_stats['is_src_obj_grasped'] or info['is_src_obj_grasped']
+        episode_stats['num_success'] += int(info['success'])
     else:
         raise NotImplementedError()
     
@@ -52,5 +54,7 @@ def obtain_truncation_step_success(env_name, episode_stats, info):
     # obtain success indicator if policy never terminates
     if 'GraspSingle' in env_name:
         return (info['lifted_object_significantly'] or (episode_stats['n_lift_significant'] >= 5))
+    elif ('Put' in env_name or 'Stack' in env_name) and ('On' in env_name):
+        return info['success'] or (episode_stats['num_success'] >= 5)
     else:
         return info['success']
