@@ -83,11 +83,19 @@ def calc_pose_err_single_ep(episode, arm_stiffness, arm_damping, robot, control_
             
     # calculate trajectory error
     this_traj_err = []
+    this_traj_raw_transl_err = []
+    this_traj_raw_rot_err = []
     for (tcp_pose_at_base, gt_tcp_pose_at_base) in zip(tcp_poses_at_base, gt_tcp_poses_at_base):
-        err = 2 * np.linalg.norm(tcp_pose_at_base.p - gt_tcp_pose_at_base.p)
+        raw_transl_err = np.linalg.norm(tcp_pose_at_base.p - gt_tcp_pose_at_base.p)
+        err = 2 * raw_transl_err
+        this_traj_raw_transl_err.append(raw_transl_err)
+        
         R_pred = quat2mat(tcp_pose_at_base.q)
         R_gt = quat2mat(gt_tcp_pose_at_base.q)
-        err = err + 2 * np.arcsin(np.clip(1 / (2 * np.sqrt(2)) * np.sqrt(np.trace((R_pred - R_gt).T @ (R_pred - R_gt))), 0.0, 1.0))
+        raw_rot_err = np.arcsin(np.clip(1 / (2 * np.sqrt(2)) * np.sqrt(np.trace((R_pred - R_gt).T @ (R_pred - R_gt))), 0.0, 1.0))
+        err = err + 2 * raw_rot_err
+        this_traj_raw_rot_err.append(raw_rot_err)
+        
         this_traj_err.append(err)
         
     if np.mean(this_traj_err) > 0.25:
@@ -100,12 +108,14 @@ def calc_pose_err_single_ep(episode, arm_stiffness, arm_damping, robot, control_
     if this_traj_err[0] > 0.02:
         print("WARNING: The robot is not initialized to have the same pose as the first step of the episode. Error is: ", this_traj_err[0])
     
-    return np.mean(this_traj_err)
+    return np.mean(this_traj_err), np.mean(this_traj_raw_transl_err), np.mean(this_traj_raw_rot_err)
 
 
 def calc_pose_err(dset, arm_stiffness, arm_damping, robot, control_mode, log_path):
     
     errs = []
+    raw_transl_errs = []
+    raw_rot_errs = []
     processes = []
     
     pool = mp.Pool(min(len(dset), 18))
@@ -118,11 +128,16 @@ def calc_pose_err(dset, arm_stiffness, arm_damping, robot, control_mode, log_pat
         )
     pool.close()
     for process in processes:
-        errs.append(process.get())
+        result = process.get()
+        errs.append(result[0])
+        raw_transl_errs.append(result[1])
+        raw_rot_errs.append(result[2])
     pool.join()
             
     avg_err = np.mean(errs)
-    print_info = f'arm_stiffness: {list(arm_stiffness)}, arm_damping: {list(arm_damping)}, avg_err: {avg_err}, per_traj_err: {errs}'
+    avg_raw_transl_err = np.mean(raw_transl_errs)
+    avg_raw_rot_err = np.mean(raw_rot_errs)
+    print_info = f'arm_stiffness: {list(arm_stiffness)}, arm_damping: {list(arm_damping)}, avg_raw_transl_err: {avg_raw_transl_err}, avg_raw_rot_err: {avg_raw_rot_err}, avg_err: {avg_err}, per_traj_err: {errs}'
     with open(log_path, 'a') as f:
         print(print_info, file=f)
     print(print_info)
@@ -190,6 +205,20 @@ if __name__ == '__main__':
         # damping_low = np.array([830, 830, 630, 550, 500, 190, 230])
         init_stiffness = np.array([1700.0, 1737.0471680861954, 979.975871856535, 930.0, 1212.154500274304, 432.96500923932535, 468.0013365498738])
         init_damping = np.array([1059.9791902443303, 1010.4720585373592, 767.2803161582076, 680.0, 674.9946964336588, 274.613381336198, 340.532560578637])
+        
+        # init_stiffness = np.array([1542.4844516168355, 1906.9938992819923, 1605.8611345378665, 1400.0, 630.0, 730.0, 583.6446104792196])
+        # init_damping = np.array([513.436152107585, 504.0051814405743, 455.6134557131383, 408.36436883104705, 253.9497910839597, 156.7912085424362, 138.8619324972991])
+        
+        # init_stiffness = np.array([1700.4844516168355, 1906.9938992819923, 1605.8611345378665, 1400.0, 630.0, 730.0, 583.6446104792196])
+        # init_damping = np.array([383.436152107585, 384.0051814405743, 335.6134557131383, 288.36436883104705, 153.9497910839597, 106.7912085424362, 88.8619324972991])
+        # init_stiffness = np.array([2000, 2000, 1500, 1500, 1500, 800, 800])
+        # init_damping = np.array([300, 300, 200, 200, 150, 100, 80])
+        
+        # init_stiffness = np.array([1200, 1200, 800, 800, 600, 300, 300])
+        # init_damping = np.array([1200, 1200, 800, 800, 800, 400, 400])
+        
+        # init_stiffness = np.array([2000, 1800, 1200, 1000, 650, 500, 500])
+        # init_damping = np.array([850, 810, 500, 480, 460, 190, 250])
         
         # stiffness_high = np.array([1800, 1800, 1050, 950, 1300, 630, 550])
         # stiffness_low = np.array([1700, 1700, 950, 850, 1200, 580, 500])

@@ -70,3 +70,7 @@ Make mesh a (local) convex hull to reduce "slipping" behaviors
 **Scripts**
 
 See `scripts/rt1_pick_coke_can_eval.sh`
+
+**Evaluation Note**
+
+When you evaluate "pick coke can", some cases might show success in our automated metric (since the coke can leaves the table), but the lifting distance is too small (<2cm) and insignificant. In this case I'll manually check these videos, and if the coke can is too close to the table, I'll count them as failure.
