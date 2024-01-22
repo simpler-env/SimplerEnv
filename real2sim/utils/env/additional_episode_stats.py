@@ -55,6 +55,6 @@ def obtain_truncation_step_success(env_name, episode_stats, info):
     if 'GraspSingle' in env_name:
         return (info['lifted_object_significantly'] or (episode_stats['n_lift_significant'] >= 5))
     elif ('Put' in env_name or 'Stack' in env_name) and ('On' in env_name):
-        return info['success'] or (episode_stats['num_success'] >= 5)
+        return info['success'] # or (episode_stats['num_success'] >= 5)
     else:
         return info['success']
