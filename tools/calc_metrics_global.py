@@ -97,39 +97,64 @@ print("=" * 60)
 
 # [base success, background, lighting, distractor, table tex, cam pose]
 coke_can_rt1_new_late_sim_table_avg = np.mean(
-    [[0.96, 1.00, 1.00, 0.92, 0.88, 0.04],
+    [[[0.96, 1.00, 1.00, 0.92, 0.88, 0.04],
      [0.84, 0.84, 0.92, 0.76, 0.44, 0.08],
      [0.96, 0.96, 0.96, 0.96, 0.92, 0.04]],
-    axis=0
+     [[0.96, 1.00, 1.00, 0.96, 1.00, 0.28],
+     [0.84, 0.72, 0.92, 0.80, 0.60, 0.00],
+     [0.96, 1.00, 0.96, 0.96, 1.00, 0.56]],
+    ],
+    axis=1
 )
 coke_can_gengap1234_sim_table_avg = np.mean(
-    [[0.92, 0.80, 0.96, 0.76, 0.92, 0.16],
+    [[[0.92, 0.80, 0.96, 0.76, 0.92, 0.16],
      [0.84, 0.56, 0.76, 0.52, 0.52, 0.04],
      [0.96, 0.76, 0.92, 0.88, 0.72, 0.36]],
-    axis=0
+     [[0.92, 0.84, 0.96, 0.88, 0.88, 0.44],
+     [0.84, 0.60, 0.84, 0.60, 0.80, 0.24],
+     [0.96, 0.60, 0.88, 0.88, 0.68, 0.68]],
+    ],
+    axis=1
 )
 coke_can_gengap1_sim_table_avg = np.mean(
-    [[0.96, 0.84, 1.00, 0.88, 0.64, 0.20],
+    [[[0.96, 0.84, 1.00, 0.88, 0.64, 0.20],
      [0.68, 0.60, 0.76, 0.68, 0.16, 0.00],
      [0.76, 0.80, 0.52, 0.88, 0.68, 0.12]],
-    axis=0
+     [[0.96, 0.72, 0.96, 0.92, 0.84, 0.32],
+     [0.68, 0.64, 0.72, 0.52, 0.56, 0.00],
+     [0.76, 0.28, 0.64, 0.80, 0.60, 0.48]],
+    ],
+    axis=1
 )
 
-print("coke_can_rt1_new_late_sim_table_avg", coke_can_rt1_new_late_sim_table_avg)
-print("coke_can_gengap1234_sim_table_avg", coke_can_gengap1234_sim_table_avg)
-print("coke_can_gengap1_sim_table_avg", coke_can_gengap1_sim_table_avg)
+print("coke_can_rt1_new_late_sim_table_avg over all numbers of variations", np.mean(coke_can_rt1_new_late_sim_table_avg, axis=0))
+print("coke_can_gengap1234_sim_table_avg over all numbers of variations", np.mean(coke_can_gengap1234_sim_table_avg, axis=0))
+print("coke_can_gengap1_sim_table_avg over all numbers of variations", np.mean(coke_can_gengap1_sim_table_avg, axis=0))
 
-coke_can_rt1_sim_factor_diff = np.abs(coke_can_rt1_new_late_sim_table_avg[1:] - coke_can_rt1_new_late_sim_table_avg[0])
-coke_can_gengap1234_sim_factor_diff = np.abs(coke_can_gengap1234_sim_table_avg[1:] - coke_can_gengap1234_sim_table_avg[0])
-coke_can_gengap1_sim_factor_diff = np.abs(coke_can_gengap1_sim_table_avg[1:] - coke_can_gengap1_sim_table_avg[0])
+coke_can_rt1_sim_factor_diff = np.abs(coke_can_rt1_new_late_sim_table_avg[:, 1:] - coke_can_rt1_new_late_sim_table_avg[:, [0]])
+coke_can_gengap1234_sim_factor_diff = np.abs(coke_can_gengap1234_sim_table_avg[:, 1:] - coke_can_gengap1234_sim_table_avg[:, [0]])
+coke_can_gengap1_sim_factor_diff = np.abs(coke_can_gengap1_sim_table_avg[:, 1:] - coke_can_gengap1_sim_table_avg[:, [0]])
+coke_can_rt1_sim_factor_diff = np.mean(coke_can_rt1_sim_factor_diff, axis=0)
+coke_can_gengap1234_sim_factor_diff = np.mean(coke_can_gengap1234_sim_factor_diff, axis=0)
+coke_can_gengap1_sim_factor_diff = np.mean(coke_can_gengap1_sim_factor_diff, axis=0)
 
-move_near_rt1_new_late_sim_table_avg = np.array([0.467, 0.533, 0.483, 0.600, 0.200, 0.117])
-move_near_gengap1234_sim_table_avg = np.array([0.267, 0.283, 0.300, 0.367, 0.150, 0.100])
-move_near_gengap1_sim_table_avg = np.array([0.383, 0.483, 0.517, 0.467, 0.133, 0.200])
+move_near_rt1_new_late_sim_table_avg = np.array([[0.467, 0.533, 0.483, 0.600, 0.200, 0.117], 
+                                                 [0.467, 0.567, 0.600, 0.600, 0.550, 0.433]])
+move_near_gengap1234_sim_table_avg = np.array([[0.267, 0.283, 0.300, 0.367, 0.150, 0.100],
+                                               [0.267, 0.317, 0.317, 0.367, 0.433, 0.417]])
+move_near_gengap1_sim_table_avg = np.array([[0.383, 0.483, 0.517, 0.467, 0.133, 0.200],
+                                            [0.383, 0.467, 0.483, 0.467, 0.450, 0.217]])
 
-move_near_rt1_sim_factor_diff = np.abs(move_near_rt1_new_late_sim_table_avg[1:] - move_near_rt1_new_late_sim_table_avg[0])
-move_near_gengap1234_sim_factor_diff = np.abs(move_near_gengap1234_sim_table_avg[1:] - move_near_gengap1234_sim_table_avg[0])
-move_near_gengap1_sim_factor_diff = np.abs(move_near_gengap1_sim_table_avg[1:] - move_near_gengap1_sim_table_avg[0])
+print("move_near_rt1_new_late_sim_table_avg over all numbers of variations", np.mean(move_near_rt1_new_late_sim_table_avg, axis=0))
+print("move_near_gengap1234_sim_table_avg over all numbers of variations", np.mean(move_near_gengap1234_sim_table_avg, axis=0))
+print("move_near_gengap1_sim_table_avg over all numbers of variations", np.mean(move_near_gengap1_sim_table_avg, axis=0))
+
+move_near_rt1_sim_factor_diff = np.abs(move_near_rt1_new_late_sim_table_avg[:, 1:] - move_near_rt1_new_late_sim_table_avg[:, [0]])
+move_near_gengap1234_sim_factor_diff = np.abs(move_near_gengap1234_sim_table_avg[:, 1:] - move_near_gengap1234_sim_table_avg[:, [0]])
+move_near_gengap1_sim_factor_diff = np.abs(move_near_gengap1_sim_table_avg[:, 1:] - move_near_gengap1_sim_table_avg[:, [0]])
+move_near_rt1_sim_factor_diff = np.mean(move_near_rt1_sim_factor_diff, axis=0)
+move_near_gengap1234_sim_factor_diff = np.mean(move_near_gengap1234_sim_factor_diff, axis=0)
+move_near_gengap1_sim_factor_diff = np.mean(move_near_gengap1_sim_factor_diff, axis=0)
 
 
 
@@ -142,6 +167,9 @@ rt1_real_factor_diff = np.abs(rt1_real_avg[1:] - rt1_real_avg[0])
 gengap1234_real_factor_diff = np.abs(gengap1234_real_avg[1:] - gengap1234_real_avg[0])
 gengap1_real_factor_diff = np.abs(gengap1_real_avg[1:] - gengap1_real_avg[0])
 
+print("coke_can_rt1_sim_factor_diff, move_near_rt1_sim_factor_diff, rt1_real_factor_diff", coke_can_rt1_sim_factor_diff, move_near_rt1_sim_factor_diff, rt1_real_factor_diff)
+print("coke_can_gengap1234_sim_factor_diff, move_near_gengap1234_sim_factor_diff, gengap1234_real_factor_diff", coke_can_gengap1234_sim_factor_diff, move_near_gengap1234_sim_factor_diff, gengap1234_real_factor_diff)
+print("coke_can_gengap1_sim_factor_diff, move_near_gengap1_sim_factor_diff, gengap1_real_factor_diff", coke_can_gengap1_sim_factor_diff, move_near_gengap1_sim_factor_diff, gengap1_real_factor_diff)
 print("pearson_correlation(coke_can_rt1_sim_factor_diff, rt1_real_factor_diff)", pearson_correlation(coke_can_rt1_sim_factor_diff, rt1_real_factor_diff))
 print("pearson_correlation(coke_can_gengap1234_sim_factor_diff, gengap1234_real_factor_diff)", pearson_correlation(coke_can_gengap1234_sim_factor_diff, gengap1234_real_factor_diff))
 print("pearson_correlation(coke_can_gengap1_sim_factor_diff, gengap1_real_factor_diff)", pearson_correlation(coke_can_gengap1_sim_factor_diff, gengap1_real_factor_diff))
@@ -152,6 +180,9 @@ print("pearson_correlation(move_near_gengap1_sim_factor_diff, gengap1_real_facto
 avg_rt1_sim_factor_diff = np.mean([coke_can_rt1_sim_factor_diff, move_near_rt1_sim_factor_diff], axis=0)
 avg_gengap1234_sim_factor_diff = np.mean([coke_can_gengap1234_sim_factor_diff, move_near_gengap1234_sim_factor_diff], axis=0)
 avg_gengap1_sim_factor_diff = np.mean([coke_can_gengap1_sim_factor_diff, move_near_gengap1_sim_factor_diff], axis=0)
+print("avg_rt1_sim_factor_diff, rt1_real_factor_diff", avg_rt1_sim_factor_diff, rt1_real_factor_diff)
+print("avg_gengap1234_sim_factor_diff, gengap1234_real_factor_diff", avg_gengap1234_sim_factor_diff, gengap1234_real_factor_diff)
+print("avg_gengap1_sim_factor_diff, gengap1_real_factor_diff", avg_gengap1_sim_factor_diff, gengap1_real_factor_diff)
 print("pearson_correlation(avg_rt1_sim_factor_diff, rt1_real_factor_diff)", pearson_correlation(avg_rt1_sim_factor_diff, rt1_real_factor_diff))
 print("pearson_correlation(avg_gengap1234_sim_factor_diff, gengap1234_real_factor_diff)", pearson_correlation(avg_gengap1234_sim_factor_diff, gengap1234_real_factor_diff))
 print("pearson_correlation(avg_gengap1_sim_factor_diff, gengap1_real_factor_diff)", pearson_correlation(avg_gengap1_sim_factor_diff, gengap1_real_factor_diff))
