@@ -4,14 +4,19 @@ gpu_id=0
 
 declare -a arr=("/home/xuanlin/Real2Sim/rt_1_x_tf_trained_for_002272480_step/" \
                 "/home/xuanlin/Real2Sim/xid77467904_000400120/" \
-                "/home/xuanlin/Real2Sim/rt1poor_xid77467904_000058240/")
+                "/home/xuanlin/Real2Sim/rt1poor_xid77467904_000058240/" \
+                "/home/xuanlin/Real2Sim/gengap-phase1viscrop_b282197888_56381011_000368200/" \
+                "/home/xuanlin/Real2Sim/gengap-phase1234viscrop_b284347745_56932176_000386120/")
 
-env_name=GraspSingleOpenedCokeCanAltGoogleCameraInScene-v0
+declare -a env_arr=("GraspSingleOpenedCokeCanAltGoogleCameraInScene-v0" \
+                   "GraspSingleOpenedCokeCanAltGoogleCamera2InScene-v0")
 scene_name=google_pick_coke_can_1_v4
 
 for ckpt_path in "${arr[@]}"; do echo "$ckpt_path"; done
 
-for ckpt_path in "${arr[@]}";
+for env_name in "${env_arr[@]}";
+
+do for ckpt_path in "${arr[@]}";
 
 do CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
@@ -39,19 +44,7 @@ CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model 
 
 done
 
+done
 
 
-# debug
 
-# ckpt_path=/home/xuanlin/Real2Sim/xid77467904_000400120/
-# python real2sim/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path} \
-#   --robot google_robot_static --gpu-id ${gpu_id} \
-#   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
-#   --env-name GraspSingleOpenedCokeCanInScene-v0 --scene-name google_pick_coke_can_1_v4 \
-#   --rgb-overlay-path /home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_coke_can_real_eval_2.png \
-#   --robot-init-x 0.35 0.35 1 --robot-init-y 0.20 0.20 1 --obj-init-x -0.35 -0.35 1 --obj-init-y -0.02 -0.02 1 \
-#   --robot-init-rot-quat-center 0 0 0 1 --robot-init-rot-rpy-range 0 0 1 0 0 1 0.03 0.03 1 \
-#   --additional-env-build-kwargs laid_vertically=True 
-
-
-# python real2sim/main_inference.py --ckpt-path /home/xuanlin/Real2Sim/robotics_transformer/trained_checkpoints/rt1main/ \
