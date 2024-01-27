@@ -13,7 +13,7 @@ def initialize_additional_episode_stats(env_name):
             'near_tgt_obj': False,
             'is_closest_to_tgt': False,
         }
-    elif 'OpenDrawer' in env_name:
+    elif 'Drawer' in env_name:
         episode_stats = {
             'qpos': 0,
         }
@@ -39,7 +39,7 @@ def update_additional_episode_stats(env_name, episode_stats, info):
     elif 'MoveNear' in env_name:
         for k in episode_stats.keys():
             episode_stats[k] = info[k] # requires success at the final step
-    elif 'OpenDrawer' in env_name:
+    elif 'Drawer' in env_name:
         episode_stats['qpos'] = '{:.3f}'.format(info['qpos'])
     elif ('Put' in env_name or 'Stack' in env_name) and ('On' in env_name):
         for k in ['moved_correct_obj', 'moved_wrong_obj', 'src_on_target']:
