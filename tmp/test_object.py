@@ -23,6 +23,8 @@ def build_actor(
     )
 
     visual_file = str(model_dir / "textured.dae")
+    if not Path(visual_file).exists():
+        visual_file = str(model_dir / "textured.glb")
     builder.add_visual_from_file(filename=visual_file, scale=[scale] * 3)
 
     actor = builder.build()
@@ -81,7 +83,7 @@ def demo(model_dir):
 
 
 def main():
-    demo('/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/custom/models/bridge_carrot_generated')
+    demo('/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/custom/models/baked_blue_plastic_bottle')
     
 if __name__ == '__main__':
     main()

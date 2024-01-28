@@ -171,7 +171,6 @@ if __name__ == '__main__':
     parser.add_argument('--scene-name', type=str, default='google_pick_coke_can_1_v4')
     parser.add_argument('--enable-raytracing', action='store_true')
     parser.add_argument('--robot', type=str, default='google_robot_static')
-    parser.add_argument('--gpu-id', type=int, default=0)
     parser.add_argument('--action-scale', type=float, default=1.0)
     
     parser.add_argument('--control-freq', type=int, default=3)
@@ -199,14 +198,15 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     
-    os.environ['CUDA_VISIBLE_DEVICES'] = f'{args.gpu_id}'
     os.environ['DISPLAY'] = ''
     
     if args.policy_model == 'rt1':
+        tf.config.set_visible_devices([], 'GPU')
         gpus = tf.config.list_physical_devices('GPU')
-        tf.config.set_logical_device_configuration(
-            gpus[0],
-            [tf.config.LogicalDeviceConfiguration(memory_limit=4096)])
+        if len(gpus) > 0:
+            tf.config.set_logical_device_configuration(
+                gpus[0],
+                [tf.config.LogicalDeviceConfiguration(memory_limit=4096)])
       
     # env args
     control_mode = get_robot_control_mode(args.robot, args.policy_model)

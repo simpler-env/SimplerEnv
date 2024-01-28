@@ -55,8 +55,8 @@ done
 # debug
 
 # ckpt_path=/home/xuanlin/Real2Sim/xid77467904_000400120/
-# python real2sim/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path} \
-#   --robot google_robot_static --gpu-id ${gpu_id} \
+# CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path} \
+#   --robot google_robot_static \
 #   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
 #   --env-name GraspSingleOpenedCokeCanInScene-v0 --scene-name google_pick_coke_can_1_v4 \
 #   --rgb-overlay-path /home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_coke_can_real_eval_2.png \

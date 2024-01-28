@@ -27,7 +27,6 @@ def main(input_video, impainting_img_path, instruction,
         camera_cfgs={"add_segmentation": True},
         rgb_overlay_path=impainting_img_path,
         rgb_overlay_cameras=['overhead_camera'],
-        instruction=instruction
     )
     
     # Reset and initialize environment
@@ -91,8 +90,10 @@ if __name__ == '__main__':
     mp4_path = None
     # impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_vertical_coke_can_eval_1_cleanup.png'
     # impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_vertical_coke_can_d4_cleanup.png'
-    impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_standing_coke_can_c0_cleanup.png'
-    instruction = 'pick coke can'
+    # impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_standing_coke_can_c0_cleanup.png'
+    # instruction = 'pick coke can'
+    impainting_img_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/move_near_real_1_1.png'
+    instruction = 'move blue plastic bottle near pepsi can'
     # ckpt_path = '/home/xuanlin/Real2Sim/rt_1_x_tf_trained_for_002272480_step/'
     # ckpt_path = '/home/xuanlin/Real2Sim/robotics_transformer/trained_checkpoints/rt1main/'
     # ckpt_path = '/home/xuanlin/Real2Sim/rt1_xid45615428_000315000/'

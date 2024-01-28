@@ -127,10 +127,6 @@ coke_can_gengap1_sim_table_avg = np.mean(
     axis=1
 )
 
-print("coke_can_rt1_new_late_sim_table_avg over all numbers of variations", np.mean(coke_can_rt1_new_late_sim_table_avg, axis=0))
-print("coke_can_gengap1234_sim_table_avg over all numbers of variations", np.mean(coke_can_gengap1234_sim_table_avg, axis=0))
-print("coke_can_gengap1_sim_table_avg over all numbers of variations", np.mean(coke_can_gengap1_sim_table_avg, axis=0))
-
 coke_can_rt1_sim_factor_diff = np.abs(coke_can_rt1_new_late_sim_table_avg[:, 1:] - coke_can_rt1_new_late_sim_table_avg[:, [0]])
 coke_can_gengap1234_sim_factor_diff = np.abs(coke_can_gengap1234_sim_table_avg[:, 1:] - coke_can_gengap1234_sim_table_avg[:, [0]])
 coke_can_gengap1_sim_factor_diff = np.abs(coke_can_gengap1_sim_table_avg[:, 1:] - coke_can_gengap1_sim_table_avg[:, [0]])
@@ -138,16 +134,14 @@ coke_can_rt1_sim_factor_diff = np.mean(coke_can_rt1_sim_factor_diff, axis=0)
 coke_can_gengap1234_sim_factor_diff = np.mean(coke_can_gengap1234_sim_factor_diff, axis=0)
 coke_can_gengap1_sim_factor_diff = np.mean(coke_can_gengap1_sim_factor_diff, axis=0)
 
+
+
 move_near_rt1_new_late_sim_table_avg = np.array([[0.467, 0.533, 0.483, 0.600, 0.200, 0.117], 
                                                  [0.467, 0.567, 0.600, 0.600, 0.550, 0.433]])
 move_near_gengap1234_sim_table_avg = np.array([[0.267, 0.283, 0.300, 0.367, 0.150, 0.100],
                                                [0.267, 0.317, 0.317, 0.367, 0.433, 0.417]])
 move_near_gengap1_sim_table_avg = np.array([[0.383, 0.483, 0.517, 0.467, 0.133, 0.200],
                                             [0.383, 0.467, 0.483, 0.467, 0.450, 0.217]])
-
-print("move_near_rt1_new_late_sim_table_avg over all numbers of variations", np.mean(move_near_rt1_new_late_sim_table_avg, axis=0))
-print("move_near_gengap1234_sim_table_avg over all numbers of variations", np.mean(move_near_gengap1234_sim_table_avg, axis=0))
-print("move_near_gengap1_sim_table_avg over all numbers of variations", np.mean(move_near_gengap1_sim_table_avg, axis=0))
 
 move_near_rt1_sim_factor_diff = np.abs(move_near_rt1_new_late_sim_table_avg[:, 1:] - move_near_rt1_new_late_sim_table_avg[:, [0]])
 move_near_gengap1234_sim_factor_diff = np.abs(move_near_gengap1234_sim_table_avg[:, 1:] - move_near_gengap1234_sim_table_avg[:, [0]])
@@ -187,16 +181,73 @@ print("pearson_correlation(avg_rt1_sim_factor_diff, rt1_real_factor_diff)", pear
 print("pearson_correlation(avg_gengap1234_sim_factor_diff, gengap1234_real_factor_diff)", pearson_correlation(avg_gengap1234_sim_factor_diff, gengap1234_real_factor_diff))
 print("pearson_correlation(avg_gengap1_sim_factor_diff, gengap1_real_factor_diff)", pearson_correlation(avg_gengap1_sim_factor_diff, gengap1_real_factor_diff))
 
+
+
 print("=" * 60)
 
 
+# average performance from many simulation variants to select checkpoint and calculate normalized rank loss
+print("Average performance from many simulation variants to select checkpoint and calculate normalized rank loss")
 
 
+# use variants that do not involve cam pose change to select checkpoint (since original cam pose is identical between sim & real)?
+horizontal_coke_can_rt1_new_late_avg_variants = np.mean([0.96, 1.00, 1.00, 0.92, 0.96, 1.00, 1.00, 1.00, 0.88]) # 0.04, 0.28])
+vertical_coke_can_rt1_new_late_avg_variants = np.mean([0.84, 0.92, 0.76, 0.76, 0.80, 0.84, 0.72, 0.60, 0.44]) # 0.08, 0.00])
+standing_coke_can_rt1_new_late_avg_variants = np.mean([0.96, 0.96, 0.96, 0.96, 0.96, 0.96, 1.00, 1.00, 0.92]) # 0.04, 0.56])
+horizontal_coke_can_rt1_new_early_avg_variants = np.mean([1.00, 0.96, 0.96, 0.96, 0.92, 1.00, 0.92, 0.88, 0.68]) # 0.08, 0.32])
+vertical_coke_can_rt1_new_early_avg_variants = np.mean([0.88, 0.68, 0.56, 0.68, 0.84, 0.72, 0.84, 0.68, 0.84]) # 0.08, 0.00])
+standing_coke_can_rt1_new_early_avg_variants = np.mean([0.92, 1.00, 0.92, 0.88, 0.64, 0.92, 0.76, 0.76, 0.52]) # 0.12, 0.40])
+horizontal_coke_can_rt1x_late_avg_variants = np.mean([0.64, 0.56, 0.72, 0.60, 0.60, 0.60, 0.84, 0.52, 0.04]) # 0.00, 0.00])
+vertical_coke_can_rt1x_late_avg_variants = np.mean([0.32, 0.16, 0.24, 0.20, 0.24, 0.44, 0.16, 0.04, 0.04]) # 0.00, 0.00])
+standing_coke_can_rt1x_late_avg_variants = np.mean([0.76, 0.64, 0.80, 0.88, 0.80, 0.64, 0.72, 0.76, 0.28]) # 0.00, 0.04])
+print("horizontal_coke_can_rt1_new_late_avg_variants", horizontal_coke_can_rt1_new_late_avg_variants)
+print("vertical_coke_can_rt1_new_late_avg_variants", vertical_coke_can_rt1_new_late_avg_variants)
+print("standing_coke_can_rt1_new_late_avg_variants", standing_coke_can_rt1_new_late_avg_variants)
+print("horizontal_coke_can_rt1_new_early_avg_variants", horizontal_coke_can_rt1_new_early_avg_variants)
+print("vertical_coke_can_rt1_new_early_avg_variants", vertical_coke_can_rt1_new_early_avg_variants)
+print("standing_coke_can_rt1_new_early_avg_variants", standing_coke_can_rt1_new_early_avg_variants)
+print("horizontal_coke_can_rt1x_late_avg_variants", horizontal_coke_can_rt1x_late_avg_variants)
+print("vertical_coke_can_rt1x_late_avg_variants", vertical_coke_can_rt1x_late_avg_variants)
+print("standing_coke_can_rt1x_late_avg_variants", standing_coke_can_rt1x_late_avg_variants)
+horizontal_coke_can_avg_variants = np.array([horizontal_coke_can_rt1_new_late_avg_variants, horizontal_coke_can_rt1_new_early_avg_variants, horizontal_coke_can_rt1x_late_avg_variants])
+vertical_coke_can_avg_variants = np.array([vertical_coke_can_rt1_new_late_avg_variants, vertical_coke_can_rt1_new_early_avg_variants, vertical_coke_can_rt1x_late_avg_variants])
+standing_coke_can_avg_variants = np.array([standing_coke_can_rt1_new_late_avg_variants, standing_coke_can_rt1_new_early_avg_variants, standing_coke_can_rt1x_late_avg_variants])
 
 
+coke_can_rt1_new_late_avg_variants = np.mean([horizontal_coke_can_rt1_new_late_avg_variants, vertical_coke_can_rt1_new_late_avg_variants, standing_coke_can_rt1_new_late_avg_variants])
+coke_can_rt1_new_early_avg_variants = np.mean([horizontal_coke_can_rt1_new_early_avg_variants, vertical_coke_can_rt1_new_early_avg_variants, standing_coke_can_rt1_new_early_avg_variants])
+coke_can_rt1x_late_avg_variants = np.mean([horizontal_coke_can_rt1x_late_avg_variants, vertical_coke_can_rt1x_late_avg_variants, standing_coke_can_rt1x_late_avg_variants])
+coke_can_avg_variants = np.array([coke_can_rt1_new_late_avg_variants, coke_can_rt1_new_early_avg_variants, coke_can_rt1x_late_avg_variants])
 
+print("coke_can_rt1_new_late_avg_variants", coke_can_rt1_new_late_avg_variants)
+print("coke_can_rt1_new_early_avg_variants", coke_can_rt1_new_early_avg_variants)
+print("coke_can_rt1x_late_avg_variants", coke_can_rt1x_late_avg_variants)
 
+coke_can_horizontal_real_success = [0.96, 1.0, 0.88]
+coke_can_vertical_real_success = [0.88, 0.96, 0.56]
+coke_can_standing_real_success = [0.72, 0.80, 0.84]
+coke_can_avg_real = np.mean([coke_can_horizontal_real_success, coke_can_vertical_real_success, coke_can_standing_real_success], axis=0)
 
+print("ranking_violation(horizontal_coke_can_avg_variants, coke_can_horizontal_real_success)", ranking_violation(horizontal_coke_can_avg_variants, coke_can_horizontal_real_success))
+print("ranking_violation(vertical_coke_can_avg_variants, coke_can_vertical_real_success)", ranking_violation(vertical_coke_can_avg_variants, coke_can_vertical_real_success))
+print("ranking_violation(standing_coke_can_avg_variants, coke_can_standing_real_success)", ranking_violation(standing_coke_can_avg_variants, coke_can_standing_real_success))
+print("ranking_violation(coke_can_avg_variants, coke_can_avg_real)", ranking_violation(coke_can_avg_variants, coke_can_avg_real))
+
+print("=" * 60)
+
+move_near_rt1_new_late_avg_variants = np.mean([0.467, 0.483, 0.600, 0.600, 0.533, 0.567, 0.550, 0.200]) # 0.117, 0.433])
+move_near_rt1_new_early_avg_variants = np.mean([0.483, 0.483, 0.500, 0.433, 0.500, 0.467, 0.500, 0.200]) # 0.167, 0.217])
+move_near_rt1x_avg_variants = np.mean([0.367, 0.333, 0.350, 0.367, 0.433, 0.400, 0.300, 0.033, ]) # 0.050, 0.100])
+
+move_near_sim_avg_variants = np.array([move_near_rt1_new_late_avg_variants, move_near_rt1_new_early_avg_variants, move_near_rt1x_avg_variants])
+move_near_real_success = [0.633, 0.583, 0.45]
+
+print("move_near_rt1_new_late_avg_variants", move_near_rt1_new_late_avg_variants)
+print("move_near_rt1_new_early_avg_variants", move_near_rt1_new_early_avg_variants)
+print("move_near_rt1x_avg_variants", move_near_rt1x_avg_variants)
+print("ranking_violation(move_near_sim_avg_variants, move_near_real_success)", ranking_violation(move_near_sim_avg_variants, move_near_real_success))
+
+print("=" * 60)
 
 
 

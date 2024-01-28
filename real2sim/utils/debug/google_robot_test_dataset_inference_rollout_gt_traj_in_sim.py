@@ -126,7 +126,7 @@ if __name__ == '__main__':
     dset = dset.as_dataset(split='train', read_config=tfds.ReadConfig(add_tfds_id=True))
     dset_iter = iter(dset)
     last_episode_id = 0
-    for ep_idx in [805, 1257, 1495, 1539, 1991, 2398, 3289]:
+    for ep_idx in [0, 805, 1257, 1495, 1539, 1991, 2398, 3289]:
         if last_episode_id == 0:
             main(dset_iter, ep_idx + 1 - last_episode_id, ep_idx)
         else:
