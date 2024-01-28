@@ -28,8 +28,10 @@ def main(episode, model, model_type='rt1'):
     print(language_instruction)
     model.reset(language_instruction)
     
+    tot_mse = 0.0
     for i in range(len(episode_steps) - 1):
         episode_step = episode_steps[i]
+        next_episode_step = episode_steps[i + 1]
         
         raw_action, _ = model.step(episode_step['observation']['image'], cur_gripper_closedness=0.0)
         if model_type == 'rt1':
@@ -44,6 +46,9 @@ def main(episode, model, model_type='rt1'):
             print("rotation pred", action_rotation_delta, "gt", gt_action_rotation_delta, "mse", np.mean((action_rotation_delta - gt_action_rotation_delta) ** 2))
             print("gripper pred", action_gripper_closedness_action, "gt", gt_action_gripper_closedness_action, "mse", np.mean((action_gripper_closedness_action - gt_action_gripper_closedness_action) ** 2))
             print("terminate pred", raw_action['terminate_episode'], "gt", episode_step['action']['terminate_episode'])
+            action_concat = np.concatenate([action_world_vector, action_rotation_delta, action_gripper_closedness_action], axis=-1)
+            gt_action_concat = np.concatenate([gt_action_world_vector, gt_action_rotation_delta, gt_action_gripper_closedness_action], axis=-1)
+            tot_mse += np.mean((action_concat - gt_action_concat) ** 2)
         else:
             raise NotImplementedError()
         
@@ -51,15 +56,17 @@ def main(episode, model, model_type='rt1'):
         gt_actions.append(episode_step['action'])
         images.append(episode_step['observation']['image'])
     
-    plot_pred_and_gt_action_trajectory(pred_actions, gt_actions, 
-                                       tf.concat(tf.unstack(images[::int(len(images) // 10)], axis=0), 1).numpy())
+    # plot_pred_and_gt_action_trajectory(pred_actions, gt_actions, 
+    #                                    tf.concat(tf.unstack(images[::int(len(images) // 10)], axis=0), 1).numpy())
+    tot_mse /= (len(episode_steps) - 1)
+    return tot_mse
 
 if __name__ == '__main__':
-    ckpt_path = "/home/xuanlin/Real2Sim/rt_1_x_tf_trained_for_002272480_step/"
-    # ckpt_path = "/home/xuanlin/Real2Sim/xid77467904_000400120/" 
-    # ckpt_path = "/home/xuanlin/Real2Sim/rt1poor_xid77467904_000058240/"
-    # ckpt_path = "/home/xuanlin/Real2Sim/rt1poorearly_77467904_000010080/"
-    # ckpt_path = "/home/xuanlin/Real2Sim/rt1_xid45615428_000315000/"
+    # ckpt_path = "/home/xuanlin/Real2Sim/rt_1_x_tf_trained_for_002272480_step/" # 30 traj coke can mse: 0.010757321488493518; 30 traj move near mse: 0.04338108899866212
+    # ckpt_path = "/home/xuanlin/Real2Sim/xid77467904_000400120/" # 30 traj coke can mse: 0.0056369849062154085; 30 traj move near mse: 0.005759397293250814
+    ckpt_path = "/home/xuanlin/Real2Sim/rt1poor_xid77467904_000058240/" # 30 traj coke can mse: 0.007822104350586; 30 traj move near mse: 0.011442187409432612
+    # ckpt_path = "/home/xuanlin/Real2Sim/rt1poorearly_77467904_000010080/" # 
+    # ckpt_path = "/home/xuanlin/Real2Sim/rt1_xid45615428_000315000/" # 
     # ckpt_path = '/home/xuanlin/Real2Sim/robotics_transformer/trained_checkpoints/rt1main/'
     # ckpt_path = 'rt_1_x_tf_trained_for_002272480_step'
     
@@ -76,5 +83,15 @@ if __name__ == '__main__':
     tot_mse = 0.0
     model = RT1Inference(saved_model_path=ckpt_path)
     
-    episode = next(dset_iter)
-    main(episode, model, model_type='rt1')
+    num_samples = 0
+    tot_samples = 30
+    while num_samples < tot_samples:
+        episode = next(dset_iter)
+        first_episode_step = next(iter(episode['steps']))
+        # if first_episode_step['observation']['natural_language_instruction'] != 'pick coke can':
+        lang = first_episode_step['observation']['natural_language_instruction'].numpy().decode('utf-8')
+        if ('move' not in lang) or ('near' not in lang):
+            continue
+        tot_mse += main(episode, model, model_type='rt1')
+        num_samples += 1
+    print("tot mse", tot_mse / tot_samples)
