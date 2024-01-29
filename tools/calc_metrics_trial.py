@@ -42,6 +42,8 @@ def get_pearson(x, y, name):
     assert len(x) == len(y)
     print(name)
     x, y = np.array(x), np.array(y)
+    x = x - np.mean(x)
+    y = y - np.mean(y)
     print("pearson", np.sum(x * y) / (np.sqrt(np.sum(x ** 2) * np.sum(y ** 2)) + 1e-8))
     print("=" * 60)
     
