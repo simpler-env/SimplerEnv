@@ -56,8 +56,6 @@ def main(dset_iter, iter_num, episode_id,
     ee_poses_at_base = []
     gt_images = []
     obs, _ = env.reset()
-    images.append(obs['image']['overhead_camera']['rgb'])
-    ee_poses_at_base.append(env.agent.robot.pose.inv() * env.tcp.pose)
     
     last_action_world_vector = np.zeros(3)
     last_action_rotation_ax = np.zeros(3)
@@ -81,6 +79,9 @@ def main(dset_iter, iter_num, episode_id,
             cur_qpos[controller.joint_indices] = init_arm_qpos
             env.agent.reset(cur_qpos)
             current_pose_at_robot_base = env.agent.robot.pose.inv() * env.tcp.pose
+            obs = env.get_obs()
+            images.append((obs['image']['overhead_camera']['Color'][..., :-1] * 255).astype(np.uint8))
+            ee_poses_at_base.append(current_pose_at_robot_base)
         
         gt_action_world_vector = episode_step['action']['world_vector']
         gt_action_rotation_delta = np.asarray(episode_step['action']['rotation_delta'], dtype=np.float64) # this is axis-angle for Fractal

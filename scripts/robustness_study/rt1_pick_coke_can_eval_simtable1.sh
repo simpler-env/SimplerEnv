@@ -7,8 +7,11 @@ gpu_id=0
 #                 "/home/xuanlin/Real2Sim/rt1poorearly_77467904_000010080/" \
 #                 "/home/xuanlin/Real2Sim/xid77467904_000400120/" \
 #                 "/home/xuanlin/Real2Sim/rt1poor_xid77467904_000058240/")
-declare -a arr=("/home/xuanlin/Real2Sim/gengap-phase1viscrop_b282197888_56381011_000368200/" \
-               "/home/xuanlin/Real2Sim/gengap-phase1234viscrop_b284347745_56932176_000386120/")
+declare -a arr=("/home/xuanlin/Real2Sim/rt_1_x_tf_trained_for_002272480_step/" \
+                "/home/xuanlin/Real2Sim/xid77467904_000400120/" \
+                "/home/xuanlin/Real2Sim/rt1poor_xid77467904_000058240/" \
+                "/home/xuanlin/Real2Sim/gengap-phase1viscrop_b282197888_56381011_000368200/" \
+                "/home/xuanlin/Real2Sim/gengap-phase1234viscrop_b284347745_56932176_000386120/")
 
 env_name=GraspSingleOpenedCokeCanInScene-v0
 scene_name=google_pick_coke_can_1_v4
