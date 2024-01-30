@@ -1,5 +1,4 @@
 export MS2_ASSET_DIR=./ManiSkill2_real2sim/data
-export CUDA_VISIBLE_DEVICES=1
 
 declare -a ckpt_paths=(
 "./checkpoints/xid77467904_000400120/"
@@ -17,6 +16,7 @@ CloseBottomDrawerCustomInScene-v0
 )
 
 EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt"
+# EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station2"
 
 EvalOverlay() {
 # A0

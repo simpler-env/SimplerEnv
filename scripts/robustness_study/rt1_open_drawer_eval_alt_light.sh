@@ -15,8 +15,6 @@ CloseMiddleDrawerCustomInScene-v0
 CloseBottomDrawerCustomInScene-v0
 )
 
-EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt"
-
 EvalSim() {
   echo ${ckpt_path} ${env_name}
 
@@ -33,6 +31,9 @@ EvalSim() {
 
 for ckpt_path in "${ckpt_paths[@]}"; do
   for env_name in "${env_names[@]}"; do
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt light_mode=brighter"
+    EvalSim
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt light_mode=darker"
     EvalSim
   done
 done
