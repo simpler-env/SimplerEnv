@@ -201,7 +201,6 @@ if __name__ == '__main__':
     os.environ['DISPLAY'] = ''
     
     if args.policy_model == 'rt1':
-        tf.config.set_visible_devices([], 'GPU')
         gpus = tf.config.list_physical_devices('GPU')
         if len(gpus) > 0:
             tf.config.set_logical_device_configuration(
