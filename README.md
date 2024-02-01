@@ -37,6 +37,7 @@ Install this package:
 cd {this_repo}
 pip install tensorflow==2.15.0
 pip install -e .
+pip install tensorflow[and-cuda]
 ```
 
 Download RT-1 Checkpoint:

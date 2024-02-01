@@ -1,4 +1,4 @@
-tensorflow[and-cuda]
+# tensorflow[and-cuda]
 tensorflow_datasets
 tensorflow_hub
 rlds

@@ -55,6 +55,7 @@ def main(dset_iter, iter_num, episode_id,
     images = []
     ee_poses_at_base = []
     gt_images = []
+    qpos_arr = []
     obs, _ = env.reset()
     
     last_action_world_vector = np.zeros(3)
@@ -79,9 +80,12 @@ def main(dset_iter, iter_num, episode_id,
             cur_qpos[controller.joint_indices] = init_arm_qpos
             env.agent.reset(cur_qpos)
             current_pose_at_robot_base = env.agent.robot.pose.inv() * env.tcp.pose
+            
             obs = env.get_obs()
             images.append((obs['image']['overhead_camera']['Color'][..., :-1] * 255).astype(np.uint8))
             ee_poses_at_base.append(current_pose_at_robot_base)
+        
+        qpos_arr.append(env.agent.robot.get_qpos())
         
         gt_action_world_vector = episode_step['action']['world_vector']
         gt_action_rotation_delta = np.asarray(episode_step['action']['rotation_delta'], dtype=np.float64) # this is axis-angle for Fractal
@@ -115,7 +119,11 @@ def main(dset_iter, iter_num, episode_id,
     for i in range(len(images)):
         images[i] = np.concatenate([images[i], cv2.resize(np.asarray(gt_images[i]), (images[i].shape[1], images[i].shape[0]))], axis=1)
     
-    write_video(f'/home/xuanlin/Downloads/tmp_pick_coke_can/{episode_id}_0_cleanup_overlay_arm.mp4', images, fps=5)
+    save_root = '/home/xuanlin/Downloads/tmp_pick_coke_can/'
+    os.makedirs(save_root, exist_ok=True)
+    os.makedirs(f'{save_root}/save_qpos', exist_ok=True)
+    write_video(f'{save_root}/{episode_id}_0_cleanup_overlay_arm.mp4', images, fps=5)
+    np.save(f'{save_root}/save_qpos/{episode_id}_qpos.npy', np.array(qpos_arr))
     
 
 if __name__ == '__main__':
@@ -127,9 +135,10 @@ if __name__ == '__main__':
     dset = dset.as_dataset(split='train', read_config=tfds.ReadConfig(add_tfds_id=True))
     dset_iter = iter(dset)
     last_episode_id = 0
-    for ep_idx in [0, 805, 1257, 1495, 1539, 1991, 2398, 3289]:
+    for ep_idx in [805]: # , 1257, 1495, 1539, 1991, 2398, 3289]:
         if last_episode_id == 0:
             main(dset_iter, ep_idx + 1 - last_episode_id, ep_idx)
+            # main(dset_iter, ep_idx - last_episode_id, ep_idx)
         else:
             main(dset_iter, ep_idx - last_episode_id, ep_idx)
         last_episode_id = ep_idx
