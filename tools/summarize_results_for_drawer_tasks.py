@@ -58,16 +58,14 @@ def parse_open_drawer_results_overlay(result_dir, env_suffix):
 for ckpt_name in [
     "xid77467904_000400120",
     "rt_1_x_tf_trained_for_002272480_step",
-    # "rt1new_77467904_000003080",
-    "rt1new_77467904_000001120",
     "rt1poor_xid77467904_000058240",
+    "rt1new_77467904_000001120",
+    # "rt1new_77467904_000003080",
 ]:
     for env_suffix in [
         "shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True_urdf_version_recolor",
     ]:
-        result_dir = (
-            f"{ROOT_DIR}/results/{ckpt_name}/dummy2/{DEFAULT_CONTROLLER}"
-        )
+        result_dir = f"{ROOT_DIR}/results/{ckpt_name}/dummy2/{DEFAULT_CONTROLLER}"
         parse_open_drawer_results_overlay(result_dir, env_suffix)
 
 
@@ -81,9 +79,7 @@ for ckpt_name in [
         "shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True",
         "shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True_urdf_version_recolor2",
     ]:
-        result_dir = (
-            f"{ROOT_DIR}/results/{ckpt_name}/dummy2/{DEFAULT_CONTROLLER}"
-        )
+        result_dir = f"{ROOT_DIR}/results/{ckpt_name}/dummy2/{DEFAULT_CONTROLLER}"
         parse_open_drawer_results_overlay(result_dir, env_suffix)
 
 
@@ -127,9 +123,9 @@ def parse_open_drawer_results_sim(result_dir, env_suffix):
 for ckpt_name in [
     "xid77467904_000400120",
     "rt_1_x_tf_trained_for_002272480_step",
-    # "rt1new_77467904_000003080",
-    "rt1new_77467904_000001120",
     "rt1poor_xid77467904_000058240",
+    "rt1new_77467904_000001120",
+    # "rt1new_77467904_000003080",
 ]:
     for env_suffix in [
         "shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True_urdf_version_recolor",
@@ -138,9 +134,7 @@ for ckpt_name in [
         "shader_dir_rt_station_name_mk_station2_light_mode_simple_disable_bad_material_True_urdf_version_recolor",
         "shader_dir_rt_station_name_mk_station3_light_mode_simple_disable_bad_material_True_urdf_version_recolor",
     ]:
-        result_dir = (
-            f"{ROOT_DIR}/results/{ckpt_name}/frl_apartment_stage_simple/{DEFAULT_CONTROLLER}"
-        )
+        result_dir = f"{ROOT_DIR}/results/{ckpt_name}/frl_apartment_stage_simple/{DEFAULT_CONTROLLER}"
         parse_open_drawer_results_sim(result_dir, env_suffix)
 
     env_suffix = "shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True_urdf_version_recolor"
@@ -149,4 +143,18 @@ for ckpt_name in [
         "modern_office_no_roof",
     ]:
         result_dir = f"{ROOT_DIR}/results/{ckpt_name}/{scene_name}/{DEFAULT_CONTROLLER}"
+        parse_open_drawer_results_sim(result_dir, env_suffix)
+
+
+# Ablations
+for ckpt_name in [
+    "xid77467904_000400120",
+    "rt_1_x_tf_trained_for_002272480_step",
+    "rt1poor_xid77467904_000058240",
+]:
+    for env_suffix in [
+        "shader_dir_rt_station_name_mk_station2_light_mode_simple_disable_bad_material_True",
+        "shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True",
+    ]:
+        result_dir = f"{ROOT_DIR}/results/{ckpt_name}/frl_apartment_stage_simple/{DEFAULT_CONTROLLER}"
         parse_open_drawer_results_sim(result_dir, env_suffix)

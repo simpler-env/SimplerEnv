@@ -64,7 +64,9 @@ def compute_metrics_real_vs_sim():
     # env_suffix = "shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True_urdf_version_recolor2"
     # env_suffix = "shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True"
     # env_suffix = "shader_dir_rt_station_name_mk_station2_light_mode_simple_disable_bad_material_True_urdf_version_recolor"
-    env_suffix = "shader_dir_rt_station_name_mk_station2"
+    # env_suffix = "shader_dir_rt_station_name_mk_station2"
+    # env_suffix = "shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True"
+    env_suffix = "shader_dir_rt_station_name_mk_station2_light_mode_simple_disable_bad_material_True"
 
     df_all_tasks = pd.DataFrame()
     for task_name in ["Open", "Close", "Drawer"]:
