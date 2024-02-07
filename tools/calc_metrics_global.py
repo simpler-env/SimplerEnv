@@ -36,13 +36,13 @@ def ranking_violation(x, y):
     return rank_violation
     # return rank_violation / (len(x) * (len(x) - 1) / 2)
 
-rt_ckpts = ['rt-1-new-best-late', 'rt-1-new-early', 'rt-1-x']
-coke_can_horizontal_sim_success = [1.0, 0.84, 0.80]
-coke_can_horizontal_real_success = [0.96, 1.0, 0.88]
-coke_can_vertical_sim_success = [0.80, 0.72, 0.48]
-coke_can_vertical_real_success = [0.88, 0.96, 0.56]
-coke_can_standing_sim_success = [0.80, 0.60, 0.68]
-coke_can_standing_real_success = [0.72, 0.80, 0.84]
+rt_ckpts = ['rt-1-new-best-late', 'rt-1-new-early', 'rt-1-x', 'rt-1-early-1k']
+coke_can_horizontal_sim_success = [1.0, 0.84, 0.80, 0.08]
+coke_can_horizontal_real_success = [0.96, 1.0, 0.88, 0.20]
+coke_can_vertical_sim_success = [0.80, 0.72, 0.48, 0.00]
+coke_can_vertical_real_success = [0.88, 0.96, 0.56, 0.00]
+coke_can_standing_sim_success = [0.80, 0.60, 0.68, 0.00]
+coke_can_standing_real_success = [0.72, 0.80, 0.84, 0.20]
 
 coke_can_avg_sim = np.mean([coke_can_horizontal_sim_success, coke_can_vertical_sim_success, coke_can_standing_sim_success], axis=0)
 coke_can_avg_real = np.mean([coke_can_horizontal_real_success, coke_can_vertical_real_success, coke_can_standing_real_success], axis=0)
@@ -50,16 +50,16 @@ print("coke_can_average_sim", coke_can_avg_sim)
 print("coke_can_average_real", coke_can_avg_real)
 
 print("mean_diff(coke_can_horizontal_sim, coke_can_horizontal_real)", mean_diff(coke_can_horizontal_sim_success, coke_can_horizontal_real_success))
-print("pearson_correlation_std_discrep(coke_can_horizontal_sim, coke_can_horizontal_real)", pearson_correlation_std_discrep(coke_can_horizontal_sim_success, coke_can_horizontal_real_success))
+print("pearson_correlation(coke_can_horizontal_sim, coke_can_horizontal_real)", pearson_correlation(coke_can_horizontal_sim_success, coke_can_horizontal_real_success))
 print("ranking_violation(coke_can_horizontal_sim, coke_can_horizontal_real)", ranking_violation(coke_can_horizontal_sim_success, coke_can_horizontal_real_success))
 print("mean_diff(coke_can_vertical_sim, coke_can_vertical_real)", mean_diff(coke_can_vertical_sim_success, coke_can_vertical_real_success))
-print("pearson_correlation_std_discrep(coke_can_vertical_sim, coke_can_vertical_real)", pearson_correlation_std_discrep(coke_can_vertical_sim_success, coke_can_vertical_real_success))
+print("pearson_correlation(coke_can_vertical_sim, coke_can_vertical_real)", pearson_correlation(coke_can_vertical_sim_success, coke_can_vertical_real_success))
 print("ranking_violation(coke_can_vertical_sim, coke_can_vertical_real)", ranking_violation(coke_can_vertical_sim_success, coke_can_vertical_real_success))
 print("mean_diff(coke_can_standing_sim, coke_can_standing_real)", mean_diff(coke_can_standing_sim_success, coke_can_standing_real_success))
-print("pearson_correlation_std_discrep(coke_can_standing_sim, coke_can_standing_real)", pearson_correlation_std_discrep(coke_can_standing_sim_success, coke_can_standing_real_success))
+print("pearson_correlation(coke_can_standing_sim, coke_can_standing_real)", pearson_correlation(coke_can_standing_sim_success, coke_can_standing_real_success))
 print("ranking_violation(coke_can_standing_sim, coke_can_standing_real)", ranking_violation(coke_can_standing_sim_success, coke_can_standing_real_success))
 print("mean_diff(coke_can_avg_sim, coke_can_avg_real)", mean_diff(coke_can_avg_sim, coke_can_avg_real))
-print("pearson_correlation_std_discrep(coke_can_avg_sim, coke_can_avg_real)", pearson_correlation_std_discrep(coke_can_avg_sim, coke_can_avg_real))
+print("pearson_correlation(coke_can_avg_sim, coke_can_avg_real)", pearson_correlation(coke_can_avg_sim, coke_can_avg_real))
 print("ranking_violation(coke_can_avg_sim, coke_can_avg_real)", ranking_violation(coke_can_avg_sim, coke_can_avg_real))
 
 print("=" * 60)
@@ -88,11 +88,11 @@ print("coke_can_r_real_success", coke_can_r_real_success)
 
 print("=" * 60)
 
-move_near_sim_success = [0.30, 0.367, 0.35]
-move_near_real_success = [0.633, 0.583, 0.45]
+move_near_sim_success = [0.30, 0.367, 0.35, 0.04]
+move_near_real_success = [0.633, 0.583, 0.45, 0.00]
 
 print("mean_diff(move_near_sim_success, move_near_real_success)", mean_diff(move_near_sim_success, move_near_real_success))
-print("pearson_correlation_std_discrep(move_near_sim_success, move_near_real_success)", pearson_correlation_std_discrep(move_near_sim_success, move_near_real_success))
+print("pearson_correlation(move_near_sim_success, move_near_real_success)", pearson_correlation(move_near_sim_success, move_near_real_success))
 print("ranking_violation(move_near_sim_success, move_near_real_success)", ranking_violation(move_near_sim_success, move_near_real_success))
 
 print("=" * 60)
@@ -128,6 +128,11 @@ coke_can_gengap1_sim_table_avg = np.mean(
     ],
     axis=1
 )
+
+print("coke_can_rt1_new_late_sim_table_avg", coke_can_rt1_new_late_sim_table_avg)
+print("coke_can_gengap1234_sim_table_avg", coke_can_gengap1234_sim_table_avg)
+print("coke_can_gengap1_sim_table_avg", coke_can_gengap1_sim_table_avg)
+
 
 coke_can_rt1_sim_factor_diff_wo_absolute = coke_can_rt1_new_late_sim_table_avg[:, 1:] - coke_can_rt1_new_late_sim_table_avg[:, [0]]
 coke_can_gengap1234_sim_factor_diff_wo_absolute = coke_can_gengap1234_sim_table_avg[:, 1:] - coke_can_gengap1234_sim_table_avg[:, [0]]
@@ -259,6 +264,10 @@ print("ranking_violation(horizontal_coke_can_avg_variants, coke_can_horizontal_r
 print("ranking_violation(vertical_coke_can_avg_variants, coke_can_vertical_real_success)", ranking_violation(vertical_coke_can_avg_variants, coke_can_vertical_real_success))
 print("ranking_violation(standing_coke_can_avg_variants, coke_can_standing_real_success)", ranking_violation(standing_coke_can_avg_variants, coke_can_standing_real_success))
 print("ranking_violation(coke_can_avg_variants, coke_can_avg_real)", ranking_violation(coke_can_avg_variants, coke_can_avg_real))
+print("pearson_corrlation(horizontal_coke_can_avg_variants, coke_can_horizontal_real_success)", pearson_correlation(horizontal_coke_can_avg_variants, coke_can_horizontal_real_success))
+print("pearson_correlation(vertical_coke_can_avg_variants, coke_can_vertical_real_success)", pearson_correlation(vertical_coke_can_avg_variants, coke_can_vertical_real_success))
+print("pearson_correlation(standing_coke_can_avg_variants, coke_can_standing_real_success)", pearson_correlation(standing_coke_can_avg_variants, coke_can_standing_real_success))
+print("pearson_correlation(coke_can_avg_variants, coke_can_avg_real)", pearson_correlation(coke_can_avg_variants, coke_can_avg_real))
 
 print("=" * 60)
 
@@ -275,12 +284,27 @@ print("move_near_rt1_new_early_avg_variants", move_near_rt1_new_early_avg_varian
 print("move_near_rt1x_avg_variants", move_near_rt1x_avg_variants)
 print("move_near_rt1_1k_avg_variants", move_near_rt1_1k_avg_variants)
 print("ranking_violation(move_near_sim_avg_variants, move_near_real_success)", ranking_violation(move_near_sim_avg_variants, move_near_real_success))
+print("pearson_correlation(move_near_sim_avg_variants, move_near_real_success)", pearson_correlation(move_near_sim_avg_variants, move_near_real_success))
 
 print("=" * 60)
 
+print("Drawer open pearson correlation", pearson_correlation([0.815,0.704,0.519,0.0], [0.328,0.265,0.102,0.0]))
+print("Drawer close pearson correlation", pearson_correlation([0.926,0.889,0.741,0.0], [0.381,0.317,0.487,0.153]))
+print("Drawer all pearson correlation", pearson_correlation([0.870,0.796,0.630,0.0], [0.354,0.291,0.295,0.077]))
 
 
 
+print("Drawer open greenscreen pearson correlation", pearson_correlation([0.815,0.704,0.519,0.0], [0.667,0.519,0.481,0.0]))
+print("Drawer close greenscreen pearson correlation", pearson_correlation([0.926,0.889,0.741,0.0], [0.889,0.556,0.815,0.333]))
+print("Drawer all greenscreen pearson correlation", pearson_correlation([0.870,0.796,0.630,0.0], [0.778,0.537,0.648,0.167]))
+
+
+print("=" * 60)
+
+print("Bridge carrot on plate partial success pearson correlation", pearson_correlation([0.167, 0.500, 0.208], [0.167, 0.333, 0.125]))
+print("Bridge carrot on plate pearson correlation", pearson_correlation([0.000, 0.250, 0.083], [0.000, 0.083, 0.000]))
+print("Bridge stack cube partial success pearson correlation", pearson_correlation([0.000, 0.292, 0.583], [0.083, 0.208, 0.042]))
+print("Bridge stack cube pearson correlation", pearson_correlation([0.000, 0.000, 0.125], [0.000, 0.000, 0.000]))
 
 
 
@@ -371,11 +395,12 @@ print("pearson_correlation_std_discrep(coke_can_avg_ctrl2_sim, coke_can_avg_real
 
 
 
-move_near_sim_ctrl2_success = [0.30, 0.317, 0.217]
-move_near_real_success = [0.633, 0.583, 0.45]
+move_near_sim_ctrl2_success = [0.30, 0.317, 0.217, 0.027]
+move_near_real_success = [0.633, 0.583, 0.45, 0.133]
 
 print("mean_diff(move_near_sim_ctrl2_success, move_near_real_success)", mean_diff(move_near_sim_ctrl2_success, move_near_real_success))
 print("pearson_correlation_std_discrep(move_near_sim_ctrl2_success, move_near_real_success)", pearson_correlation_std_discrep(move_near_sim_ctrl2_success, move_near_real_success))
+print("ranking_violation(move_near_sim_ctrl2_success, move_near_real_success)", ranking_violation(move_near_sim_ctrl2_success, move_near_real_success))
 
 print("=" * 60)
 
@@ -406,11 +431,12 @@ print("pearson_correlation_std_discrep(coke_can_avg_ctrl4_sim, coke_can_avg_real
 
 
 
-move_near_sim_ctrl4_success = [0.217, 0.350, 0.183]
-move_near_real_success = [0.633, 0.583, 0.45]
+move_near_sim_ctrl4_success = [0.217, 0.350, 0.183, 0.027]
+move_near_real_success = [0.633, 0.583, 0.45, 0.133]
 
 print("mean_diff(move_near_sim_ctrl4_success, move_near_real_success)", mean_diff(move_near_sim_ctrl4_success, move_near_real_success))
 print("pearson_correlation_std_discrep(move_near_sim_ctrl4_success, move_near_real_success)", pearson_correlation_std_discrep(move_near_sim_ctrl4_success, move_near_real_success))
+print("ranking_violation(move_near_sim_ctrl4_success, move_near_real_success)", ranking_violation(move_near_sim_ctrl4_success, move_near_real_success))
 
 print("=" * 60)
 
@@ -423,7 +449,8 @@ coke_can_horizontal_real_success = [0.96, 1.0, 0.88]
 coke_can_vertical_ctrl5_sim_success = [0.80, 0.84, 0.04]
 coke_can_vertical_real_success = [0.88, 0.96, 0.56]
 coke_can_standing_ctrl5_sim_success = [0.76, 0.44, 0.72]
-coke_can_standing_real_success = [0.68, 0.52, 0.04]
+coke_can_standing_real_success = [0.72, 0.80, 0.84]
+
 
 coke_can_avg_ctrl5_sim = np.mean([coke_can_horizontal_ctrl5_sim_success, coke_can_vertical_ctrl5_sim_success, coke_can_standing_ctrl5_sim_success], axis=0)
 coke_can_avg_real = np.mean([coke_can_horizontal_real_success, coke_can_vertical_real_success, coke_can_standing_real_success], axis=0)
@@ -441,10 +468,11 @@ print("pearson_correlation_std_discrep(coke_can_avg_ctrl5_sim, coke_can_avg_real
 
 
 
-move_near_sim_ctrl5_success = [0.250, 0.367, 0.183]
-move_near_real_success = [0.633, 0.583, 0.45]
+move_near_sim_ctrl5_success = [0.250, 0.367, 0.183, 0.027]
+move_near_real_success = [0.633, 0.583, 0.45, 0.133]
 
 print("mean_diff(move_near_sim_ctrl5_success, move_near_real_success)", mean_diff(move_near_sim_ctrl5_success, move_near_real_success))
 print("pearson_correlation_std_discrep(move_near_sim_ctrl5_success, move_near_real_success)", pearson_correlation_std_discrep(move_near_sim_ctrl5_success, move_near_real_success))
+print("ranking_violation(move_near_sim_ctrl5_success, move_near_real_success)", ranking_violation(move_near_sim_ctrl5_success, move_near_real_success))
 
 print("=" * 60)

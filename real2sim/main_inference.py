@@ -9,8 +9,9 @@ from sapien.core import Pose
 from real2sim.rt1.rt1_model import RT1Inference
 try:
     from real2sim.octo.octo_model import OctoInference
-except ImportError:
+except ImportError as e:
     print("Octo is not correctly imported.")
+    print(e)
 from real2sim.utils.visualization import write_video
 from real2sim.utils.env.env_builder import build_maniskill2_env, get_maniskill2_env_instruction, get_robot_control_mode
 from real2sim.utils.env.additional_episode_stats import (
@@ -163,7 +164,7 @@ def parse_range_tuple(t):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--policy-model', type=str, default='rt1', choices=['rt1', 'octo-base', 'octo-small'])
+    parser.add_argument('--policy-model', type=str, default='rt1', help="Policy model type; e.g., 'rt1', 'octo-base', 'octo-small'")
     parser.add_argument('--policy-setup', type=str, default='google_robot', choices=['google_robot', 'widowx_bridge'])
     parser.add_argument('--ckpt-path', type=str, default=None)
     parser.add_argument('--env-name', type=str, required=True)

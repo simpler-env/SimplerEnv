@@ -11,6 +11,7 @@ from sapien.core import Pose
 from transforms3d.euler import euler2axangle
 from collections import deque
 from real2sim.utils.action.action_ensemble import ActionEnsembler
+from transformers import AutoTokenizer
 
 class OctoInference:
     def __init__(
@@ -27,13 +28,34 @@ class OctoInference:
         action_ensemble_temp=0.0,
     ):
         os.environ['TOKENIZERS_PARALLELISM'] = 'false'
-        self.model_type = f"hf://rail-berkeley/{model_type}"
-        self.model = OctoModel.load_pretrained(self.model_type)
+        if model_type in ['octo-base', 'octo-small']:
+            self.model_type = f"hf://rail-berkeley/{model_type}"
+            self.tokenizer, self.tokenizer_kwargs = None, None
+            self.model = OctoModel.load_pretrained(self.model_type)
+            self.action_mean = self.model.dataset_statistics[dataset_id]['action']['mean']
+            self.action_std = self.model.dataset_statistics[dataset_id]['action']['std']
+            self.automatic_task_creation = True
+        else:
+            self.model_type = model_type
+            self.tokenizer = AutoTokenizer.from_pretrained("t5-base")
+            self.tokenizer_kwargs = {
+                "max_length": 16,
+                "padding": "max_length",
+                "truncation": True,
+                "return_tensors": "np",
+            }
+            self.model = tf.saved_model.load(self.model_type)
+            assert dataset_id in ['bridge_dataset']
+            self.action_mean = np.array([
+                0.00021161, 0.00012614, -0.00017022, -0.00015062, -0.00023831, 0.00025646, 0.0
+            ])
+            self.action_std = np.array([
+                0.00963721, 0.0135066, 0.01251861, 0.02806791, 0.03016905, 0.07632624, 1.0
+            ])
+            self.automatic_task_creation = False
+        
         self.policy_setup = policy_setup
         assert self.policy_setup in ['widowx_bridge']
-        
-        self.action_mean = self.model.dataset_statistics[dataset_id]['action']['mean']
-        self.action_std = self.model.dataset_statistics[dataset_id]['action']['std']
         
         self.image_size = image_size
         self.action_scale = action_scale
@@ -73,7 +95,10 @@ class OctoInference:
         return images, pad_mask
         
     def reset(self, task_description):
-        self.task = self.model.create_tasks(texts=[task_description])
+        if self.automatic_task_creation:
+            self.task = self.model.create_tasks(texts=[task_description])
+        else:
+            self.task = self.tokenizer(task_description, **self.tokenizer_kwargs)
         self.image_history.clear()
         self.action_ensembler.reset()
         self.num_image_history = 0
@@ -84,12 +109,26 @@ class OctoInference:
         self._add_image_to_history(image)
         images, pad_mask = self._obtain_image_history_and_mask()
         images, pad_mask = images[None], pad_mask[None]
-        input_observation = {
-            'image_primary': images,
-            'pad_mask': pad_mask
-        }
         
-        norm_raw_actions = self.model.sample_actions(input_observation, self.task, rng=jax.random.PRNGKey(0))
+        if self.automatic_task_creation:
+            input_observation = {
+                'image_primary': images,
+                'pad_mask': pad_mask
+            }
+            norm_raw_actions = self.model.sample_actions(input_observation, self.task, rng=jax.random.PRNGKey(0))
+        else:
+            input_observation = {
+                'image_primary': images,
+                'timestep_pad_mask': pad_mask
+            }
+            input_observation = {
+                'observations': input_observation,
+                'tasks': {
+                    'language_instruction': self.task
+                },
+                'rng': np.zeros((4,), dtype=np.uint32),
+            }
+            norm_raw_actions = self.model.lc_ws2(input_observation)[:, :, :7]
         norm_raw_actions = norm_raw_actions[0]   # remove batch, becoming (action_pred_horizon, action_dim)
         
         if self.action_ensemble:
