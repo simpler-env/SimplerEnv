@@ -1,3 +1,7 @@
+"""
+Obtain dataset trajectory samples and save them for system identification.
+"""
+
 import numpy as np
 import tensorflow_datasets as tfds
 import pickle
@@ -59,14 +63,14 @@ if __name__ == '__main__':
         for j, episode_step in enumerate(episode_steps):
             if dataset_name == 'fractal20220817_data':
                 if j == 0:
-                    continue # skip first step since the first step's action might not reach the robot, causing the first action to be invalid
+                    continue # skip the first step since during the real data collection process, its action might not be reach the robot in time and be executed by the robot
                 base_pose_tool_reached = episode_step['observation']['base_pose_tool_reached']
                 base_pose_tool_reached = np.concatenate([base_pose_tool_reached[:3], base_pose_tool_reached[-1:], base_pose_tool_reached[3:-1]]) # [xyz, quat(wxyz)]
                 save_episode_step = {
-                    'base_pose_tool_reached': np.array(base_pose_tool_reached, dtype=np.float64),
+                    'base_pose_tool_reached': np.array(base_pose_tool_reached, dtype=np.float64), # reached tool pose under the robot base frame
                     'action_world_vector': np.array(episode_step['action']['world_vector'], dtype=np.float64),
                     'action_rotation_delta': np.array(episode_step['action']['rotation_delta'], dtype=np.float64),
-                    'action_gripper': np.array(episode_step['action']['gripper_closedness_action'], dtype=np.float64), # 1=close; -1=open
+                    # 'action_gripper': np.array(episode_step['action']['gripper_closedness_action'], dtype=np.float64), # 1=close; -1=open
                 }
             elif dataset_name == 'bridge':
                 mat_transform = np.array([[0., 0., 1.], [0., 1., 0.], [-1., 0., 0.]], dtype=np.float64)
@@ -78,10 +82,10 @@ if __name__ == '__main__':
                     'base_pose_tool_reached': np.concatenate(
                         [np.array(base_pose_tool_reached.p, dtype=np.float64), 
                          np.array(base_pose_tool_reached.q, dtype=np.float64)]
-                    ),
+                    ), # reached tool pose under the robot base frame, [xyz, quat(wxyz)]
                     'action_world_vector': np.array(episode_step['action']['world_vector'], dtype=np.float64),
                     'action_rotation_delta': np.array(episode_step['action']['rotation_delta'], dtype=np.float64),
-                    'action_gripper': np.array(2.0 * (np.array(episode_step['action']['open_gripper'])[None]) - 1.0, dtype=np.float64), # 1=open; -1=close
+                    # 'action_gripper': np.array(2.0 * (np.array(episode_step['action']['open_gripper'])[None]) - 1.0, dtype=np.float64), # 1=open; -1=close
                 }
             else:
                 raise NotImplementedError()

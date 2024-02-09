@@ -1,3 +1,7 @@
+"""
+Use CoACD to obtain convex collision mesh from an input mesh.
+"""
+
 # https://github.com/SarahWeiii/CoACD/blob/main/python/package/bin/coacd
 try:
     import trimesh

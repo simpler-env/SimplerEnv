@@ -25,7 +25,7 @@ if __name__ == '__main__':
         episode_steps = list(episode['steps'])
         for j in range(len(episode_steps) - 1):
             gt_images.append(episode_steps[j]['observation']['image'])
-        write_video(f'/home/xuanlin/Downloads/{dataset_name}_vis/{i}_gt.mp4', gt_images, fps=5)
+        write_video(f'{dataset_name}_vis/{i}_gt.mp4', gt_images, fps=5)
         
         
         

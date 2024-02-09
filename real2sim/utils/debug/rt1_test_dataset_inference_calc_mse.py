@@ -62,12 +62,9 @@ def main(episode, model, model_type='rt1'):
     return tot_mse
 
 if __name__ == '__main__':
-    # ckpt_path = "/home/xuanlin/Real2Sim/rt_1_x_tf_trained_for_002272480_step/" # 30 traj coke can mse: 0.010757321488493518; 30 traj move near mse: 0.04338108899866212
-    # ckpt_path = "/home/xuanlin/Real2Sim/xid77467904_000400120/" # 30 traj coke can mse: 0.0056369849062154085; 30 traj move near mse: 0.005759397293250814
-    ckpt_path = "/home/xuanlin/Real2Sim/rt1poor_xid77467904_000058240/" # 30 traj coke can mse: 0.007822104350586; 30 traj move near mse: 0.011442187409432612
-    # ckpt_path = "/home/xuanlin/Real2Sim/rt1poorearly_77467904_000010080/" # 
-    # ckpt_path = "/home/xuanlin/Real2Sim/rt1_xid45615428_000315000/" # 
-    # ckpt_path = '/home/xuanlin/Real2Sim/robotics_transformer/trained_checkpoints/rt1main/'
+    # ckpt_path = "rt_1_x_tf_trained_for_002272480_step/" 
+    # ckpt_path = "xid77467904_000400120/" 
+    ckpt_path = "rt1poor_xid77467904_000058240/" 
     # ckpt_path = 'rt_1_x_tf_trained_for_002272480_step'
     
     gpus = tf.config.list_physical_devices('GPU')

@@ -3,16 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import tensorflow as tf
-import tensorflow_datasets as tfds
 import tf_agents
 from tf_agents.policies import py_tf_eager_policy
 from tf_agents.trajectories import time_step as ts
 import tensorflow_hub as hub
 
-from sapien.core import Pose
 from transforms3d.euler import euler2axangle
-from transforms3d.quaternions import axangle2quat, quat2axangle
-from real2sim.utils.action.action_ensemble import ActionEnsembler
 
 class RT1Inference:
     def __init__(
@@ -46,18 +42,14 @@ class RT1Inference:
             self.unnormalize_action_fxn = None
             self.invert_gripper_action = False
             self.action_rotation_mode = 'axis_angle'
-            self.action_ensembler = None
         elif self.policy_setup == 'widowx_bridge':
             self.unnormalize_action = True
             self.unnormalize_action_fxn = self._unnormalize_action_widowx_bridge
             self.invert_gripper_action = True
             self.action_rotation_mode = 'rpy'
-            self.action_ensembler = None
-            # self.action_ensembler = ActionEnsembler(4, 0.0)
         else:
             raise NotImplementedError()
         
-        self.goal_gripper_closedness = np.array([0.0])
         self.time_step = 0
 
     @staticmethod
@@ -94,29 +86,8 @@ class RT1Inference:
             post_scaling_max=0.25,
             post_scaling_min=-0.25,
         )
-
         return action
     
-    # def _unnormalize_action_widowx_bridge(self, action):
-    #     # https://github.com/Asap7772/rt1_eval/blob/2fad77e9bf4def2ef82604d445270f83475e9726/kitchen_eval/rt1_wrapper.py
-    #     # the last dimension is -1.0 because maniskill2 widowx gripper action range normalizes to [-1, 1]
-    #     # see ManiSkill2_real2sim/mani_skill2/agents/configs/widowx/defaults.py
-    #     rescaled_action_min = np.array([-0.05, -0.05, -0.05, -0.25, -0.25, -0.25, -1.0])
-    #     rescaled_action_max = np.array([0.05, 0.05, 0.05, 0.25, 0.25, 0.25, 1.0])
-    #     action_concat = np.concatenate([action['world_vector'], action['rotation_delta'], action['gripper_closedness_action']])
-    #     action_rescaled = (action_concat + 1.0) / 2.0 * (rescaled_action_max - rescaled_action_min) + rescaled_action_min
-        
-    #     if np.any(action_rescaled > rescaled_action_max):
-    #         print('action bounds violated: ', action_rescaled)
-    #     if np.any(action_rescaled < rescaled_action_min):
-    #         print('action bounds violated: ', action_rescaled)
-
-    #     action['world_vector'] = action_rescaled[:3]
-    #     action['rotation_delta'] = action_rescaled[3:6]
-    #     action['gripper_closedness_action'] = action_rescaled[6:]
-        
-    #     return action
-
     def _initialize_model(self):
         # Perform one step of inference using dummy input to trace the tensoflow graph
         # Obtain a dummy observation, where the features are all 0
@@ -130,12 +101,11 @@ class RT1Inference:
         # Initialize the state of the policy
         self.policy_state = self.tfa_policy.get_initial_state(
             batch_size=1
-        )  # {'seq_idx': shape (1,1,1,1,1), 'action_tokens': shape [1,15,11,1,1], 'context_image_tokens' (1,15,81,1,512)}
+        )
         # Run inference using the policy
-        action = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
+        _action = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
         
         self.time_step = 0
-        self.goal_gripper_closedness = np.array([0.0])
 
     def _resize_image(self, image):
         image = tf.image.resize_with_pad(
@@ -155,7 +125,7 @@ class RT1Inference:
 
     @staticmethod
     def _small_action_filter_google_robot(raw_action, arm_movement=False, gripper=True):
-        # small action filtering
+        # small action filtering for google robot
         if arm_movement:
             raw_action['world_vector'] = tf.where(
                 tf.abs(raw_action['world_vector']) < 5e-3, tf.zeros_like(raw_action['world_vector']), raw_action['world_vector']
@@ -181,81 +151,72 @@ class RT1Inference:
             )
         return raw_action
         
-    def step(self, image, cur_gripper_closedness):
+    def step(self, image):
+        """
+        Input:
+            image: np.ndarray of shape (H, W, 3)
+        Output:
+            raw_action: dict; raw policy action output before sending into maniskill2 environment
+            action: dict; processed action to be sent to the maniskill2 environment, with the following keys:
+                - 'world_vector': np.ndarray of shape (3,), xyz translation of robot end-effector
+                - 'rot_axangle': np.ndarray of shape (3,), axis-angle representation of end-effector rotation
+                - 'gripper': np.ndarray of shape (1,), gripper action
+                - 'terminate_episode': np.ndarray of shape (1,), 1 if episode should be terminated, 0 otherwise
+        """
         image = self._resize_image(image)
         self.observation["image"] = image
         self.observation["natural_language_embedding"] = self.task_description_embedding
-        # self.observation["natural_language_instruction"] = tf.constant(self.task_description, dtype=tf.string)
 
+        # obtain (unnormalized and filtered) raw action from model forward pass
         self.tfa_time_step = ts.transition(
             self.observation, reward=np.zeros((), dtype=np.float32)
         )
         policy_step = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
-        raw_action = policy_step.action # keys: ['base_displacement_vector', 'rotation_delta', 'world_vector', 'base_displacement_ve...l_rotation', 'gripper_closedness_action', 'terminate_episode']
+        raw_action = policy_step.action
         if self.policy_setup == 'google_robot':
             raw_action = self._small_action_filter_google_robot(raw_action, arm_movement=False, gripper=True)
-        
         if self.unnormalize_action:
             raw_action = self.unnormalize_action_fxn(raw_action)
             
-        # ensemble action if needed
-        ensembled_raw_action = raw_action.copy()
-        if self.action_ensembler is not None:
-            if self.policy_setup == 'widowx_bridge':
-                raw_action_concat = np.concatenate([raw_action['world_vector'], raw_action['rotation_delta'], raw_action['gripper_closedness_action']])
-                raw_action_concat = self.action_ensembler.ensemble_action(raw_action_concat)
-                ensembled_raw_action['world_vector'] = raw_action_concat[:3]
-                ensembled_raw_action['rotation_delta'] = raw_action_concat[3:6]
-                ensembled_raw_action['gripper_closedness_action'] = raw_action_concat[6:]
-        
-        # process raw_action to obtain the action to be sent to the environment
+        # process raw_action to obtain the action to be sent to the maniskill2 environment
         action = {}
-        action['world_vector'] = np.asarray(ensembled_raw_action['world_vector'], dtype=np.float64) * self.action_scale
+        action['world_vector'] = np.asarray(raw_action['world_vector'], dtype=np.float64) * self.action_scale
         if self.action_rotation_mode == 'axis_angle':
-            action_rotation_delta = np.asarray(ensembled_raw_action['rotation_delta'], dtype=np.float64)
+            action_rotation_delta = np.asarray(raw_action['rotation_delta'], dtype=np.float64)
             action_rotation_angle = np.linalg.norm(action_rotation_delta)
             action_rotation_ax = action_rotation_delta / action_rotation_angle if action_rotation_angle > 1e-6 else np.array([0., 1., 0.])
             action['rot_axangle'] = action_rotation_ax * action_rotation_angle * self.action_scale
         elif self.action_rotation_mode in ['rpy', 'ypr', 'pry']:
             if self.action_rotation_mode == 'rpy':
-                roll, pitch, yaw = np.asarray(ensembled_raw_action['rotation_delta'], dtype=np.float64)
+                roll, pitch, yaw = np.asarray(raw_action['rotation_delta'], dtype=np.float64)
             elif self.action_rotation_mode == 'ypr':
-                yaw, pitch, roll = np.asarray(ensembled_raw_action['rotation_delta'], dtype=np.float64)
+                yaw, pitch, roll = np.asarray(raw_action['rotation_delta'], dtype=np.float64)
             elif self.action_rotation_mode == 'pry':
-                pitch, roll, yaw = np.asarray(ensembled_raw_action['rotation_delta'], dtype=np.float64)
+                pitch, roll, yaw = np.asarray(raw_action['rotation_delta'], dtype=np.float64)
             action_rotation_ax, action_rotation_angle = euler2axangle(roll, pitch, yaw)
             action['rot_axangle'] = action_rotation_ax * action_rotation_angle * self.action_scale
         else:
             raise NotImplementedError()
         
-        raw_gripper_closedness = ensembled_raw_action['gripper_closedness_action']
+        raw_gripper_closedness = raw_action['gripper_closedness_action']
         if self.invert_gripper_action:
-            # for some embodiments, -1 is open gripper, 1 is closed gripper; we uniformize to -1 is closed gripper, 1 is open gripper
+            # rt1 policy output is uniformized such that -1 is open gripper, 1 is close gripper; 
+            # thus we need to invert the rt1 output gripper action for some embodiments like WidowX, since for these embodiments -1 is close gripper, 1 is open gripper
             raw_gripper_closedness = -raw_gripper_closedness
-        
-        # gripper_pd_joint_target_pos:
-        # if np.abs(ensembled_raw_action['gripper_closedness_action'][0]) > 0:
-        #     action['gripper_closedness_action'] = cur_gripper_closedness + raw_gripper_closedness
-        #     self.goal_gripper_closedness = action['gripper_closedness_action'] # update gripper joint position goal
-        # else:
-        #     action['gripper_closedness_action'] = self.goal_gripper_closedness # repeat last target gripper joint position
-        
         if self.policy_setup == 'google_robot':
-            # gripper_pd_joint_target_delta_pos_interpolate_by_planner
-            if np.abs(ensembled_raw_action['gripper_closedness_action'][0]) > 0:
-                action['gripper'] = np.asarray(raw_gripper_closedness, dtype=np.float64) # update gripper joint position goal
-            else:
-                action['gripper'] = np.array([0.0]) # repeat last target gripper joint position
+            # gripper controller: pd_joint_target_delta_pos_interpolate_by_planner; raw_gripper_closedness has range of [0, 1]
+            action['gripper'] = np.asarray(raw_gripper_closedness, dtype=np.float64)
         elif self.policy_setup == 'widowx_bridge':
-            # gripper_pd_joint_pos; input raw_gripper_closedness has range of [-1, 1]
+            # gripper controller: pd_joint_pos; raw_gripper_closedness has range of [-1, 1]
             action['gripper'] = np.asarray(raw_gripper_closedness, dtype=np.float64)
             # binarize gripper action to be -1 or 1
             action['gripper'] = 2.0 * (action['gripper'] > 0.0) - 1.0
         else:
             raise NotImplementedError()
             
-        action['terminate_episode'] = ensembled_raw_action['terminate_episode']
+        action['terminate_episode'] = raw_action['terminate_episode']
                 
+        # update policy state
         self.policy_state = policy_step.state
         self.time_step += 1
         

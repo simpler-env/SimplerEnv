@@ -29,6 +29,7 @@ class OctoInference:
     ):
         os.environ['TOKENIZERS_PARALLELISM'] = 'false'
         if model_type in ['octo-base', 'octo-small']:
+            # released huggingface octo models
             self.model_type = f"hf://rail-berkeley/{model_type}"
             self.tokenizer, self.tokenizer_kwargs = None, None
             self.model = OctoModel.load_pretrained(self.model_type)
@@ -36,6 +37,7 @@ class OctoInference:
             self.action_std = self.model.dataset_statistics[dataset_id]['action']['std']
             self.automatic_task_creation = True
         else:
+            # custom model path
             self.model_type = model_type
             self.tokenizer = AutoTokenizer.from_pretrained("t5-base")
             self.tokenizer_kwargs = {
@@ -45,17 +47,19 @@ class OctoInference:
                 "return_tensors": "np",
             }
             self.model = tf.saved_model.load(self.model_type)
-            assert dataset_id in ['bridge_dataset']
-            self.action_mean = np.array([
-                0.00021161, 0.00012614, -0.00017022, -0.00015062, -0.00023831, 0.00025646, 0.0
-            ])
-            self.action_std = np.array([
-                0.00963721, 0.0135066, 0.01251861, 0.02806791, 0.03016905, 0.07632624, 1.0
-            ])
+            if dataset_id == 'bridge_dataset':
+                self.action_mean = np.array([
+                    0.00021161, 0.00012614, -0.00017022, -0.00015062, -0.00023831, 0.00025646, 0.0
+                ])
+                self.action_std = np.array([
+                    0.00963721, 0.0135066, 0.01251861, 0.02806791, 0.03016905, 0.07632624, 1.0
+                ])
+            else:
+                raise NotImplementedError(f"{dataset_id} not supported yet for custom octo model checkpoints.")
             self.automatic_task_creation = False
         
         self.policy_setup = policy_setup
-        assert self.policy_setup in ['widowx_bridge']
+        assert self.policy_setup in ['widowx_bridge'], f"Policy setup {self.policy_setup} not supported for octo models."
         
         self.image_size = image_size
         self.action_scale = action_scale
@@ -65,8 +69,6 @@ class OctoInference:
         self.action_ensemble = action_ensemble
         self.action_ensemble_temp = action_ensemble_temp
         
-        self.goal_gripper_pose_at_robot_base = None
-        self.goal_gripper_closedness = np.array([0.0])
         self.task = None
         self.image_history = deque(maxlen=self.horizon)
         self.action_ensembler = ActionEnsembler(self.pred_action_horizon, self.action_ensemble_temp)
@@ -74,7 +76,6 @@ class OctoInference:
         self.time_step = 0
 
     def _resize_image(self, image):
-        # image = cv2.resize(image, (self.image_size, self.image_size))
         image = tf.image.resize(
             image, size=(self.image_size, self.image_size), method="lanczos3", antialias=True
         )
@@ -105,6 +106,17 @@ class OctoInference:
         self.time_step = 0
 
     def step(self, image, *args, **kwargs):
+        """
+        Input:
+            image: np.ndarray of shape (H, W, 3)
+        Output:
+            raw_action: dict; raw policy action output before sending into maniskill2 environment
+            action: dict; processed action to be sent to the maniskill2 environment, with the following keys:
+                - 'world_vector': np.ndarray of shape (3,), xyz translation of robot end-effector
+                - 'rot_axangle': np.ndarray of shape (3,), axis-angle representation of end-effector rotation
+                - 'gripper': np.ndarray of shape (1,), gripper action
+                - 'terminate_episode': np.ndarray of shape (1,), 1 if episode should be terminated, 0 otherwise
+        """
         image = self._resize_image(image)
         self._add_image_to_history(image)
         images, pad_mask = self._obtain_image_history_and_mask()
@@ -142,7 +154,7 @@ class OctoInference:
             "open_gripper": np.array(raw_actions[0, 6:7]), # range [0, 1]; 1 = open; 0 = close
         }
         
-        # process raw_action to obtain the action to be sent to the environment
+        # process raw_action to obtain the action to be sent to the maniskill2 environment
         action = {}
         action['world_vector'] = raw_action['world_vector'] * self.action_scale
         action_rotation_delta = np.asarray(raw_action['rotation_delta'], dtype=np.float64)

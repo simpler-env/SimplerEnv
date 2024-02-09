@@ -14,10 +14,7 @@ except ImportError as e:
     print(e)
 from real2sim.utils.visualization import write_video
 from real2sim.utils.env.env_builder import build_maniskill2_env, get_maniskill2_env_instruction, get_robot_control_mode
-from real2sim.utils.env.additional_episode_stats import (
-    initialize_additional_episode_stats, update_additional_episode_stats, obtain_truncation_step_success
-)
-from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
+from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_dict, obtain_truncation_step_success
 from real2sim.utils.io import DictAction
 
 def main(model, ckpt_path, robot_name, env_name, scene_name, 
@@ -25,7 +22,7 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
          control_mode,
          obj_init_x=None, obj_init_y=None, obj_episode_id=None,
          additional_env_build_kwargs=None,
-         rgb_overlay_path=None, tmp_exp=False,
+         rgb_overlay_path=None,
          control_freq=3, sim_freq=513, max_episode_steps=80,
          instruction=None,
          action_scale=1.0, enable_raytracing=False,
@@ -85,7 +82,6 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
     images = [image]
     predicted_actions = []
     predicted_terminated, done, truncated = False, False, False
-    additional_episode_stats = initialize_additional_episode_stats(env_name)
     
     # Initialize model
     model.reset(task_description)
@@ -95,9 +91,7 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
     
     # Step the environment
     while not (predicted_terminated or truncated):
-        cur_gripper_closedness = env.agent.get_gripper_closedness()
-        
-        raw_action, action = model.step(image, cur_gripper_closedness)
+        raw_action, action = model.step(image)
         predicted_actions.append(raw_action)
         print(timestep, raw_action)
         predicted_terminated = bool(action['terminate_episode'][0] > 0)
@@ -110,7 +104,6 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
                 ]
             )
         )
-        additional_episode_stats = update_additional_episode_stats(env_name, additional_episode_stats, info)
         if predicted_terminated and info['success']:
             success = "success"
         
@@ -119,8 +112,9 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
         timestep += 1
         print(info)
 
-    # obtain success indicator if policy never terminates
-    if obtain_truncation_step_success(env_name, additional_episode_stats, info):
+    episode_stats = info.get("episode_stats", {})
+    # if policy never outputs terminate throughout a trajectory, obtain an episode's success status based on episode stats and last step's info
+    if obtain_truncation_step_success(env_name, episode_stats, info):
         success = "success"
     
     # save video
@@ -135,7 +129,7 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
         video_name = f'{success}_obj_{obj_init_x}_{obj_init_y}'
     elif obj_variation_mode == 'episode':
         video_name = f'{success}_obj_episode_{obj_episode_id}'
-    for k, v in additional_episode_stats.items():
+    for k, v in episode_stats.items():
         video_name = video_name + f'_{k}_{v}'
     video_name = video_name + '.mp4'
     if rgb_overlay_path is not None:
@@ -144,10 +138,7 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
         rgb_overlay_path_str = 'None'
     r, p, y = quat2euler(robot_init_quat)
     video_path = f'{ckpt_path_basename}/{scene_name}/{control_mode}/{env_save_name}/rob_{robot_init_x}_{robot_init_y}_rot_{r:.3f}_{p:.3f}_{y:.3f}_rgb_overlay_{rgb_overlay_path_str}/{video_name}'
-    if not tmp_exp:
-        video_path = 'results/' + video_path
-    else:
-        video_path = 'results_tmp/' + video_path 
+    video_path = 'results/' + video_path
     write_video(video_path, images, fps=5)
     
     # save action trajectory
@@ -229,7 +220,7 @@ if __name__ == '__main__':
         model = RT1Inference(saved_model_path=args.ckpt_path, action_scale=args.action_scale,
                              policy_setup=args.policy_setup)
     elif 'octo' in args.policy_model:
-        args.ckpt_path = args.policy_model # octo models are loaded through huggingface, which does not require ckpt_path, so ckpt_path is only used for logging purpose
+        args.ckpt_path = args.policy_model
         model = OctoInference(model_type=args.policy_model, action_scale=args.action_scale,
                               policy_setup=args.policy_setup)
     else:
@@ -243,7 +234,7 @@ if __name__ == '__main__':
                     additional_env_build_kwargs=additional_env_build_kwargs,
                     rgb_overlay_path=args.rgb_overlay_path,
                     control_freq=control_freq, sim_freq=sim_freq, max_episode_steps=max_episode_steps,
-                    action_scale=args.action_scale, tmp_exp=args.tmp_exp,
+                    action_scale=args.action_scale, 
                     enable_raytracing=args.enable_raytracing,
                     additional_env_save_tags=args.additional_env_save_tags
                 )
@@ -264,24 +255,3 @@ if __name__ == '__main__':
                             **kwargs)
                 else:
                     raise NotImplementedError()
-    
-"""
-# control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_pos',
-# control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_pos',
-# control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_pos_interpolate_by_planner',
-# control_mode='arm_pd_ee_delta_pose_align_gripper_pd_joint_target_pos',
-# control_mode='arm_pd_ee_delta_pose_align_interpolate_gripper_pd_joint_target_pos',
-# control_mode='arm_pd_ee_target_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_pos',
-# control_mode='arm_pd_ee_target_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner',
-
-# Baked_sc1_staging_table_616385
-# robot_init_x, robot_init_y = 0.32, 0.188
-# rob_init_quat = (Pose(q=[0, 0, 0, 1]) * Pose(q=euler2quat(0, 0, -0.01))).q
-# obj_init_x_range = np.linspace(-0.35, -0.1, 5)
-# obj_init_y_range = np.linspace(0.0, 0.4, 5)
-# rgb_overlay_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/real_impainting/google_table_top_1.png'
-# for env_name in ['GraspSingleVerticalCokeCanInScene-v0', 'GraspSingleCokeCanInScene-v0', 'GraspSingleUpRightOpenedCokeCanInScene-v0']:
-#     main(env_name, 'Baked_sc1_staging_table_616385', rgb_overlay_path=rgb_overlay_path,
-#          obj_init_x_range=obj_init_x_range, obj_init_y_range=obj_init_y_range,
-#          robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=rob_init_quat)
-"""

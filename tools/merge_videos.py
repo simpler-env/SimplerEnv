@@ -1,3 +1,11 @@
+"""
+Merge videos into a single video with multiple subvideos.
+e.g.,
+python -m pdb tools/merge_videos.py \
+    --input-dir results/xid77467904_000400120/google_pick_coke_can_1_v4/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/GraspSingleOpenedCokeCanInScene-v0_upright_True_worse_control_4/rob_0.35_0.2_rot_0.000_-0.000_3.142_rgb_overlay_google_coke_can_real_eval_1 \
+    --output-path results/xid77467904_000400120/google_pick_coke_can_1_v4/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/GraspSingleOpenedCokeCanInScene-v0_upright_True_worse_control_4/merged.mp4
+"""
+
 import argparse
 from functools import partial
 from pathlib import Path
@@ -6,7 +14,7 @@ from typing import List
 import cv2
 import moviepy
 import numpy as np
-from moviepy.editor import VideoFileClip, clips_array
+from moviepy.editor import VideoFileClip, clips_array, ColorClip
 
 
 def parse_args():
@@ -47,41 +55,57 @@ def merge_videos(input_dir: Path, output_path:str= None):
     video_paths = []
     for video_path in input_dir.glob("**/*.mp4"):
         video_paths.append(video_path)
-        # print(video_path)
+        print(video_path)
+    n_videos = len(video_paths)
 
-    # video_clips = []
     video_clips = {}
-    if 'obj' in video_paths[0].stem.split('_'):
+    example_video_path_elems = video_paths[0].stem.split('_')
+    if 'qpos' in example_video_path_elems:
+        # cabinet qpos
+        pos_variation_mode = 'qpos'
+    elif 'episode' in example_video_path_elems:
+        # episode-based object pos variation
+        pos_variation_mode = 'episode'
+    elif 'obj' in example_video_path_elems:
+        # position-based object variation
         pos_variation_mode = 'obj'
     else:
         pos_variation_mode = 'robot'
+        
     init_xs = set()
     init_ys = set()
     max_duration = 0
+    video_clip_size = None
     for video_path in video_paths:
         # robot initial poses
         dirname = video_path.parent
         dirname_elems = dirname.name.split("_")
-        # hardcoded
-        robot_init_x = round(float(dirname_elems[1]), 3)
-        robot_init_y = round(float(dirname_elems[2]), 3)
+        
+        rob_idx = dirname_elems.index('rob')
+        robot_init_x = round(float(dirname_elems[rob_idx + 1]), 3)
+        robot_init_y = round(float(dirname_elems[rob_idx + 2]), 3)
         
         basename = video_path.stem
         basename_elems = basename.split("_")
         # hardcoded
         success = basename_elems[0]
-        if pos_variation_mode == 'obj':
-            obj_init_x = round(float(basename_elems[2]), 3)
-            obj_init_y = round(float(basename_elems[3]), 3)
-        try:
-            qpos = round(float(basename_elems[-1]), 3)
-        except:
-            if pos_variation_mode == 'obj':
-                qpos = (obj_init_x, obj_init_y)
-            else:
-                qpos = None
+        if pos_variation_mode == 'qpos':
+            qpos_idx = basename_elems.index('qpos')
+            qpos = round(float(basename_elems[qpos_idx + 1]), 3)
+            video_clip_additional_info = f"qpos: {qpos}"
+        elif pos_variation_mode == 'obj':
+            obj_idx = basename_elems.index('obj')
+            obj_init_x = round(float(basename_elems[obj_idx + 1]), 3)
+            obj_init_y = round(float(basename_elems[obj_idx + 2]), 3)
+            video_clip_additional_info = f"obj_init: {(obj_init_x, obj_init_y)}"
+        elif pos_variation_mode == 'episode':
+            episode_idx = basename_elems.index('episode')
+            episode = int(basename_elems[episode_idx + 1])
+            video_clip_additional_info = f"episode: {episode}"
+        else:
+            video_clip_additional_info = None
             
-        if pos_variation_mode == 'robot':
+        if pos_variation_mode in ['robot', 'qpos']:
             init_x, init_y = robot_init_x, robot_init_y
             init_xs.add(robot_init_x)
             init_ys.add(robot_init_y)
@@ -89,13 +113,21 @@ def merge_videos(input_dir: Path, output_path:str= None):
             init_x, init_y = obj_init_x, obj_init_y
             init_xs.add(obj_init_x)
             init_ys.add(obj_init_y)
+        elif pos_variation_mode == 'episode':
+            episode_idx = basename_elems.index('episode')
+            episode = int(basename_elems[episode_idx + 1])
+            merged_video_side_length = int(np.ceil(np.sqrt(n_videos)))
+            init_x, init_y = episode // merged_video_side_length, episode % merged_video_side_length
+            init_xs.add(init_x)
+            init_ys.add(init_y)
         else:
             raise NotImplementedError()
 
         video_clip = VideoFileClip(str(video_path))
+        if video_clip_size is None:
+            video_clip_size = video_clip.size
         max_duration = max(max_duration, video_clip.duration)
-        # video_clips.append(video_clip)
-        video_clips[(init_x, init_y)] = (video_clip, success, qpos)
+        video_clips[(init_x, init_y)] = (video_clip, success, video_clip_additional_info)
 
     def add_text_to_clip(get_frame, t, text_fn, start=0):
         frame = np.array(get_frame(t))
@@ -107,14 +139,19 @@ def merge_videos(input_dir: Path, output_path:str= None):
     for init_x in sorted(init_xs):
         final_clip_array.append([])
         for init_y in sorted(init_ys):
+            if (pos_variation_mode == 'episode') and (init_x, init_y) not in video_clips:
+                # for episode-based object pos variation, we may have empty slots since the number of episodes might not be a perfect square
+                pad_video_clip = ColorClip(size=video_clip_size, color=(0, 0, 0)).set_duration(max_duration)
+                final_clip_array[-1].append(pad_video_clip)
+                continue
             video_clip: VideoFileClip = video_clips[(init_x, init_y)][0]
             video_clip = video_clip.set_duration(max_duration)
 
             success = video_clips[(init_x, init_y)][1]
-            qpos = video_clips[(init_x, init_y)][2]
+            video_clip_additional_info = video_clips[(init_x, init_y)][2]
             text_fn = partial(
                 put_text_on_image,
-                lines=["success: " + success, "qpos: " + str(qpos)],
+                lines=["success: " + success, video_clip_additional_info if video_clip_additional_info is not None else ""],
                 color=(255, 0, 0) if success != "success" else (0, 255, 0),
             )
             video_clip = video_clip.fl(partial(add_text_to_clip, text_fn=text_fn))

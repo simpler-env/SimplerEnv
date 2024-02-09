@@ -1,3 +1,7 @@
+"""
+Parse the results of the system identification logs and print the top 10 results.
+"""
+
 import argparse
 import re
 
@@ -9,7 +13,7 @@ def obtain_arr(s):
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--log-file', type=str, default='/home/xuanlin/Downloads/opt_results.txt')
+    parser.add_argument('--log-file', type=str, default='sysid_log/opt_results_google_robot.txt')
     args = parser.parse_args()
     
     with open(args.log_file, 'r') as f:
@@ -29,5 +33,5 @@ if __name__ == '__main__':
         
     results = sorted(results, key=lambda x: x[0])
     for result in results[:10]:
-        print(result)
+        print(f"Avg error: {result[0]}; Arm stiffness: {result[1][0]}; Arm damping: {result[1][1]}; Misc: {result[2]}; Per traj error: {result[3]}")
         

@@ -1,3 +1,7 @@
+"""
+Save a particular frame from a video.
+"""
+
 import argparse
 from pathlib import Path
 from typing import List
