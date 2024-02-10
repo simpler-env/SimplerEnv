@@ -1,7 +1,10 @@
-import sapien.core as sapien
-from sapien.utils.viewer import Viewer
+
 import numpy as np
 import time
+import argparse
+import sapien.core as sapien
+
+from sapien.utils.viewer import Viewer
 from pathlib import Path
 
 def build_actor(
@@ -79,7 +82,11 @@ def demo(model_dir):
 
 
 def main():
-    demo('ManiSkill2_real2sim/data/custom/models/opened_coke_can')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model-dir', type=str, default='ManiSkill2_real2sim/data/custom/models/opened_coke_can')
+    args = parser.parse_args()
+    
+    demo(args.model_dir)
     
 if __name__ == '__main__':
     main()
