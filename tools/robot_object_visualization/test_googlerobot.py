@@ -30,12 +30,11 @@ def demo(fix_root_link, balance_passive_force):
     # robot: sapien.Articulation = loader.load("/home/xuanlin/real2sim/ManiSkill2/mani_skill2/assets/descriptions/mobile_panda_single_arm.urdf")
     # robot.set_root_pose(sapien.Pose([0, 0, 0], [1, 0, 0, 0]))
 
-    robot: sapien.Articulation = loader.load("/home/xuanlin/Real2Sim/ManiSkill2_real2sim/mani_skill2/assets/descriptions/googlerobot_description_color_adjust/google_robot_meta_sim_fix_wheel_fix_fingertip.urdf")
+    robot: sapien.Articulation = loader.load("ManiSkill2_real2sim/mani_skill2/assets/descriptions/googlerobot_description/google_robot_meta_sim_fix_wheel_fix_fingertip.urdf")
     print(robot.get_links())
     robot.set_root_pose(sapien.Pose([0, 0, 0.06205], [1, 0, 0, 0]))
 
     # Set initial joint positions
-    # robot.set_qpos(np.zeros(13))
     qpos = [-0.2639457174606611,
             0.0831913360274175,
             0.5017611504652179,
@@ -45,7 +44,6 @@ def demo(fix_root_link, balance_passive_force):
             -1.080652960128774,
             0, 0,
             -0.00285961, 0.7851361]
-    # qpos = np.zeros(11)
     robot.set_qpos(qpos)
     for joint in robot.get_active_joints():
         joint.set_drive_property(stiffness=1e5, damping=1e3)
@@ -64,9 +62,8 @@ def demo(fix_root_link, balance_passive_force):
     camera.set_parent(parent=link_camera, keep_pose=False)
     camera.set_local_pose(sapien.Pose.from_transformation_matrix(
         np.array([[0, -1, 0, 0], [0, 0, -1, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
-    )) # SAPIEN uses ros camera convention; the rotation matrix of link_camera is in opencv convention, so we need to transform it to ros convention
+    )) # SAPIEN uses ros camera convention; the rotation matrix of link_camera's pose is in opencv convention, so we need to transform it to ros convention
 
-    # tmp = 0
     tcp_link = [x for x in robot.get_links() if x.name == 'link_gripper_tcp'][0]
     while not viewer.closed:
         print(robot.get_qpos())
@@ -82,9 +79,6 @@ def demo(fix_root_link, balance_passive_force):
             print("tcp pose wrt robot base", robot.pose.inv() * tcp_link.pose)
             robot.set_drive_target(qpos)
             scene.step()
-            # if tmp > 0 and tmp % 1 == 0:
-            #     scene.step()
-            # tmp += 1
         scene.update_render()
         viewer.render()
 
@@ -97,7 +91,7 @@ def main():
 if __name__ == '__main__':
     main()
     """
-    robot.qpos 15-dim if mobile else 13
+    robot.qpos 13-dim if mobile else 11
     robot qlimits 
         array([[     -inf,       inf],
        [     -inf,       inf],
@@ -108,7 +102,7 @@ if __name__ == '__main__':
        [-2.92e+00,  2.92e+00],
        [-1.79e+00,  1.79e+00],
        [-4.49e+00,  1.35e+00],
-       [-1.00e-04,  1.30e+00], # gripper plus = close
+       [-1.00e-04,  1.30e+00], # gripper plus direction = close
        [-1.00e-04,  1.30e+00],
        [-3.79e+00,  2.22e+00],
        [-1.17e+00,  1.17e+00]], dtype=float32)
@@ -116,4 +110,5 @@ if __name__ == '__main__':
         ['joint_wheel_left', 'joint_wheel_right', 'joint_torso', 'joint_shoulder', 
         'joint_bicep', 'joint_elbow', 'joint_forearm', 'joint_wrist', 'joint_gripper', 
         'joint_finger_right', 'joint_finger_left', 'joint_head_pan', 'joint_head_tilt']
+    If robot is not mobile, then the first two joints are not active
     """

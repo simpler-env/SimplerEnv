@@ -83,5 +83,6 @@ real2sim/main_inference.py
 real2sim/utils/env/env_builder.py
 real2sim/utils/env/observation_utils.py
 real2sim/tools/sysid/sysid.py
+real2sim/tools/robot_object_visualization
 
 tcp = tool center point of end-effector

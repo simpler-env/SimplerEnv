@@ -27,23 +27,15 @@ def demo(fix_root_link, balance_passive_force):
     loader.fix_root_link = fix_root_link
     loader.load_multiple_collisions_from_file = True
     
-    robot: sapien.Articulation = loader.load("/home/xuanlin/Real2Sim/ManiSkill2_real2sim/mani_skill2/assets/descriptions/widowx_description/wx250s.urdf")
+    robot: sapien.Articulation = loader.load("ManiSkill2_real2sim/mani_skill2/assets/descriptions/widowx_description/wx250s.urdf")
     print(robot.get_links())
     robot.set_root_pose(sapien.Pose([0, 0, 0.2], [1, 0, 0, 0]))
     print([x.name for x in robot.get_active_joints()])
     print(robot.get_qlimits())
 
     # Set initial joint positions
-    # qpos = np.array([-0.13192235, -0.76238847,  0.44485444, -0.01994175,  1.7564081,  -0.15953401,
-    #                  0.015, 0.015])
-    # qpos = np.array([0, 0, 0, -np.pi, np.pi / 2, np.pi,
-    #                  0.015, 0.015])
-    # qpos = np.array([-0.00153398,  0.04448544,  0.21629129, -np.pi,  1.36524296, np.pi,
-    #                  0.015, 0.015])
     qpos = np.array([-0.00153398,  0.04448544,  0.21629129, -0.00306796,  1.36524296, 0.,
                      0.015, 0.015])
-    # qpos = np.array([-0.39407882,  0.05721467, -0.32068512, -3.0768952 ,  1.0481696 ,
-    #                  -3.1414535 ,  0.02599986,  0.02600013])
     robot.set_qpos(qpos)
     for joint in robot.get_active_joints():
         joint.set_drive_property(stiffness=1e5, damping=1e3)
@@ -73,6 +65,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
     """
     [Actor(name="base_link", id="2"), Actor(name="shoulder_link", id="3"), Actor(name="upper_arm_link", id="4"), Actor(name="upper_forearm_link", id="5"), 
     Actor(name="lower_forearm_link", id="6"), Actor(name="wrist_link", id="7"), Actor(name="gripper_link", id="8"), Actor(name="ee_arm_link", id="9"), 

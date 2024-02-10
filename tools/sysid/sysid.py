@@ -26,7 +26,7 @@ def calc_pose_err_single_ep(episode, arm_stiffness, arm_damping, robot, control_
         sim_freq, control_freq = 252, 3
     elif robot == 'widowx':
         sim_freq, control_freq = 500, 5
-    env = gym.make('PickCube-v0',
+    env = gym.make('GraspSingleDummy-v0',
                     control_mode=control_mode,
                     obs_mode='rgbd',
                     robot=robot,

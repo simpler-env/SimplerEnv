@@ -71,19 +71,15 @@ def demo(model_dir):
     camera.set_principal_point(424.59, 236.67)
     camera.set_parent(parent=obj, keep_pose=False)
 
-    # tmp = 0
     while not viewer.closed:
         for _ in range(4):  # render every 4 steps
             scene.step()
-            # if tmp > 0 and tmp % 1 == 0:
-            #     scene.step()
-            # tmp += 1
         scene.update_render()
         viewer.render()
 
 
 def main():
-    demo('/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/custom/models/baked_opened_coke_can')
+    demo('ManiSkill2_real2sim/data/custom/models/opened_coke_can')
     
 if __name__ == '__main__':
     main()

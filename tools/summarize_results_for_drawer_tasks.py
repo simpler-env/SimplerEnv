@@ -65,7 +65,7 @@ for ckpt_name in [
     for env_suffix in [
         "shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True_urdf_version_recolor",
     ]:
-        result_dir = f"{ROOT_DIR}/results/{ckpt_name}/dummy2/{DEFAULT_CONTROLLER}"
+        result_dir = f"{ROOT_DIR}/results/{ckpt_name}/dummy_drawer/{DEFAULT_CONTROLLER}"
         parse_open_drawer_results_overlay(result_dir, env_suffix)
 
 
@@ -79,7 +79,7 @@ for ckpt_name in [
         "shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True",
         "shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True_urdf_version_recolor2",
     ]:
-        result_dir = f"{ROOT_DIR}/results/{ckpt_name}/dummy2/{DEFAULT_CONTROLLER}"
+        result_dir = f"{ROOT_DIR}/results/{ckpt_name}/dummy_drawer/{DEFAULT_CONTROLLER}"
         parse_open_drawer_results_overlay(result_dir, env_suffix)
 
 

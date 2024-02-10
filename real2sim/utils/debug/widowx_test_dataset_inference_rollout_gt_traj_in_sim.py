@@ -45,7 +45,7 @@ def main(dset_iter, iter_num, episode_id,
     
     sim_freq, control_freq = 510, 5
     action_scale = 1.0
-    env = gym.make('PickCube-v0',
+    env = gym.make('GraspSingleDummy-v0',
                         control_mode=control_mode,
                         obs_mode='rgbd',
                         robot='widowx',

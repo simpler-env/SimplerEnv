@@ -55,7 +55,7 @@ def get_results(csv_path, task_name):
 
 
 def compute_metrics_real_vs_sim():
-    # scene_name = "dummy2"
+    # scene_name = "dummy_drawer"
     scene_name = "frl_apartment_stage_simple"
     DEFAULT_CONTROLLER = "arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner"
     # model_names = ["rt-1-400k", "rt-1-58k", "rt-1-x", "rt-1-1k"]

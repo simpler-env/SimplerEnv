@@ -30,7 +30,7 @@ def main(input_video, impainting_img_path, instruction,
     
     # Create environment
     env = build_maniskill2_env(
-        'PickCube-v0',
+        'GraspSingleDummy-v0',
         control_mode=control_mode,
         obs_mode='rgbd',
         robot='google_robot_static',

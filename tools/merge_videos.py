@@ -21,6 +21,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input-dir", type=Path, required=True)
     parser.add_argument("-o", "--output-path", type=str)
+    parser.add_argument("--no-text-on-video", action="store_true")
 
     args = parser.parse_args()
     return args
@@ -51,7 +52,7 @@ def put_text_on_image(
         )
 
 
-def merge_videos(input_dir: Path, output_path:str= None):
+def merge_videos(input_dir: Path, output_path:str= None, no_text_on_video: bool=False):
     video_paths = []
     for video_path in input_dir.glob("**/*.mp4"):
         video_paths.append(video_path)
@@ -149,12 +150,13 @@ def merge_videos(input_dir: Path, output_path:str= None):
 
             success = video_clips[(init_x, init_y)][1]
             video_clip_additional_info = video_clips[(init_x, init_y)][2]
-            text_fn = partial(
-                put_text_on_image,
-                lines=["success: " + success, video_clip_additional_info if video_clip_additional_info is not None else ""],
-                color=(255, 0, 0) if success != "success" else (0, 255, 0),
-            )
-            video_clip = video_clip.fl(partial(add_text_to_clip, text_fn=text_fn))
+            if not no_text_on_video:
+                text_fn = partial(
+                    put_text_on_image,
+                    lines=["success: " + success, video_clip_additional_info if video_clip_additional_info is not None else ""],
+                    color=(255, 0, 0) if success != "success" else (0, 255, 0),
+                )
+                video_clip = video_clip.fl(partial(add_text_to_clip, text_fn=text_fn))
 
             final_clip_array[-1].append(video_clip)
     
@@ -168,7 +170,7 @@ def merge_videos(input_dir: Path, output_path:str= None):
 
 def main():
     args = parse_args()
-    merge_videos(args.input_dir, args.output_path)
+    merge_videos(args.input_dir, args.output_path, args.no_text_on_video)
 
 
 if __name__ == "__main__":
