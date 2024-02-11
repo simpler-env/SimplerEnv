@@ -110,13 +110,13 @@ if __name__ == '__main__':
     mp4_path = None
     impainting_img_path = 'ManiSkill2_real2sim/data/real_impainting/move_near_real_obj_variants/move_near_real_1_1.png'
     instruction = 'move blue plastic bottle near pepsi can'
-    ckpt_path = 'xid77467904_000400120/'
+    ckpt_path = 'checkpoints/xid77467904_000400120/'
     # mp4_path = 'data/debug/bridge_real_1.mp4'
     # impainting_img_path = 'data/debug/bridge_real_1_cleanup.png'
     # instruction = 'Place the can to the left of the pot.'
     # init_tcp_pose_at_robot_base = Pose([0.298068, -0.114657, 0.10782], [0.750753, 0.115962, 0.642171, -0.102661])
     # camera = '3rd_view_camera_bridge'
-    # ckpt_path = 'rt_1_x_tf_trained_for_002272480_step/'
+    # ckpt_path = 'checkpoints/rt_1_x_tf_trained_for_002272480_step/'
     
     if mp4_path is not None:
         input_video = media.read_video(mp4_path)

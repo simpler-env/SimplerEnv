@@ -4,6 +4,7 @@ declare -a ckpt_paths=(
 "./checkpoints/xid77467904_000400120/"
 "./checkpoints/rt1poor_xid77467904_000058240/"
 "./checkpoints/rt_1_x_tf_trained_for_002272480_step/"
+"./checkpoints/rt1new_77467904_000001120/"
 )
 
 declare -a env_names=(

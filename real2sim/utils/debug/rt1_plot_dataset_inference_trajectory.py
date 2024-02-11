@@ -59,10 +59,10 @@ def main(episode, model, model_type='rt1'):
                                        tf.concat(tf.unstack(images[::int(len(images) // 10)], axis=0), 1).numpy())
 
 if __name__ == '__main__':
-    ckpt_path = "rt_1_x_tf_trained_for_002272480_step/"
-    # ckpt_path = "xid77467904_000400120/" 
-    # ckpt_path = "rt1poor_xid77467904_000058240/"
-    # ckpt_path = 'rt_1_x_tf_trained_for_002272480_step'
+    ckpt_path = "checkpoints/rt_1_x_tf_trained_for_002272480_step/"
+    # ckpt_path = "checkpoints/xid77467904_000400120/" 
+    # ckpt_path = "checkpoints/rt1poor_xid77467904_000058240/"
+    # ckpt_path = 'checkpoints/rt_1_x_tf_trained_for_002272480_step'
     
     gpus = tf.config.list_physical_devices('GPU')
     tf.config.set_logical_device_configuration(

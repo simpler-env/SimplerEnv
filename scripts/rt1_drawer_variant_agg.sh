@@ -4,6 +4,7 @@ declare -a ckpt_paths=(
 "./checkpoints/xid77467904_000400120/"
 "./checkpoints/rt1poor_xid77467904_000058240/"
 "./checkpoints/rt_1_x_tf_trained_for_002272480_step/"
+"./checkpoints/rt1new_77467904_000001120/"
 )
 
 declare -a env_names=(
@@ -15,10 +16,11 @@ CloseMiddleDrawerCustomInScene-v0
 CloseBottomDrawerCustomInScene-v0
 )
 
-declare -a scene_names=(
-"modern_bedroom_no_roof"
-"modern_office_no_roof"
-)
+EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt"
+
+
+# base setup
+scene_name=frl_apartment_stage_simple
 
 EvalSim() {
   echo ${ckpt_path} ${env_name}
@@ -33,11 +35,52 @@ EvalSim() {
     ${EXTRA_ARGS}
 }
 
+
+for ckpt_path in "${ckpt_paths[@]}"; do
+  for env_name in "${env_names[@]}"; do
+    EvalSim
+  done
+done
+
+
+# backgrounds
+
+declare -a scene_names=(
+"modern_bedroom_no_roof"
+"modern_office_no_roof"
+)
+
 for scene_name in "${scene_names[@]}"; do
   for ckpt_path in "${ckpt_paths[@]}"; do
     for env_name in "${env_names[@]}"; do
       EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt"
       EvalSim
     done
+  done
+done
+
+
+# lightings
+scene_name=frl_apartment_stage_simple
+
+for ckpt_path in "${ckpt_paths[@]}"; do
+  for env_name in "${env_names[@]}"; do
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt light_mode=brighter"
+    EvalSim
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt light_mode=darker"
+    EvalSim
+  done
+done
+
+
+# new cabinets
+scene_name=frl_apartment_stage_simple
+
+for ckpt_path in "${ckpt_paths[@]}"; do
+  for env_name in "${env_names[@]}"; do
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station2"
+    EvalSim
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station3"
+    EvalSim
   done
 done

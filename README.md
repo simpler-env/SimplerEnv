@@ -41,20 +41,28 @@ Download RT-1 Checkpoint:
 ```
 # First, install gsutil following https://cloud.google.com/storage/docs/gsutil_install
 
+# Make a checkpoint dir:
+mkdir {this_repo}/checkpoints
+
 # RT-1-X
 cd {this_repo}
 gsutil -m cp -r gs://gdm-robotics-open-x-embodiment/open_x_embodiment_and_rt_x_oss/rt_1_x_tf_trained_for_002272480_step.zip .
 unzip rt_1_x_tf_trained_for_002272480_step.zip
+mv rt_1_x_tf_trained_for_002272480_step checkpoints
 rm rt_1_x_tf_trained_for_002272480_step.zip
 
 # RT-1-Converged
-Download from https://drive.google.com/drive/folders/1pdHYzgNQqinEv0sXlKpL3ZDr2-eDFebQ
+Download from https://drive.google.com/drive/folders/1pdHYzgNQqinEv0sXlKpL3ZDr2-eDFebQ 
+(click the directory name header > download, then unzip the file)
+After unzipping, you'll see a "xid77467904_000400120" directory when you enter the unzipped directory. Move this directory to the `checkpoints` directory.
 
 # RT-1-15%
 Download from https://drive.google.com/drive/folders/1nzOfnyNzxKkr3aXj3kqekfXdxAPU15aY
+After unzipping, you'll see a "rt1poor_xid77467904_000058240" directory when you enter the unzipped directory. Move this directory to the `checkpoints` directory.
 
 # RT-1-Begin
 Download from https://drive.google.com/drive/folders/19xWAJR9EGX86zN9LfgYSvKj27t_4kNry
+After unzipping, you'll see a "rt1new_77467904_000001120" directory when you enter the unzipped directory. Move this directory to the `checkpoints` directory.
 ```
 
 Install Octo:
@@ -62,6 +70,7 @@ Install Octo:
 cd {this_repo}/octo
 pip install --upgrade "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 pip install -e .
+# Octo checkpoints are managed by huggingface, so you don't need to download them manually.
 ```
 
 Install simulated annealing utils for system identification:
@@ -102,7 +111,7 @@ SAPIEN uses an axis convention of x forward, y left, z up.
 4. Add new object assets to `ManiSkill2_real2sim/data/custom`. 
    - Example object assets are in `ManiSkill2_real2sim/data/custom`. Each object asset contains two components:
      - Visual mesh (a `textured.dae` file combined with its corresponding `.png` texture files, or a single `textured.glb` file)
-     - Collision mesh (`collision.obj`). The collision mesh should be watertight and convex.
+     - Collision mesh (`collision.obj`). The collision mesh should be watertight and convex. 
    - After adding `collision.obj`, if the collision shape is not yet convex, use `tools/coacd_process_mesh.py` to obtain a convex collision mesh.
    - Use `tools/robot_object_visualization/test_object.py` to visualize the object in the SAPIEN viewer. You can click on an object / object link and press "show / hide" on the right panel to show / hide its collision mesh. 
    - For SAPIEN viewer control, see [here](#sapien-viewer-controls)
@@ -116,7 +125,7 @@ SAPIEN uses an axis convention of x forward, y left, z up.
   
 </details>
 
-5. Add custom simulation scene backgrounds to `ManiSkill2_real2sim/data/hab2_bench_assets/stages`.
+1. Add custom simulation scene backgrounds to `ManiSkill2_real2sim/data/hab2_bench_assets/stages`.
    - In our environments, scene backgrounds are loaded in the `_load_arena_helper` function in `ManiSkill2_real2sim/mani_skill2/envs/custom_scenes/base_env.py`. The existing scenes use the Habitat convention (y-axis up).
 
 <details>
@@ -130,6 +139,7 @@ You can export the `.glb` scenes from Blender. Pay attention to the axis convent
 
 7. Add a new environment to `ManiSkill2_real2sim/mani_skill2/envs/custom_scenes`. You can use the existing environments as a reference. 
    - The environment `reset` function first assesses whether to reconfigure the environment (if so, then we call the `reconfigure` function in `ManiSkill2_real2sim/mani_skill2/envs/sapien_env.py` to load scenes, robot agents, objects, cameras, and lightings). It then calls the `initialize_episode` function to initialize the loaded robots and objects.
+   - Our environments load metadata json files for the object assets (in `ManiSkill2_real2sim/data/custom/info_*.json`). Based on your environment implementation, fill in the metadata for each new object asset in existing json files or create new json files.
 
 8. Test your environment using `ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`. See the script for more details.
    - You can set different `env_reset_options` to test different environment configurations.
