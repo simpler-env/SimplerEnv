@@ -191,6 +191,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     os.environ['DISPLAY'] = ''
+    os.environ['XLA_PYTHON_CLIENT_PREALLOCATE']='false'
     
     if args.policy_model == 'rt1':
         gpus = tf.config.list_physical_devices('GPU')

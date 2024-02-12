@@ -9,13 +9,17 @@
     - [Adding New Policies](#adding-new-policies)
     - [Appendix](#appendix)
       - [SAPIEN viewer controls](#sapien-viewer-controls)
+      - [Asset missing errors and MS2\_ASSET\_DIR environment variable](#asset-missing-errors-and-ms2_asset_dir-environment-variable)
+      - [Other troublewshooting tips](#other-troublewshooting-tips)
 
 
 ## Installation
 
+Prerequisites: CUDA version >=11.8
+
 Create an anaconda environment: 
 ```
-conda create -n real2sim python=3.9
+conda create -n real2sim python=3.9 (any version above 3.9 is fine)
 ```
 
 Clone this repo:
@@ -68,7 +72,7 @@ After unzipping, you'll see a "rt1new_77467904_000001120" directory when you ent
 Install Octo:
 ```
 cd {this_repo}/octo
-pip install --upgrade "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+pip install --upgrade "jax[cuda11_pip]==0.4.20" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html # or jax[cuda12_pip] if you have CUDA 12
 pip install -e .
 # Octo checkpoints are managed by huggingface, so you don't need to download them manually.
 ```
@@ -81,7 +85,9 @@ pip install git+https://github.com/nathanrooy/simulated-annealing
 
 ## Reproducing Real-to-Sim Evaluation Results for Google Robot and WidowX
 
+We have provided policy inference scripts in `scripts/` to reproduce our real-to-sim evaluation results. You can also use them as a reference to write new scripts.
 
+TODO: result 
 
 ## Adding New Real-to-Sim Evaluation Environments, Robots, and Policies
 
@@ -122,6 +128,8 @@ SAPIEN uses an axis convention of x forward, y left, z up.
 - If you have an object file opened in Blender, assuming that an object is modeled with y-forward and z-up convention (e.g., the longest side of object is along the +y axis and the shortest side is along the +z axis), you can export the object as `textured.dae` / `textured.glb` for the textured mesh and `collision.obj` for the collision mesh with `x forward, z up` as the output option in Blender. In this case, when you load the object in SAPIEN, the x-axis will become the longest side while the z aixs will become the shortest side. This is because the Blender axis convention is y forward, z up, while the SAPIEN axis convention is x forward, z up.
 
 - When modeling objects in Blender, it is recommended to clear its parents (`alt+p > clear parent`) and move the object to the origin (`object > set origin > geometry to origin`). Before exporting objects, set them to have a unit transformation `object > apply > all transforms`. When loading and modifying objects in Blender, first select the object, press `N` to toggle object property channel, set the object rotation to euler mode with all 0s, then start modifying the object, and export objects with the forementioned conventions.
+
+- For the collision mesh (`collision.obj`), you can further modify it by loading it in Blender and making it (locally) a convex hull (`edit mode > mesh > convex hull`) to reduce the number of vertices and reduce "slipping" behaviors during grasping. You can also use the "decimate" modifier to simplify the collision mesh (`modifier properties > add modifier > decimate > {input your setting and apply}`). For objects like cans, you can also make the bottom of the collision mesh flat (`edit mode > {select desired vertices} > press "s x/y/z 0"`) to reduce wobbly behaviors when the object is placed on a flat surface.
   
 </details>
 
@@ -167,17 +175,17 @@ You can export the `.glb` scenes from Blender. Pay attention to the axis convent
 - Press "pause" on the top left to pause the simulation. 
 - Press "g" to grab object; "g" + "x"/"y"/"z" to move object along x/y/z axis.
 
+#### Asset missing errors and MS2_ASSET_DIR environment variable
 
-
+If you are not running scripts under the `ManiSkill2_real2sim` directory, but you create a ManiSkill2 environment in the script, then some asset missing errors might be reported. In this case, please make sure this environment variable is set:
 
 ```
-Make mesh a (local) convex hull to reduce "slipping" behaviors
+export MS2_ASSET_DIR={path_to_ManiSkill2_real2sim}/data
 ```
 
+#### Other troublewshooting tips
 
-**Scripts**
-
-See `scripts/rt1_pick_coke_can_eval.sh`
+If you encounter out-of-gpu-memory error when running jax models (e.g., Octo), try `JAX_PLATFORM_NAME='cpu' python {script}`. However, ManiSkill2 environments require a GPU to run, so you cannot set `CUDA_VISIBLE_DEVICES=''`.
 
 
 

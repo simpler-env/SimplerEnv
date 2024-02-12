@@ -17,17 +17,26 @@ class OctoInference:
     def __init__(
         self,
         model_type="octo-base",
-        dataset_id='bridge_dataset',
         policy_setup='widowx_bridge',
-        image_size=256,
-        action_scale=1.0,
         horizon=2,
         pred_action_horizon=4,
         exec_horizon=1,
-        action_ensemble=True,
-        action_ensemble_temp=0.0,
+        image_size=256,
+        action_scale=1.0,
     ):
         os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+        if policy_setup == 'widowx_bridge':
+            dataset_id = 'bridge_dataset'
+            action_ensemble = True
+            action_ensemble_temp = 0.0
+        elif policy_setup == 'google_robot':
+            dataset_id = 'fractal20220817_data'
+            action_ensemble = False
+            action_ensemble_temp = 0.0
+        else:
+            raise NotImplementedError(f"Policy setup {policy_setup} not supported for octo models.")
+        self.policy_setup = policy_setup
+            
         if model_type in ['octo-base', 'octo-small']:
             # released huggingface octo models
             self.model_type = f"hf://rail-berkeley/{model_type}"
@@ -54,12 +63,12 @@ class OctoInference:
                 self.action_std = np.array([
                     0.00963721, 0.0135066, 0.01251861, 0.02806791, 0.03016905, 0.07632624, 1.0
                 ])
+            elif dataset_id == 'fractal20220817_data':
+                self.action_mean = np.array([ 0.00696389,  0.00627008, -0.01263256,  0.04330839, -0.00570499, 0.00089247, 0.])
+                self.action_std = np.array([0.06925472, 0.06019009, 0.07354742, 0.15605888, 0.1316399, 0.14593437, 1.])
             else:
                 raise NotImplementedError(f"{dataset_id} not supported yet for custom octo model checkpoints.")
             self.automatic_task_creation = False
-        
-        self.policy_setup = policy_setup
-        assert self.policy_setup in ['widowx_bridge'], f"Policy setup {self.policy_setup} not supported for octo models."
         
         self.image_size = image_size
         self.action_scale = action_scale
@@ -71,7 +80,10 @@ class OctoInference:
         
         self.task = None
         self.image_history = deque(maxlen=self.horizon)
-        self.action_ensembler = ActionEnsembler(self.pred_action_horizon, self.action_ensemble_temp)
+        if self.action_ensemble:
+            self.action_ensembler = ActionEnsembler(self.pred_action_horizon, self.action_ensemble_temp)
+        else:
+            self.action_ensembler = None
         self.num_image_history = 0
         self.time_step = 0
 
@@ -101,7 +113,8 @@ class OctoInference:
         else:
             self.task = self.tokenizer(task_description, **self.tokenizer_kwargs)
         self.image_history.clear()
-        self.action_ensembler.reset()
+        if self.action_ensemble:
+            self.action_ensembler.reset()
         self.num_image_history = 0
         self.time_step = 0
 
@@ -117,6 +130,7 @@ class OctoInference:
                 - 'gripper': np.ndarray of shape (1,), gripper action
                 - 'terminate_episode': np.ndarray of shape (1,), 1 if episode should be terminated, 0 otherwise
         """
+        assert image.dtype == np.uint8
         image = self._resize_image(image)
         self._add_image_to_history(image)
         images, pad_mask = self._obtain_image_history_and_mask()
@@ -142,6 +156,7 @@ class OctoInference:
             }
             norm_raw_actions = self.model.lc_ws2(input_observation)[:, :, :7]
         norm_raw_actions = norm_raw_actions[0]   # remove batch, becoming (action_pred_horizon, action_dim)
+        assert norm_raw_actions.shape == (self.pred_action_horizon, 7)
         
         if self.action_ensemble:
             norm_raw_actions = self.action_ensembler.ensemble_action(norm_raw_actions)
@@ -164,6 +179,19 @@ class OctoInference:
         action['rot_axangle'] = action_rotation_axangle * self.action_scale
         
         action['gripper'] = 2.0 * (raw_action['open_gripper'] > 0.5) - 1.0 # binarize gripper action to be -1 or 1
+        if self.policy_setup == 'google_robot':
+            # In google robot URDF, action 1 = close; -1 = open
+            action['gripper'] = -action['gripper']
+        
+        # if self.policy_setup == 'widowx_bridge':
+        #     action['gripper'] = 2.0 * (raw_action['open_gripper'] > 0.5) - 1.0 # binarize gripper action to be -1 or 1
+        # else:
+        #     # google robot 1 = close; -1 = open
+        #     action['gripper'] = -(2.0 * np.array(raw_action['open_gripper']) - 1.0)
+        #     if np.abs(action['gripper']) < 0.01:
+        #         # small action filtering
+        #         action['gripper'] = np.array([0.0])
+        
         action['terminate_episode'] = np.array([0.0])
         
         self.time_step += 1

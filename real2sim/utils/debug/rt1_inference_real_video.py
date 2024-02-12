@@ -14,12 +14,14 @@ import cv2
 from real2sim.rt1.rt1_model import RT1Inference
 from real2sim.utils.visualization import write_video
 from real2sim.utils.env.env_builder import build_maniskill2_env
+from sapien.core import Pose
 
 def main(input_video, impainting_img_path, instruction, 
          ckpt_path='rt_1_x_tf_trained_for_002272480_step',
          control_freq=3,
          control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner',
          policy_setup='google_robot',
+         robot='google_robot_static',
          init_tcp_pose_at_robot_base=None,
          init_robot_base_pos=None,
          overlay_camera='overhead_camera'):
@@ -33,7 +35,7 @@ def main(input_video, impainting_img_path, instruction,
         'GraspSingleDummy-v0',
         control_mode=control_mode,
         obs_mode='rgbd',
-        robot='google_robot_static',
+        robot=robot,
         sim_freq=540,
         max_episode_steps=60,
         control_freq=control_freq,
@@ -56,7 +58,7 @@ def main(input_video, impainting_img_path, instruction,
         cur_qpos[controller.joint_indices] = init_arm_qpos
         env.agent.reset(cur_qpos)
         
-    image = (env.get_obs()["image"][camera]['Color'][..., :3] * 255).astype(np.uint8)
+    image = (env.get_obs()["image"][overlay_camera]['Color'][..., :3] * 255).astype(np.uint8)
     images.append(image)
     truncated = False
 
@@ -105,6 +107,8 @@ def main(input_video, impainting_img_path, instruction,
 
 if __name__ == '__main__':
     os.environ['DISPLAY'] = ''
+    os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'] = 'false'
+    
     # mp4_path = 'ManiSkill2_real2sim/data/debug/rt1_real_vertical_coke_can_1.mp4'
     # impainting_img_path = 'ManiSkill2_real2sim/data/debug/rt1_real_vertical_coke_can_1_cleanup.png'
     mp4_path = None
@@ -132,7 +136,7 @@ if __name__ == '__main__':
     # main(input_video, impainting_img_path, instruction, ckpt_path, 
     #     control_freq=5,
     #     control_mode='arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos',
-    #     policy_setup='widowx_bridge',
+    #     policy_setup='widowx_bridge', robot='widowx',
     #     init_tcp_pose_at_robot_base=init_tcp_pose_at_robot_base,
     #     init_robot_base_pos=[0,0,1], # move the widowx robot in the sky to avoid collision w/ ground
     #     overlay_camera='3rd_view_camera_bridge'
