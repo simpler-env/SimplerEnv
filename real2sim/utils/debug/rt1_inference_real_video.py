@@ -106,8 +106,17 @@ def main(input_video, impainting_img_path, instruction,
 
 
 if __name__ == '__main__':
+    """
+    MS2_ASSET_DIR=./ManiSkill2_real2sim/data python real2sim/utils/debug/rt1_inference_real_video.py
+    """
+    
     os.environ['DISPLAY'] = ''
     os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'] = 'false'
+    gpus = tf.config.list_physical_devices('GPU')
+    if len(gpus) > 0:
+        tf.config.set_logical_device_configuration(
+            gpus[0],
+            [tf.config.LogicalDeviceConfiguration(memory_limit=4096)])
     
     # mp4_path = 'ManiSkill2_real2sim/data/debug/rt1_real_vertical_coke_can_1.mp4'
     # impainting_img_path = 'ManiSkill2_real2sim/data/debug/rt1_real_vertical_coke_can_1_cleanup.png'

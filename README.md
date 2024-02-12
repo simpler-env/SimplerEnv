@@ -7,10 +7,10 @@
     - [Adding New Robots](#adding-new-robots)
     - [Adding New Environments](#adding-new-environments)
     - [Adding New Policies](#adding-new-policies)
-    - [Appendix](#appendix)
+  - [Appendix](#appendix)
       - [SAPIEN viewer controls](#sapien-viewer-controls)
       - [Asset missing errors and MS2\_ASSET\_DIR environment variable](#asset-missing-errors-and-ms2_asset_dir-environment-variable)
-      - [Other troublewshooting tips](#other-troublewshooting-tips)
+      - [Other troubleshooting tips](#other-troubleshooting-tips)
 
 
 ## Installation
@@ -133,7 +133,7 @@ SAPIEN uses an axis convention of x forward, y left, z up.
   
 </details>
 
-1. Add custom simulation scene backgrounds to `ManiSkill2_real2sim/data/hab2_bench_assets/stages`.
+5. Add custom simulation scene backgrounds to `ManiSkill2_real2sim/data/hab2_bench_assets/stages`.
    - In our environments, scene backgrounds are loaded in the `_load_arena_helper` function in `ManiSkill2_real2sim/mani_skill2/envs/custom_scenes/base_env.py`. The existing scenes use the Habitat convention (y-axis up).
 
 <details>
@@ -164,7 +164,7 @@ You can export the `.glb` scenes from Blender. Pay attention to the axis convent
 
 
 
-### Appendix
+## Appendix
 
 #### SAPIEN viewer controls
 
@@ -183,7 +183,7 @@ If you are not running scripts under the `ManiSkill2_real2sim` directory, but yo
 export MS2_ASSET_DIR={path_to_ManiSkill2_real2sim}/data
 ```
 
-#### Other troublewshooting tips
+#### Other troubleshooting tips
 
 If you encounter out-of-gpu-memory error when running jax models (e.g., Octo), try `JAX_PLATFORM_NAME='cpu' python {script}`. However, ManiSkill2 environments require a GPU to run, so you cannot set `CUDA_VISIBLE_DEVICES=''`.
 

@@ -154,15 +154,16 @@ class RT1Inference:
     def step(self, image):
         """
         Input:
-            image: np.ndarray of shape (H, W, 3)
+            image: np.ndarray of shape (H, W, 3), uint8
         Output:
-            raw_action: dict; raw policy action output before sending into maniskill2 environment
+            raw_action: dict; raw policy action output
             action: dict; processed action to be sent to the maniskill2 environment, with the following keys:
                 - 'world_vector': np.ndarray of shape (3,), xyz translation of robot end-effector
                 - 'rot_axangle': np.ndarray of shape (3,), axis-angle representation of end-effector rotation
                 - 'gripper': np.ndarray of shape (1,), gripper action
                 - 'terminate_episode': np.ndarray of shape (1,), 1 if episode should be terminated, 0 otherwise
         """
+        assert image.dtype == np.uint8
         image = self._resize_image(image)
         self.observation["image"] = image
         self.observation["natural_language_embedding"] = self.task_description_embedding

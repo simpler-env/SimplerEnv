@@ -33,6 +33,7 @@ class OctoInference:
             dataset_id = 'fractal20220817_data'
             action_ensemble = False
             action_ensemble_temp = 0.0
+            # TODO: sticky gripper action
         else:
             raise NotImplementedError(f"Policy setup {policy_setup} not supported for octo models.")
         self.policy_setup = policy_setup
@@ -121,9 +122,9 @@ class OctoInference:
     def step(self, image, *args, **kwargs):
         """
         Input:
-            image: np.ndarray of shape (H, W, 3)
+            image: np.ndarray of shape (H, W, 3), uint8
         Output:
-            raw_action: dict; raw policy action output before sending into maniskill2 environment
+            raw_action: dict; raw policy action output
             action: dict; processed action to be sent to the maniskill2 environment, with the following keys:
                 - 'world_vector': np.ndarray of shape (3,), xyz translation of robot end-effector
                 - 'rot_axangle': np.ndarray of shape (3,), axis-angle representation of end-effector rotation

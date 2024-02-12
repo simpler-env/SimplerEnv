@@ -7,6 +7,7 @@ from transforms3d.euler import euler2axangle, euler2quat, quat2euler
 from sapien.core import Pose
 
 from real2sim.rt1.rt1_model import RT1Inference
+from real2sim.octo.octo_server_model import OctoServerInference
 try:
     from real2sim.octo.octo_model import OctoInference
 except ImportError as e:
@@ -187,18 +188,17 @@ if __name__ == '__main__':
         "is allowed.",
     )
     parser.add_argument("--tmp-exp", action='store_true', help="debug flag")
+    parser.add_argument("--tf-memory-limit", type=int, default=4096, help="Tensorflow memory limit")
     
     args = parser.parse_args()
     
     os.environ['DISPLAY'] = ''
     os.environ['XLA_PYTHON_CLIENT_PREALLOCATE']='false'
-    
-    if args.policy_model == 'rt1':
-        gpus = tf.config.list_physical_devices('GPU')
-        if len(gpus) > 0:
-            tf.config.set_logical_device_configuration(
-                gpus[0],
-                [tf.config.LogicalDeviceConfiguration(memory_limit=4096)])
+    gpus = tf.config.list_physical_devices('GPU')
+    if len(gpus) > 0:
+        tf.config.set_logical_device_configuration(
+            gpus[0],
+            [tf.config.LogicalDeviceConfiguration(memory_limit=args.tf_memory_limit)])
       
     # env args
     control_mode = get_robot_control_mode(args.robot, args.policy_model)
@@ -222,8 +222,12 @@ if __name__ == '__main__':
                              policy_setup=args.policy_setup)
     elif 'octo' in args.policy_model:
         args.ckpt_path = args.policy_model
-        model = OctoInference(model_type=args.policy_model, action_scale=args.action_scale,
-                              policy_setup=args.policy_setup)
+        if 'server' in args.policy_model:
+            model = OctoServerInference(model_type=args.policy_model, action_scale=args.action_scale,
+                                       policy_setup=args.policy_setup)
+        else:
+            model = OctoInference(model_type=args.policy_model, action_scale=args.action_scale,
+                                policy_setup=args.policy_setup)
     else:
         raise NotImplementedError()
     

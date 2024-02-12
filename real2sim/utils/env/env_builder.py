@@ -28,4 +28,5 @@ def get_robot_control_mode(robot_name, policy_name):
         # control_mode = 'arm_pd_ee_delta_pose_align2_gripper_pd_joint_pos'
     else:
         raise NotImplementedError()
+    print("Control mode: ", control_mode)
     return control_mode
