@@ -7,6 +7,7 @@
     - [Adding New Robots](#adding-new-robots)
     - [Adding New Environments](#adding-new-environments)
     - [Adding New Policies](#adding-new-policies)
+    - [Debugging](#debugging)
   - [Appendix](#appendix)
       - [SAPIEN viewer controls](#sapien-viewer-controls)
       - [Asset missing errors and MS2\_ASSET\_DIR environment variable](#asset-missing-errors-and-ms2_asset_dir-environment-variable)
@@ -71,9 +72,12 @@ After unzipping, you'll see a "rt1new_77467904_000001120" directory when you ent
 
 Install Octo:
 ```
-cd {this_repo}/octo
+cd {this_repo}
+git clone https://github.com/octo-models/octo/
+cd octo
 pip install --upgrade "jax[cuda11_pip]==0.4.20" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html # or jax[cuda12_pip] if you have CUDA 12
-pip install -e .
+pip install -e . 
+# You don't need to run "pip install -r requirements.txt" inside the octo repo; the package dependencies are already handled in the Real2Sim repo
 # Octo checkpoints are managed by huggingface, so you don't need to download them manually.
 ```
 
@@ -87,7 +91,7 @@ pip install git+https://github.com/nathanrooy/simulated-annealing
 
 We have provided policy inference scripts in `scripts/` to reproduce our real-to-sim evaluation results. You can also use them as a reference to write new scripts.
 
-TODO: result 
+TODO: result processing
 
 ## Adding New Real-to-Sim Evaluation Environments, Robots, and Policies
 
@@ -160,6 +164,9 @@ You can export the `.glb` scenes from Blender. Pay attention to the axis convent
 
 
 
+### Debugging
+
+TODO
 
 
 
