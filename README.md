@@ -109,6 +109,12 @@ If you are adding a new robot, perform the following steps:
      - Other relevant functions are the `step_action` function in `ManiSkill2_real2sim/mani_skill2/envs/sapien_env.py` and the `set_action`, `before_simulation_step` functions in `ManiSkill2_real2sim/mani_skill2/agents/base_agent.py`.
    - Add dummy stiffness and damping controller parameters; we will do system identification later.
    - Add cameras to the robot; camera poses are with respect to the link on the robot specified by `actor_uid`. In SAPIEN, camera pose follows ROS convention, i.e., x forward, y left, z up.
+     - To minimize the real-to-sim evaluation gap, it is **highly** recommended to calibrate your cameras and input the intrinsic parameters in the robot agent implementation. We found that current policies are quite brittle to camera calibration errors during sim eval.
+
+<details>
+<summary>**Notes on camera calibration**: </summary>
+Besides using regular camera calibration approaches, you can also use tools like [fSpy](https://github.com/stuffmatic/fSpy). In this case, aim your camera at a large table such that the entire table surface can be seen, and also ensure that 2 vertical wall lines can be seen. Then, input 3 pairs of lines (2 pairs of table lines + 1 pair of wall line) into fSpy to obtain intrinsic parameters for the camera. For an illustrative example, see `images/fSpy_calibration_example.png`.
+</details>
 
 3. Perform system identification for the robot.
    - First, create a system identification dataset. If you have an existing tensorflow dataset, you can create a subset of trajectories for system identification by modifying `tools/sysid/prepare_sysid_dataset.py`. In other cases, you can create a system identification subset by following the saved pickle file format in `tools/sysid/prepare_sysid_dataset.py` and having the necessary keys in each step of a trajectory.
