@@ -34,8 +34,12 @@ def demo(fix_root_link, balance_passive_force):
     print(robot.get_qlimits())
 
     # Set initial joint positions
-    qpos = np.array([-0.00153398,  0.04448544,  0.21629129, -0.00306796,  1.36524296, 0.,
-                     0.015, 0.015])
+    qpos = np.array([-0.01840777,  0.0398835,   0.22242722,  -0.00460194,  1.36524296,  0.00153398, 
+                     0.037, 0.037])
+    # qpos = np.array([-0.00153398,  0.04448544,  0.21629129, -0.00306796,  1.36524296, 0.,
+    #                  0.015, 0.015])
+    # qpos = np.array([-0.13192235, -0.76238847,  0.44485444, -0.01994175,  1.7564081,  -0.15953401,
+    #                  0.015, 0.015])
     robot.set_qpos(qpos)
     for joint in robot.get_active_joints():
         joint.set_drive_property(stiffness=1e5, damping=1e3)

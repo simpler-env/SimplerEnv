@@ -29,11 +29,12 @@ class OctoInference:
             dataset_id = 'bridge_dataset'
             action_ensemble = True
             action_ensemble_temp = 0.0
+            self.sticky_gripper_num_repeat = 1
         elif policy_setup == 'google_robot':
             dataset_id = 'fractal20220817_data'
-            action_ensemble = False
+            action_ensemble = True
             action_ensemble_temp = 0.0
-            # TODO: sticky gripper action
+            self.sticky_gripper_num_repeat = 15
         else:
             raise NotImplementedError(f"Policy setup {policy_setup} not supported for octo models.")
         self.policy_setup = policy_setup
@@ -78,6 +79,16 @@ class OctoInference:
         self.exec_horizon = exec_horizon
         self.action_ensemble = action_ensemble
         self.action_ensemble_temp = action_ensemble_temp
+        self.rng = jax.random.PRNGKey(0)
+        for _ in range(5):
+            # to match octo server's inference seeds
+            self.rng, _key = jax.random.split(self.rng) # each shape [2,]
+        
+        self.sticky_action_is_on = False
+        self.gripper_action_repeat = 0
+        self.sticky_gripper_action = 0.0
+        # self.gripper_is_closed = False
+        self.previous_gripper_action = None
         
         self.task = None
         self.image_history = deque(maxlen=self.horizon)
@@ -96,16 +107,20 @@ class OctoInference:
         return image
         
     def _add_image_to_history(self, image):
-        if self.num_image_history == 0:
-            self.image_history.extend([image] * self.horizon)
-        else:
-            self.image_history.append(image)
+        self.image_history.append(image)
+        # if self.num_image_history == 0:
+        #     self.image_history.extend([image] * self.horizon)
+        # else:
+        #     self.image_history.append(image)
         self.num_image_history = min(self.num_image_history + 1, self.horizon)
         
     def _obtain_image_history_and_mask(self):
         images = np.stack(self.image_history, axis=0)
-        pad_mask = np.ones(self.horizon, dtype=bool)
-        pad_mask[:self.horizon - self.num_image_history] = 0
+        horizon = len(self.image_history)
+        pad_mask = np.ones(horizon, dtype=np.float64) # note: this is not np.bool
+        pad_mask[:horizon - min(horizon, self.num_image_history)] = 0
+        # pad_mask = np.ones(self.horizon, dtype=np.float64) # note: this is not np.bool
+        # pad_mask[:self.horizon - self.num_image_history] = 0
         return images, pad_mask
         
     def reset(self, task_description):
@@ -118,6 +133,12 @@ class OctoInference:
             self.action_ensembler.reset()
         self.num_image_history = 0
         self.time_step = 0
+        
+        self.sticky_action_is_on = False
+        self.gripper_action_repeat = 0
+        self.sticky_gripper_action = 0.0
+        # self.gripper_is_closed = False
+        self.previous_gripper_action = None
 
     def step(self, image, *args, **kwargs):
         """
@@ -137,12 +158,14 @@ class OctoInference:
         images, pad_mask = self._obtain_image_history_and_mask()
         images, pad_mask = images[None], pad_mask[None]
         
+        self.rng, key = jax.random.split(self.rng) # each shape [2,] # needs to use a different rng key for each model forward step; this has a large impact on model performance
+        print("octo local rng", self.rng, key)
         if self.automatic_task_creation:
             input_observation = {
                 'image_primary': images,
                 'pad_mask': pad_mask
             }
-            norm_raw_actions = self.model.sample_actions(input_observation, self.task, rng=jax.random.PRNGKey(0))
+            norm_raw_actions = self.model.sample_actions(input_observation, self.task, rng=key)
         else:
             input_observation = {
                 'image_primary': images,
@@ -153,7 +176,7 @@ class OctoInference:
                 'tasks': {
                     'language_instruction': self.task
                 },
-                'rng': np.zeros((4,), dtype=np.uint32),
+                'rng': np.concatenate([self.rng, key])
             }
             norm_raw_actions = self.model.lc_ws2(input_observation)[:, :, :7]
         norm_raw_actions = norm_raw_actions[0]   # remove batch, becoming (action_pred_horizon, action_dim)
@@ -179,19 +202,53 @@ class OctoInference:
         action_rotation_axangle = action_rotation_ax * action_rotation_angle
         action['rot_axangle'] = action_rotation_axangle * self.action_scale
         
-        action['gripper'] = 2.0 * (raw_action['open_gripper'] > 0.5) - 1.0 # binarize gripper action to be -1 or 1
         if self.policy_setup == 'google_robot':
-            # In google robot URDF, action 1 = close; -1 = open
-            action['gripper'] = -action['gripper']
+            current_gripper_action = raw_action['open_gripper']
+            
+            # gripper_close_commanded = (current_gripper_action < 0.5)
+            # relative_gripper_action = 1 if gripper_close_commanded else -1 # google robot 1 = close; -1 = open
+
+            # # if action represents a change in gripper state and gripper is not already sticky, trigger sticky gripper
+            # if gripper_close_commanded != self.gripper_is_closed and not self.sticky_action_is_on:
+            #     self.sticky_action_is_on = True
+            #     self.sticky_gripper_action = relative_gripper_action
+
+            # if self.sticky_action_is_on:
+            #     self.gripper_action_repeat += 1
+            #     relative_gripper_action = self.sticky_gripper_action
+
+            # if self.gripper_action_repeat == self.sticky_gripper_num_repeat:
+            #     self.gripper_is_closed = (self.sticky_gripper_action > 0)
+            #     self.sticky_action_is_on = False
+            #     self.gripper_action_repeat = 0
+            
+            # action['gripper'] = np.array([relative_gripper_action])
+            
+            # alternative implementation
+            if self.previous_gripper_action is None:
+                relative_gripper_action = np.array([0])
+            else:
+                relative_gripper_action = self.previous_gripper_action - current_gripper_action # google robot 1 = close; -1 = open
+            self.previous_gripper_action = current_gripper_action
         
-        # if self.policy_setup == 'widowx_bridge':
-        #     action['gripper'] = 2.0 * (raw_action['open_gripper'] > 0.5) - 1.0 # binarize gripper action to be -1 or 1
-        # else:
-        #     # google robot 1 = close; -1 = open
-        #     action['gripper'] = -(2.0 * np.array(raw_action['open_gripper']) - 1.0)
-        #     if np.abs(action['gripper']) < 0.01:
-        #         # small action filtering
-        #         action['gripper'] = np.array([0.0])
+            if np.abs(relative_gripper_action) > 0.5 and self.sticky_action_is_on is False:
+                self.sticky_action_is_on = True
+                self.sticky_gripper_action = relative_gripper_action
+
+            if self.sticky_action_is_on:
+                self.gripper_action_repeat += 1
+                relative_gripper_action = self.sticky_gripper_action
+
+            if self.gripper_action_repeat == self.sticky_gripper_num_repeat:
+                self.sticky_action_is_on = False
+                self.gripper_action_repeat = 0
+                self.sticky_gripper_action = 0.0
+        
+            action['gripper'] = relative_gripper_action
+            
+        elif self.policy_setup == 'widowx_bridge':
+            action['gripper'] = 2.0 * (raw_action['open_gripper'] > 0.5) - 1.0 # binarize gripper action to 1 (open) and -1 (close)
+            # self.gripper_is_closed = (action['gripper'] < 0.0)
         
         action['terminate_episode'] = np.array([0.0])
         
@@ -201,7 +258,7 @@ class OctoInference:
     
     def visualize_epoch(self, predicted_raw_actions, images, save_path):
         images = [self._resize_image(image) for image in images]
-        ACTION_DIM_LABELS = ['x', 'y', 'z', 'yaw', 'pitch', 'roll', 'grasp']
+        ACTION_DIM_LABELS = ['x', 'y', 'z', 'roll', 'pitch', 'yaw', 'grasp']
 
         img_strip = np.concatenate(np.array(images[::3]), axis=1)
 

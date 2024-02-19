@@ -24,10 +24,12 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
          obj_init_x=None, obj_init_y=None, obj_episode_id=None,
          additional_env_build_kwargs=None,
          rgb_overlay_path=None,
+         obs_camera_name=None,
          control_freq=3, sim_freq=513, max_episode_steps=80,
          instruction=None,
-         action_scale=1.0, enable_raytracing=False,
-         additional_env_save_tags=None):
+         action_scale=1.0, 
+         enable_raytracing=False,
+         additional_env_save_tags=None,):
     
     if additional_env_build_kwargs is None:
         additional_env_build_kwargs = {}
@@ -79,7 +81,7 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
     else:
         task_description = get_maniskill2_env_instruction(env, env_name)
     # Initialize logging
-    image = get_image_from_maniskill2_obs_dict(obs, robot_name)
+    image = get_image_from_maniskill2_obs_dict(obs, robot_name, camera_name=obs_camera_name)
     images = [image]
     predicted_actions = []
     predicted_terminated, done, truncated = False, False, False
@@ -108,7 +110,7 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
         if predicted_terminated and info['success']:
             success = "success"
         
-        image = get_image_from_maniskill2_obs_dict(obs, robot_name)
+        image = get_image_from_maniskill2_obs_dict(obs, robot_name, camera_name=obs_camera_name)
         images.append(image)
         timestep += 1
         print(info)
@@ -164,6 +166,7 @@ if __name__ == '__main__':
     parser.add_argument('--scene-name', type=str, default='google_pick_coke_can_1_v4')
     parser.add_argument('--enable-raytracing', action='store_true')
     parser.add_argument('--robot', type=str, default='google_robot_static')
+    parser.add_argument('--obs-camera-name', type=str, default=None, help='Obtain image observation from this camera for policy input. None = default')
     parser.add_argument('--action-scale', type=float, default=1.0)
     
     parser.add_argument('--control-freq', type=int, default=3)
@@ -214,6 +217,11 @@ if __name__ == '__main__':
             for y in parse_range_tuple(args.robot_init_rot_rpy_range[6:]):
                 robot_init_quats.append((Pose(q=euler2quat(r, p, y)) * Pose(q=args.robot_init_rot_quat_center)).q)
     additional_env_build_kwargs = args.additional_env_build_kwargs
+    if args.obs_camera_name is not None:
+        if args.additional_env_save_tags is None:
+            args.additional_env_save_tags = f'obs_camera_{args.obs_camera_name}'
+        else:
+            args.additional_env_save_tags = args.additional_env_save_tags + f'_obs_camera_{args.obs_camera_name}'
     
     # policy
     if args.policy_model == 'rt1':
@@ -236,27 +244,25 @@ if __name__ == '__main__':
         for robot_init_y in robot_init_ys:
             for robot_init_quat in robot_init_quats:
                 kwargs = dict(
+                    model=model, 
+                    ckpt_path=args.ckpt_path,
+                    robot_name=args.robot, env_name=args.env_name, scene_name=args.scene_name,
+                    robot_init_x=robot_init_x, robot_init_y=robot_init_y, robot_init_quat=robot_init_quat,
+                    control_mode=control_mode,
                     additional_env_build_kwargs=additional_env_build_kwargs,
                     rgb_overlay_path=args.rgb_overlay_path,
                     control_freq=control_freq, sim_freq=sim_freq, max_episode_steps=max_episode_steps,
                     action_scale=args.action_scale, 
                     enable_raytracing=args.enable_raytracing,
-                    additional_env_save_tags=args.additional_env_save_tags
+                    additional_env_save_tags=args.additional_env_save_tags,
+                    obs_camera_name=args.obs_camera_name,
                 )
                 if args.obj_variation_mode == 'xy':
                     for obj_init_x in obj_init_xs:
                         for obj_init_y in obj_init_ys:
-                            main(model, args.ckpt_path, args.robot, args.env_name, args.scene_name, 
-                                robot_init_x, robot_init_y, robot_init_quat, 
-                                control_mode,
-                                obj_init_x=obj_init_x, obj_init_y=obj_init_y,
-                                **kwargs)
+                            main(obj_init_x=obj_init_x, obj_init_y=obj_init_y, **kwargs)
                 elif args.obj_variation_mode == 'episode':
                     for obj_episode_id in range(args.obj_episode_range[0], args.obj_episode_range[1]):
-                        main(model, args.ckpt_path, args.robot, args.env_name, args.scene_name, 
-                            robot_init_x, robot_init_y, robot_init_quat, 
-                            control_mode,
-                            obj_episode_id=obj_episode_id,
-                            **kwargs)
+                        main(obj_episode_id=obj_episode_id, **kwargs)
                 else:
                     raise NotImplementedError()

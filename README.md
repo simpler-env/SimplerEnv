@@ -12,6 +12,7 @@
       - [SAPIEN viewer controls](#sapien-viewer-controls)
       - [Asset missing errors and MS2\_ASSET\_DIR environment variable](#asset-missing-errors-and-ms2_asset_dir-environment-variable)
       - [Other troubleshooting tips](#other-troubleshooting-tips)
+      - [More notes](#more-notes)
 
 
 ## Installation
@@ -114,9 +115,11 @@ If you are adding a new robot, perform the following steps:
 <details>
 <summary>**Notes on camera calibration**: </summary>
 Besides using regular camera calibration approaches, you can also use tools like [fSpy](https://github.com/stuffmatic/fSpy). In this case, aim your camera at a large table such that the entire table surface can be seen, and also ensure that 2 vertical wall lines can be seen. Then, input 3 pairs of lines (2 pairs of table lines + 1 pair of wall line) into fSpy to obtain intrinsic parameters for the camera. For an illustrative example, see `images/fSpy_calibration_example.png`.
+
+Additionally, if you already know the robot joint positions and the camera extrinsics for a particular real-world observation frame, you can use `ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py` to overlay a real image onto the simulation image and manually tune the intrinsic parameters such that the gripper in the real image aligns with the gripper in the simulation image.
 </details>
 
-3. Perform system identification for the robot.
+1. Perform system identification for the robot.
    - First, create a system identification dataset. If you have an existing tensorflow dataset, you can create a subset of trajectories for system identification by modifying `tools/sysid/prepare_sysid_dataset.py`. In other cases, you can create a system identification subset by following the saved pickle file format in `tools/sysid/prepare_sysid_dataset.py` and having the necessary keys in each step of a trajectory.
    - Next, perform system identification using the dataset. You can modify the existing system identification script `tools/sysid/sysid.py`. The script uses simulated annealing algorithm to find better stiffness and damping parameters from the initialization parameters. Examine the system identification logs using `tools/sysid/analyze_sysid_results.py`, and use the best parameters to initialize the next round of system identification with reduced parameter search range. After multiple rounds of system identification, you can then use the best parameters to update the robot agent implementation.
 
@@ -199,6 +202,10 @@ export MS2_ASSET_DIR={path_to_ManiSkill2_real2sim}/data
 #### Other troubleshooting tips
 
 If you encounter out-of-gpu-memory error when running jax models (e.g., Octo), try `JAX_PLATFORM_NAME='cpu' python {script}`. However, ManiSkill2 environments require a GPU to run, so you cannot set `CUDA_VISIBLE_DEVICES=''`.
+
+#### More notes
+
+- The real-world Google Robot controller is non-blocking. For simplicity, currently we implement 3hz fixed frequency control (following RT-1 paper) in simulation.
 
 
 

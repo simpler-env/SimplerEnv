@@ -78,9 +78,11 @@ class OctoServerInference:
     ):
         if policy_setup == 'widowx_bridge':
             self.sticky_gripper_num_repeat = 1
+            self.dataset_name = "bridge_dataset"
             raise NotImplementedError("Action normalization might be wrong, TODO")
         elif policy_setup == 'google_robot':
             self.sticky_gripper_num_repeat = 15
+            self.dataset_name = "fractal20220817_data"
         else:
             raise NotImplementedError(f"Policy setup {policy_setup} not supported for octo models.")
         self.policy_setup = policy_setup
@@ -88,6 +90,7 @@ class OctoServerInference:
         self.sticky_action_is_on = False
         self.gripper_action_repeat = 0
         self.sticky_gripper_action = 0.0
+        # self.gripper_is_closed = False
         self.previous_gripper_action = None
             
         self.image_size = image_size
@@ -108,13 +111,14 @@ class OctoServerInference:
         self.sticky_action_is_on = False
         self.gripper_action_repeat = 0
         self.sticky_gripper_action = 0.0
+        # self.gripper_is_closed = False
         self.previous_gripper_action = None
         _ = requests.post(urllib.parse.urljoin("http://ari.bair.berkeley.edu:8000", "reset"),)
         time.sleep(1.0)
 
-    @staticmethod
-    def _get_fake_pay_load(image_primary, text, modality='l'):
+    def _get_fake_pay_load(self, image_primary, text, modality='l'):
         payload = {
+            "dataset_name": self.dataset_name,
             "observation": {
                 "image_primary": image_primary,
             },
@@ -167,6 +171,27 @@ class OctoServerInference:
         
         if self.policy_setup == 'google_robot':
             current_gripper_action = raw_action['open_gripper']
+            
+            # gripper_close_commanded = (current_gripper_action < 0.5)
+            # relative_gripper_action = 1 if gripper_close_commanded else -1 # google robot 1 = close; -1 = open
+
+            # # if action represents a change in gripper state and gripper is not already sticky, trigger sticky gripper
+            # if gripper_close_commanded != self.gripper_is_closed and not self.sticky_action_is_on:
+            #     self.sticky_action_is_on = True
+            #     self.sticky_gripper_action = relative_gripper_action
+
+            # if self.sticky_action_is_on:
+            #     self.gripper_action_repeat += 1
+            #     relative_gripper_action = self.sticky_gripper_action
+
+            # if self.gripper_action_repeat == self.sticky_gripper_num_repeat:
+            #     self.gripper_is_closed = (self.sticky_gripper_action > 0)
+            #     self.sticky_action_is_on = False
+            #     self.gripper_action_repeat = 0
+            
+            # action['gripper'] = np.array([relative_gripper_action])
+            
+            # alternative implementation
             if self.previous_gripper_action is None:
                 relative_gripper_action = np.array([0])
             else:
@@ -187,8 +212,10 @@ class OctoServerInference:
                 self.sticky_gripper_action = 0.0
         
             action['gripper'] = relative_gripper_action
+            
         elif self.policy_setup == 'widowx_bridge':
             action['gripper'] = 2.0 * (raw_action['open_gripper'] > 0.5) - 1.0 # binarize gripper action to 1 (open) and -1 (close)
+            # self.gripper_is_closed = (action['gripper'] < 0.0)
         
         action['terminate_episode'] = np.array([0.0])
         
