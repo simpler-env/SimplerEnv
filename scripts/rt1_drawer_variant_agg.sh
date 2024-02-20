@@ -1,3 +1,5 @@
+# shader_dir=rt means that we turn on ray-tracing rendering; this is quite crucial for the open / close drawer task
+
 export MS2_ASSET_DIR=./ManiSkill2_real2sim/data
 
 declare -a ckpt_paths=(

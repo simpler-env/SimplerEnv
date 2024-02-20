@@ -1,8 +1,8 @@
 """
-Given an impainting image, 
-query the Octo model to predict actions and visualize the predicted actions in the environment,
-where the policy input is the impainting image plus the robot arm rendered in it.
-Another use: If a video is given, the video frames will be used as the input to the Octo model.
+Uses:
+1. Given a static (impainting) image (with robot arm removed), query the Octo model to predict actions and visualize them in the environment,
+    where the policy input is the impainting image plus the robot arm rendered in it.
+2. Given a video, feed the video frames as input to the Octo model, and visualize the resulting actions in the environment.
 """
 
 import numpy as np
@@ -11,6 +11,7 @@ import mediapy as media
 import tensorflow as tf
 
 from real2sim.octo.octo_model import OctoInference
+from real2sim.octo.octo_server_model import OctoServerInference
 from real2sim.utils.visualization import write_video
 from real2sim.utils.env.env_builder import build_maniskill2_env
 from sapien.core import Pose
@@ -18,8 +19,11 @@ from sapien.core import Pose
 def main(input_video, impainting_img_path, instruction,
          gt_tcp_pose_at_robot_base=None, camera='3rd_view_camera',
          model_type='octo-base', policy_setup='widowx_bridge', robot='widowx',
-         control_freq=5,
-         control_mode='arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos'):
+         control_freq=5, max_episode_steps=90,
+         control_mode='arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos',
+         save_root='./debug_logs/',
+         save_name='debug_octo_inference',
+         **kwargs):
     
     # Create environment
     env = build_maniskill2_env(
@@ -28,17 +32,20 @@ def main(input_video, impainting_img_path, instruction,
         obs_mode='rgbd',
         robot=robot,
         sim_freq=500,
-        max_episode_steps=90,
+        max_episode_steps=max_episode_steps,
         control_freq=control_freq,
         camera_cfgs={"add_segmentation": True},
         rgb_overlay_path=impainting_img_path,
         rgb_overlay_cameras=[camera],
+        **kwargs
     )
     print(instruction)
     
     # Reset and initialize environment
     predicted_actions = []
     images = []
+    qpos_arr = []
+    qpos_arr.append(env.agent.robot.get_qpos())
     
     obs, _ = env.reset()
     
@@ -53,7 +60,11 @@ def main(input_video, impainting_img_path, instruction,
     image = (env.get_obs()["image"][camera]['Color'][..., :3] * 255).astype(np.uint8)
     images.append(image)
 
-    octo_model = OctoInference(model_type, policy_setup=policy_setup, action_scale=1.0)
+    if 'server' in model_type:
+        octo_model = OctoServerInference(model_type, policy_setup=policy_setup, action_scale=1.0)
+    else:
+        octo_model = OctoInference(model_type, policy_setup=policy_setup, action_scale=1.0)
+    
     # Reset Octo model
     octo_model.reset(instruction)
 
@@ -82,21 +93,34 @@ def main(input_video, impainting_img_path, instruction,
             )
         )
         
+        # debug
+        # controller = env.agent.controller.controllers['arm']
+        # cur_qpos = env.agent.robot.get_qpos()
+        # cur_qpos[controller.joint_indices] = env.agent.controller.controllers['arm']._target_qpos
+        # env.agent.reset(cur_qpos)
+        
         image = obs['image'][camera]['rgb']
         images.append(image)
+        qpos_arr.append(env.agent.robot.get_qpos())
         timestep += 1
 
-    octo_model.visualize_epoch(predicted_actions, images, save_path='debug_logs/debug_octo_inference.png')
     
     if input_video is not None:
         for i in range(len(images)):
+            images[i] = cv2.resize(images[i], (input_video[i].shape[1], input_video[i].shape[0]))
             images[i] = np.concatenate(
-                [cv2.resize(images[i], (input_video[i].shape[1], input_video[i].shape[0])), 
+                [images[i] if impainting_img_path is not None else np.array(images[i] * 0.7 + input_video[i] * 0.3).astype(np.uint8), 
                 input_video[i]], 
                 axis=1
             )
-    video_path = f'debug_logs/debug_octo_inference.mp4'
+
+    os.makedirs(f'{save_root}', exist_ok=True)        
+    os.makedirs(f'{save_root}/save_qpos', exist_ok=True)
+    
+    octo_model.visualize_epoch(predicted_actions, images, save_path=f'{save_root}/{save_name}.png')
+    video_path = f'{save_root}/{save_name}.mp4'
     write_video(video_path, images, fps=5)
+    np.save(f'{save_root}/save_qpos/{save_name}_qpos.npy', np.array(qpos_arr))
 
 
 if __name__ == '__main__':
@@ -110,21 +134,34 @@ if __name__ == '__main__':
     if len(gpus) > 0:
         tf.config.set_logical_device_configuration(
             gpus[0],
-            [tf.config.LogicalDeviceConfiguration(memory_limit=4096)])
+            [tf.config.LogicalDeviceConfiguration(memory_limit=3072)])
     
     mp4_path = None
-    # impainting_img_path = 'ManiSkill2_real2sim/data/debug/bridge_real_stackcube_2.png'
-    # instruction = 'stack the green block on the yellow block'
-    # gt_tcp_pose_at_robot_base = None
-    # camera = '3rd_view_camera'
-    mp4_path = '/home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/Octo_HF_Small_SanDiego_feb1/2-01-24/2024-02-01_15-52-27_hf-small_processed.mp4'
-    impainting_img_path = None
+    impainting_img_path = 'ManiSkill2_real2sim/data/debug/bridge_real_stackcube_2.png'
     instruction = 'stack the green block on the yellow block'
     gt_tcp_pose_at_robot_base = None
     camera = '3rd_view_camera'
     
+    # mp4_path = 'ManiSkill2_real2sim/data/Octo_HF_Small_SanDiego_feb1/2-01-24/2024-02-01_15-52-27_hf-small_processed.mp4'
+    # impainting_img_path = None
+    # instruction = 'stack the green block on the yellow block'
+    # gt_tcp_pose_at_robot_base = None
+    # camera = '3rd_view_camera'
+    
     # impainting_img_path = 'ManiSkill2_real2sim/data/debug/rt1_real_standing_coke_can_1_cleanup.png'
     # impainting_img_path = 'ManiSkill2_real2sim/data/real_impainting/pick_coke_can_real_misc/google_horizontal_coke_can_b0_cleanup.png'
+    # instruction = 'pick coke can'
+    # gt_tcp_pose_at_robot_base = None
+    # camera = 'overhead_camera'
+    
+    # mp4_path = 'ManiSkill2_real2sim/data/octo_google_robot_inference_feb13/215953.mp4'
+    # impainting_img_path = None
+    # instruction = 'pick coke can'
+    # gt_tcp_pose_at_robot_base = None
+    # camera = 'overhead_camera'
+    
+    # mp4_path = None
+    # impainting_img_path = 'ManiSkill2_real2sim/data/octo_google_robot_inference_feb13/215953_frame0.png'
     # instruction = 'pick coke can'
     # gt_tcp_pose_at_robot_base = None
     # camera = 'overhead_camera'
@@ -136,12 +173,13 @@ if __name__ == '__main__':
     
     # main(input_video, impainting_img_path, instruction, gt_tcp_pose_at_robot_base, camera)
     
-    main(input_video, impainting_img_path, instruction, gt_tcp_pose_at_robot_base, camera, model_type='octo-small')
+    main(input_video, impainting_img_path, instruction, gt_tcp_pose_at_robot_base, camera, 
+         model_type='octo-small', robot='widowx_camera_setup2',
+         control_mode='arm_pd_ee_target_delta_pose_align_gripper_pd_joint_pos')
     
     # main(input_video, impainting_img_path, instruction, gt_tcp_pose_at_robot_base, camera,
-    #      model_type='./checkpoints/octo_feb1_24/octo_base_gpu_final',
+    #      model_type='octo-base', 
     #      policy_setup='google_robot', robot='google_robot_static',
-    #     #  control_freq=3,
-    #     #  control_mode='arm_pd_ee_target_delta_pose_align_gripper_pd_joint_pos')
-    #      control_freq=3,
-    #      control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner')
+    #      control_freq=3, max_episode_steps=60,
+    #      control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner',
+    #      urdf_version="recolor_tabletop_visual_matching_1")
