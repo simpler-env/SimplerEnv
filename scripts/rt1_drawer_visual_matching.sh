@@ -1,3 +1,5 @@
+# shader_dir=rt means that we turn on ray-tracing rendering; this is quite crucial for the open / close drawer task
+
 export MS2_ASSET_DIR=./ManiSkill2_real2sim/data
 
 declare -a ckpt_paths=(
@@ -16,7 +18,7 @@ CloseMiddleDrawerCustomInScene-v0
 CloseBottomDrawerCustomInScene-v0
 )
 
-EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station_recolor light_mode=simple disable_bad_material=True urdf_version=recolor"
+EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station_recolor light_mode=simple disable_bad_material=True urdf_version=recolor_cabinet_visual_matching_1"
 
 EvalOverlay() {
 # A0

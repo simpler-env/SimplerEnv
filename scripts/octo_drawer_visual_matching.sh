@@ -2,7 +2,7 @@ export MS2_ASSET_DIR=./ManiSkill2_real2sim/data
 
 declare -a policy_models=(
 "octo-base"
-"octo-server"
+# "octo-server"
 )
 
 declare -a env_names=(
@@ -14,7 +14,7 @@ CloseMiddleDrawerCustomInScene-v0
 CloseBottomDrawerCustomInScene-v0
 )
 
-EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station_recolor light_mode=simple disable_bad_material=True urdf_version=recolor2"
+EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station_recolor light_mode=simple disable_bad_material=True urdf_version=recolor_cabinet_visual_matching_1"
 
 EvalOverlay() {
 # A0

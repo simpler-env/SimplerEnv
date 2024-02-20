@@ -47,7 +47,9 @@ def print_all_kruskal_results(sim, real, title):
             print(" " * 12, kruskal(sim[i], real[i]))
     
 def construct_unordered_trial_results(n_trials_per_ckpt, success):
-    n_success_trials = np.round(n_trials_per_ckpt * np.array(success)).astype(np.int32)
+    success = np.array(success)
+    success = np.where(np.isnan(success), 0, success)
+    n_success_trials = np.round(n_trials_per_ckpt * success).astype(np.int32)
     results = []
     for nst in n_success_trials:
         results.append([1] * nst + [0] * (n_trials_per_ckpt - nst))
@@ -81,7 +83,7 @@ def get_dir_stats(dir_name, extra_pattern_require=[], succ_fail_pattern=['succes
 
 # Calculate metrics for each task
 
-def calc_pick_coke_can_stats(root_result_dir):
+def calc_pick_coke_can_stats(root_result_dir, visual_matching_urdf_version=None):
     print("***Pick coke can results***")
     # If you use a new checkpoint, please update the real evaluation results here
     coke_can_real_success = {
@@ -89,19 +91,22 @@ def calc_pick_coke_can_stats(root_result_dir):
             "rt-1-converged": 0.96, 
             "rt-1-15pct": 1.0, 
             "rt-1-x": 0.88, 
-            "rt-1-begin": 0.20
+            "rt-1-begin": 0.20,
+            "octo-base": 0.52
         },
         'vertical': {
             "rt-1-converged": 0.88, 
             "rt-1-15pct": 0.96, 
             "rt-1-x": 0.56, 
-            "rt-1-begin": 0.00
+            "rt-1-begin": 0.00,
+            "octo-base": 0.24
         },
         'standing': {
             "rt-1-converged": 0.72,
             "rt-1-15pct": 0.80,
             "rt-1-x": 0.84,
-            "rt-1-begin": 0.20
+            "rt-1-begin": 0.20,
+            "octo-base": 0.32
         }
     }
     
@@ -129,6 +134,9 @@ def calc_pick_coke_can_stats(root_result_dir):
     base_visual_matching_variants = [
         'google_pick_coke_can_1_v4/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/GraspSingleOpenedCokeCanInScene-v0_{}_True',
     ]
+    if visual_matching_urdf_version is not None:
+        for i in range(len(base_visual_matching_variants)):
+            base_visual_matching_variants[i] = base_visual_matching_variants[i] + f'_urdf_version_{visual_matching_urdf_version}'
     background_variants = [
         'google_pick_coke_can_1_v4_alt_background/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/GraspSingleOpenedCokeCanInScene-v0_{}_True',
         'google_pick_coke_can_1_v4_alt_background_2/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/GraspSingleOpenedCokeCanInScene-v0_{}_True',
@@ -162,7 +170,7 @@ def calc_pick_coke_can_stats(root_result_dir):
                     )
                 )
                 if np.isnan(avg_sim_success):
-                    raise ValueError(f"avg_sim_success is nan for {variant}")
+                    print(f"WARNING: avg_sim_success is nan for {variant}")
                 coke_can_sim_variant_success[coke_can_orientation][ckpt_alias].append(avg_sim_success)
             coke_can_sim_variant_success[coke_can_orientation][ckpt_alias] = np.mean(coke_can_sim_variant_success[coke_can_orientation][ckpt_alias])
             
@@ -210,7 +218,7 @@ def calc_pick_coke_can_stats(root_result_dir):
                     )
                 )
                 if np.isnan(avg_sim_success):
-                    raise ValueError(f"avg_sim_success is nan for {variant}")
+                    print(f"WARNING: avg_sim_success is nan for {variant}")
                 coke_can_sim_visual_matching_success[coke_can_orientation][ckpt_alias].append(avg_sim_success)
             coke_can_sim_visual_matching_success[coke_can_orientation][ckpt_alias] = np.mean(coke_can_sim_visual_matching_success[coke_can_orientation][ckpt_alias])
             
@@ -258,14 +266,15 @@ def calc_pick_coke_can_stats(root_result_dir):
                 
     
 
-def calc_move_near_stats(root_result_dir):
+def calc_move_near_stats(root_result_dir, visual_matching_urdf_version=None):
     print("***Move Near results***")
     # If you use a new checkpoint, please update the real evaluation results here
     move_near_real_success = {
         "rt-1-converged": 0.633,
         "rt-1-15pct": 0.583, 
         "rt-1-x": 0.45, 
-        "rt-1-begin": 0.00
+        "rt-1-begin": 0.00,
+        "octo-base": 0.11,
     }
     
     ckpt_alias_keys = list(move_near_real_success.keys())
@@ -283,8 +292,11 @@ def calc_move_near_stats(root_result_dir):
         'google_pick_coke_can_1_v4/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/MoveNearGoogleInScene-v0',
     ]
     base_visual_matching_variants = [
-        'google_pick_coke_can_1_v4/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/MoveNearGoogleBakedTexInScene-v0_baked_except_bpb_orange_color_adjust_redbull',
+        'google_pick_coke_can_1_v4/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/MoveNearGoogleBakedTexInScene-v0_baked_except_bpb_orange',
     ]
+    if visual_matching_urdf_version is not None:
+        for i in range(len(base_visual_matching_variants)):
+            base_visual_matching_variants[i] = base_visual_matching_variants[i].replace('MoveNearGoogleBakedTexInScene-v0', f'MoveNearGoogleBakedTexInScene-v0_urdf_version_{visual_matching_urdf_version}')
     background_variants = [
         'google_pick_coke_can_1_v4_alt_background/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/MoveNearGoogleInScene-v0',
         'google_pick_coke_can_1_v4_alt_background_2/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/MoveNearGoogleInScene-v0',
@@ -315,7 +327,7 @@ def calc_move_near_stats(root_result_dir):
                 )
             )
             if np.isnan(avg_sim_success):
-                raise ValueError(f"avg_sim_success is nan for {variant}")
+                print(f"WARNING: avg_sim_success is nan for {variant}")
             move_near_sim_variant_success[ckpt_alias].append(avg_sim_success)
         move_near_sim_variant_success[ckpt_alias] = np.mean(move_near_sim_variant_success[ckpt_alias])
             
@@ -340,7 +352,7 @@ def calc_move_near_stats(root_result_dir):
                 )
             )
             if np.isnan(avg_sim_success):
-                raise ValueError(f"avg_sim_success is nan for {variant}")
+                print(f"WARNING: avg_sim_success is nan for {variant}")
             move_near_sim_visual_matching_success[ckpt_alias].append(avg_sim_success)
         move_near_sim_visual_matching_success[ckpt_alias] = np.mean(move_near_sim_visual_matching_success[ckpt_alias])
             
@@ -364,7 +376,7 @@ def calc_move_near_stats(root_result_dir):
 
 
 
-def calc_drawer_stats(root_result_dir):
+def calc_drawer_stats(root_result_dir, visual_matching_urdf_version=None):
     print("***Drawer results***")
     # If you use a new checkpoint, please update the real evaluation results here
     drawer_real_success = {
@@ -372,13 +384,15 @@ def calc_drawer_stats(root_result_dir):
             "rt-1-converged": 0.815, 
             "rt-1-15pct": 0.704, 
             "rt-1-x": 0.519, 
-            "rt-1-begin": 0.000
+            "rt-1-begin": 0.000,
+            "octo-base": 0.148,
         },
         'close': {
             "rt-1-converged": 0.926, 
             "rt-1-15pct": 0.889, 
             "rt-1-x": 0.741, 
-            "rt-1-begin": 0.000
+            "rt-1-begin": 0.000,
+            "octo-base": 0.333,
         }
     }
     
@@ -402,9 +416,15 @@ def calc_drawer_stats(root_result_dir):
     base_variants = [
         'frl_apartment_stage_simple/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt',
     ]
-    base_visual_matching_variants = [
-        'dummy_drawer/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True_urdf_version_recolor',
-    ]
+    if visual_matching_urdf_version is None:
+        base_visual_matching_variants = [
+            'dummy_drawer/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True',
+        ]
+    else:
+        urdf_version_str = f'urdf_version_{visual_matching_urdf_version}'
+        base_visual_matching_variants = [
+            'dummy_drawer/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True_' + urdf_version_str,
+        ]
     background_variants = [
         'modern_bedroom_no_roof/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt',
         'modern_office_no_roof/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt',
@@ -419,8 +439,8 @@ def calc_drawer_stats(root_result_dir):
     ]
     
     for drawer_task in drawer_task_map_dict.keys():
-        for specific_task in drawer_task_map_dict[drawer_task]:
-            for ckpt_alias in ckpt_alias_keys:
+        for ckpt_alias in ckpt_alias_keys:
+            for specific_task in drawer_task_map_dict[drawer_task]:
                 for variant in base_variants + background_variants + lighting_variants + table_texture_variants:
                     variant = variant.format(specific_task)
                     variant = f"{root_result_dir}/{CKPT_MAPPING[ckpt_alias]}/{variant}"
@@ -431,9 +451,9 @@ def calc_drawer_stats(root_result_dir):
                         )
                     )
                     if np.isnan(avg_sim_success):
-                        raise ValueError(f"avg_sim_success is nan for {variant}")
+                        print(f"WARNING: avg_sim_success is nan for {variant}")
                     drawer_sim_variant_success[drawer_task][ckpt_alias].append(avg_sim_success)
-        drawer_sim_variant_success[drawer_task][ckpt_alias] = np.mean(drawer_sim_variant_success[drawer_task][ckpt_alias])
+            drawer_sim_variant_success[drawer_task][ckpt_alias] = np.mean(drawer_sim_variant_success[drawer_task][ckpt_alias])
             
     print("-" * 20)
     for drawer_task in drawer_task_map_dict.keys():
@@ -468,8 +488,8 @@ def calc_drawer_stats(root_result_dir):
     # get visual matching success
     drawer_sim_visual_matching_success = {k1: {k2: [] for k2 in ckpt_alias_keys} for k1 in drawer_task_map_dict.keys()}
     for drawer_task in drawer_task_map_dict.keys():
-        for specific_task in drawer_task_map_dict[drawer_task]:
-            for ckpt_alias in ckpt_alias_keys:
+        for ckpt_alias in ckpt_alias_keys:
+            for specific_task in drawer_task_map_dict[drawer_task]:
                 for variant in base_visual_matching_variants:
                     variant = variant.format(specific_task)
                     variant = f"{root_result_dir}/{CKPT_MAPPING[ckpt_alias]}/{variant}"
@@ -480,9 +500,9 @@ def calc_drawer_stats(root_result_dir):
                         )
                     )
                     if np.isnan(avg_sim_success):
-                        raise ValueError(f"avg_sim_success is nan for {variant}")
+                        print(f"WARNING: avg_sim_success is nan for {variant}")
                     drawer_sim_visual_matching_success[drawer_task][ckpt_alias].append(avg_sim_success)
-        drawer_sim_visual_matching_success[drawer_task][ckpt_alias] = np.mean(drawer_sim_visual_matching_success[drawer_task][ckpt_alias])
+            drawer_sim_visual_matching_success[drawer_task][ckpt_alias] = np.mean(drawer_sim_visual_matching_success[drawer_task][ckpt_alias])
             
     print('-' * 20)
     for drawer_task in drawer_task_map_dict.keys():
@@ -651,14 +671,20 @@ CKPT_MAPPING = {
     "rt-1-begin": "rt1new_77467904_000001120",
     "octo-base": "octo-base",
     "octo-small": "octo-small",
+    "octo-server": "octo-server"
 }
 
 
-
-calc_pick_coke_can_stats("./results/")
-calc_move_near_stats("./results/")
-calc_drawer_stats("./results/")
+calc_pick_coke_can_stats("./results/", visual_matching_urdf_version="recolor_tabletop_visual_matching_1")
+calc_move_near_stats("./results/", visual_matching_urdf_version="recolor_tabletop_visual_matching_1")
+calc_drawer_stats("./results/", visual_matching_urdf_version="recolor_cabinet_visual_matching_1")
 calc_bridge_put_on_env_stats("./results/")
+
+
+# calc_pick_coke_can_stats("./results/", visual_matching_urdf_version="recolor2_tabletop")
+# calc_move_near_stats("./results/", visual_matching_urdf_version="recolor2_tabletop")
+# calc_drawer_stats("./results/", visual_matching_urdf_version="recolor2")
+# calc_bridge_put_on_env_stats("./results/")
 
 
 

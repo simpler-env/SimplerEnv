@@ -27,10 +27,8 @@ def demo(fix_root_link, balance_passive_force):
     loader.fix_root_link = fix_root_link
     loader.load_multiple_collisions_from_file = True
     
-    # robot: sapien.Articulation = loader.load("/home/xuanlin/real2sim/ManiSkill2/mani_skill2/assets/descriptions/mobile_panda_single_arm.urdf")
-    # robot.set_root_pose(sapien.Pose([0, 0, 0], [1, 0, 0, 0]))
-
     robot: sapien.Articulation = loader.load("ManiSkill2_real2sim/mani_skill2/assets/descriptions/googlerobot_description/google_robot_meta_sim_fix_wheel_fix_fingertip.urdf")
+    # robot: sapien.Articulation = loader.load("ManiSkill2_real2sim/mani_skill2/assets/descriptions/googlerobot_description/google_robot_meta_sim_fix_wheel_fix_fingertip_recolor_cabinet_visual_matching_1.urdf")
     print(robot.get_links())
     robot.set_root_pose(sapien.Pose([0, 0, 0.06205], [1, 0, 0, 0]))
 
@@ -66,7 +64,7 @@ def demo(fix_root_link, balance_passive_force):
 
     tcp_link = [x for x in robot.get_links() if x.name == 'link_gripper_tcp'][0]
     while not viewer.closed:
-        print(robot.get_qpos())
+        # print(robot.get_qpos())
         for _ in range(4):  # render every 4 steps
             if balance_passive_force:
                 qf = robot.compute_passive_force(
@@ -76,7 +74,7 @@ def demo(fix_root_link, balance_passive_force):
                 robot.set_qf(qf)
             # print("target qpos", qpos)
             # print("current qpos", robot.get_qpos())
-            print("tcp pose wrt robot base", robot.pose.inv() * tcp_link.pose)
+            # print("tcp pose wrt robot base", robot.pose.inv() * tcp_link.pose)
             robot.set_drive_target(qpos)
             scene.step()
         scene.update_render()

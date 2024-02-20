@@ -1,6 +1,17 @@
-# Real2Sim
+# Evaluating Real-World Robot Manipulation Policies in Simulation
 
-- [Real2Sim](#real2sim)
+Recent years have witnessed remarkable advances towards building generalist robot manipulation policies. However, evaluating generalist robot policies in a scalable and reproducible way, especially in the real world, remains challenging. As real-world policy evaluation is operationally expensive and inefficient, we propose to use physical simulators as efficient, scalable, and informative tools to complement real-world manipulation evaluations. Such simulation-based evaluations can provide quantitative performance metrics useful for checkpoint selection, give insight into expected real-world policy behaviors or failure modes, and ensure standardization in hardware and environmental setups to increase reproducibility.
+
+
+This repository is based in the [SAPIEN](https://sapien.ucsd.edu/) simulator and the [ManiSkill2](https://maniskill2.github.io/) benchmark (we will also integrate the tooling into ManiSkill3 once the latter complete). 
+
+This repository encompasses 2 real-to-sim evaluation setups:
+- `Variant Aggregation` evaluation: for a real-world task (e.g., pick coke can), create different simulation environment variants for this task (encompassing different backgrounds, lightings, distractors, table textures, etc) and averaging their policy evaluation performance as the evaluation result.
+- `Visual Matching` evaluation: for a real-world task, create a single simulation environment for policy evaluation by matching the real-to-sim foreground and background visual appearances. We match background appearances by "greenscreening" real-world evaluation video backgrounds and overlaying them onto the simulation backgrounds. We match foreground appearances by baking and color-tuning the textures of object and robot assets. 
+
+We hope that our work provides guidance and inspiration for future real-to-sim manipulation evaluation efforts, such as larger scale evaluations as the fields of 3D reconstruction and 3D generation progress.
+
+- [Evaluating Real-World Robot Manipulation Policies in Simulation](#evaluating-real-world-robot-manipulation-policies-in-simulation)
   - [Installation](#installation)
   - [Reproducing Real-to-Sim Evaluation Results for Google Robot and WidowX](#reproducing-real-to-sim-evaluation-results-for-google-robot-and-widowx)
   - [Adding New Real-to-Sim Evaluation Environments, Robots, and Policies](#adding-new-real-to-sim-evaluation-environments-robots-and-policies)
@@ -22,6 +33,7 @@ Prerequisites: CUDA version >=11.8
 Create an anaconda environment: 
 ```
 conda create -n real2sim python=3.9 (any version above 3.9 is fine)
+conda activate real2sim
 ```
 
 Clone this repo:
@@ -96,7 +108,7 @@ TODO: result processing
 
 ## Adding New Real-to-Sim Evaluation Environments, Robots, and Policies
 
-Below we provide a step-by-step guide to add new real-to-sim evaluation environments, robots, and policies.
+Below we provide a step-by-step guide to add new real-to-sim evaluation environments, robots, and policies. 
 
 ### Adding New Robots
 
@@ -119,7 +131,7 @@ Besides using regular camera calibration approaches, you can also use tools like
 Additionally, if you already know the robot joint positions and the camera extrinsics for a particular real-world observation frame, you can use `ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py` to overlay a real image onto the simulation image and manually tune the intrinsic parameters such that the gripper in the real image aligns with the gripper in the simulation image.
 </details>
 
-1. Perform system identification for the robot.
+3. Perform system identification for the robot.
    - First, create a system identification dataset. If you have an existing tensorflow dataset, you can create a subset of trajectories for system identification by modifying `tools/sysid/prepare_sysid_dataset.py`. In other cases, you can create a system identification subset by following the saved pickle file format in `tools/sysid/prepare_sysid_dataset.py` and having the necessary keys in each step of a trajectory.
    - Next, perform system identification using the dataset. You can modify the existing system identification script `tools/sysid/sysid.py`. The script uses simulated annealing algorithm to find better stiffness and damping parameters from the initialization parameters. Examine the system identification logs using `tools/sysid/analyze_sysid_results.py`, and use the best parameters to initialize the next round of system identification with reduced parameter search range. After multiple rounds of system identification, you can then use the best parameters to update the robot agent implementation.
 
@@ -132,6 +144,7 @@ SAPIEN uses an axis convention of x forward, y left, z up.
      - Visual mesh (a `textured.dae` file combined with its corresponding `.png` texture files, or a single `textured.glb` file)
      - Collision mesh (`collision.obj`). The collision mesh should be watertight and convex. 
    - After adding `collision.obj`, if the collision shape is not yet convex, use `tools/coacd_process_mesh.py` to obtain a convex collision mesh.
+   - If you have good object geometry, then you can use [GeTex](https://github.com/Jiayuan-Gu/GeTex) to 
    - Use `tools/robot_object_visualization/test_object.py` to visualize the object in the SAPIEN viewer. You can click on an object / object link and press "show / hide" on the right panel to show / hide its collision mesh. 
    - For SAPIEN viewer control, see [here](#sapien-viewer-controls)
 
@@ -158,17 +171,28 @@ You can export the `.glb` scenes from Blender. Pay attention to the axis convent
 6. If you adopt our visual-matching ("greenscreen") evaluation setup, add the overlay background image (with the robot and interactable objects removed through impainting) to `ManiSkill2_real2sim/data/real_impainting`.
    - We use https://cleanup.pictures/ to remove the robot and the interactable objects from the real images.
 
-7. Add a new environment to `ManiSkill2_real2sim/mani_skill2/envs/custom_scenes`. You can use the existing environments as a reference. 
+7. Add new environments to `ManiSkill2_real2sim/mani_skill2/envs/custom_scenes`. You can use the existing environments as a reference. 
    - The environment `reset` function first assesses whether to reconfigure the environment (if so, then we call the `reconfigure` function in `ManiSkill2_real2sim/mani_skill2/envs/sapien_env.py` to load scenes, robot agents, objects, cameras, and lightings). It then calls the `initialize_episode` function to initialize the loaded robots and objects.
    - Our environments load metadata json files for the object assets (in `ManiSkill2_real2sim/data/custom/info_*.json`). Based on your environment implementation, fill in the metadata for each new object asset in existing json files or create new json files.
 
-8. Test your environment using `ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`. See the script for more details.
+8. Test your environments using `ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`. See the script for more details.
    - You can set different `env_reset_options` to test different environment configurations.
+
+
+9. Test the real-to-sim evaluation gap using the policy inference scripts in `scripts/`, if your policy is already implemented in the repo (i.e., RT-* and Octo). You can use the existing scripts as a reference to write new scripts. Improve the quality of robot and object assets along this process, if necessary. TODO jiayuan's repo
+    - recolor shader_dir
+    
+<details>
+<summary>**Notes on Improving Foreground Object / Robot Textures for Visual Matching Evaluation:** </summary>
+
+asdf
+</details>
 
 
 ### Adding New Policies
 
-9. 
+10. 
+
 
 
 

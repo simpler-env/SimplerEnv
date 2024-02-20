@@ -191,7 +191,7 @@ if __name__ == '__main__':
         "is allowed.",
     )
     parser.add_argument("--tmp-exp", action='store_true', help="debug flag")
-    parser.add_argument("--tf-memory-limit", type=int, default=4096, help="Tensorflow memory limit")
+    parser.add_argument("--tf-memory-limit", type=int, default=3072, help="Tensorflow memory limit")
     
     args = parser.parse_args()
     

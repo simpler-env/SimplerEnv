@@ -6,7 +6,7 @@ declare -a policy_models=(
   "octo-base"
   # ./checkpoints/octo_feb1_24/octo_base_gpu_final
   # "octo-small"
-  "octo-server"
+  # "octo-server"
 )
 
 # lr_switch=laying horizontally but flipped left-right to match real eval; upright=standing; laid_vertically=laying vertically                
@@ -30,7 +30,7 @@ do CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-mod
   --rgb-overlay-path ${rgb_overlay_path} \
   --robot-init-x 0.35 0.35 1 --robot-init-y 0.20 0.20 1 --obj-init-x -0.35 -0.12 5 --obj-init-y -0.02 0.42 5 \
   --robot-init-rot-quat-center 0 0 0 1 --robot-init-rot-rpy-range 0 0 1 0 0 1 0 0 1 \
-  --additional-env-build-kwargs ${coke_can_option} urdf_version=recolor2;
+  --additional-env-build-kwargs ${coke_can_option} urdf_version=recolor_tabletop_visual_matching_1;
 
 done
 

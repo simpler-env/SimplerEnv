@@ -158,8 +158,10 @@ class OctoInference:
         images, pad_mask = self._obtain_image_history_and_mask()
         images, pad_mask = images[None], pad_mask[None]
         
-        self.rng, key = jax.random.split(self.rng) # each shape [2,] # needs to use a different rng key for each model forward step; this has a large impact on model performance
-        print("octo local rng", self.rng, key)
+        # we need use a different rng key for each model forward step; this has a large impact on model performance
+        self.rng, key = jax.random.split(self.rng) # each shape [2,]
+        # print("octo local rng", self.rng, key)
+        
         if self.automatic_task_creation:
             input_observation = {
                 'image_primary': images,
