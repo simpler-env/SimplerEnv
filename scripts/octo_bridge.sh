@@ -38,7 +38,7 @@ CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model 
   --robot-init-rot-quat-center 0 0 0 1 --robot-init-rot-rpy-range 0 0 1 0 0 1 0 0 1;
 
 CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} \
-  --robot widowx --policy-setup widowx_bridge \
+  --robot ${robot} --policy-setup widowx_bridge \
   --control-freq 5 --sim-freq 500 --max-episode-steps 50 \
   --env-name PutSpoonOnTableClothInScene-v0 --scene-name ${scene_name} \
   --rgb-overlay-path ${rgb_overlay_path} \
