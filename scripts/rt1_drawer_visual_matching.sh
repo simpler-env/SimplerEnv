@@ -18,7 +18,12 @@ CloseMiddleDrawerCustomInScene-v0
 CloseBottomDrawerCustomInScene-v0
 )
 
-EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station_recolor light_mode=simple disable_bad_material=True urdf_version=recolor_cabinet_visual_matching_1"
+# URDF variations
+declare -a urdf_version_arr=(None "recolor_tabletop_visual_matching_1" "recolor_tabletop_visual_matching_2" "recolor_cabinet_visual_matching_1")
+
+for urdf_version in "${urdf_version_arr[@]}"; do 
+
+EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station_recolor light_mode=simple disable_bad_material=True urdf_version=${urdf_version}"
 
 EvalOverlay() {
 # A0
@@ -126,4 +131,8 @@ for ckpt_path in "${ckpt_paths[@]}"; do
   for env_name in "${env_names[@]}"; do
     EvalOverlay
   done
+done
+
+
+
 done
