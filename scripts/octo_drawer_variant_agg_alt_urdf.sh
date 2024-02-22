@@ -2,11 +2,8 @@
 
 export MS2_ASSET_DIR=./ManiSkill2_real2sim/data
 
-declare -a ckpt_paths=(
-"./checkpoints/xid77467904_000400120/"
-"./checkpoints/rt1poor_xid77467904_000058240/"
-"./checkpoints/rt_1_x_tf_trained_for_002272480_step/"
-"./checkpoints/rt1new_77467904_000001120/"
+declare -a policy_models=(
+"octo-base"
 )
 
 declare -a env_names=(
@@ -18,16 +15,18 @@ CloseMiddleDrawerCustomInScene-v0
 CloseBottomDrawerCustomInScene-v0
 )
 
-EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt"
+urdf_version=recolor_sim
+
+EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt urdf_version=${urdf_version}"
 
 
 # base setup
 scene_name=frl_apartment_stage_simple
 
 EvalSim() {
-  echo ${ckpt_path} ${env_name}
+  echo ${policy_model} ${env_name}
 
-  python real2sim/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path} \
+  python real2sim/main_inference.py --policy-model ${policy_model} --ckpt-path None \
     --robot google_robot_static \
     --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
     --env-name ${env_name} --scene-name ${scene_name} \
@@ -38,7 +37,7 @@ EvalSim() {
 }
 
 
-for ckpt_path in "${ckpt_paths[@]}"; do
+for policy_model in "${policy_models[@]}"; do
   for env_name in "${env_names[@]}"; do
     EvalSim
   done
@@ -53,9 +52,9 @@ declare -a scene_names=(
 )
 
 for scene_name in "${scene_names[@]}"; do
-  for ckpt_path in "${ckpt_paths[@]}"; do
+  for policy_model in "${policy_models[@]}"; do
     for env_name in "${env_names[@]}"; do
-      EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt"
+      EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt urdf_version=${urdf_version}"
       EvalSim
     done
   done
@@ -65,11 +64,11 @@ done
 # lightings
 scene_name=frl_apartment_stage_simple
 
-for ckpt_path in "${ckpt_paths[@]}"; do
+for policy_model in "${policy_models[@]}"; do
   for env_name in "${env_names[@]}"; do
-    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt light_mode=brighter"
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt urdf_version=${urdf_version} light_mode=brighter"
     EvalSim
-    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt light_mode=darker"
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt urdf_version=${urdf_version} light_mode=darker"
     EvalSim
   done
 done
@@ -78,11 +77,11 @@ done
 # new cabinets
 scene_name=frl_apartment_stage_simple
 
-for ckpt_path in "${ckpt_paths[@]}"; do
+for policy_model in "${policy_models[@]}"; do
   for env_name in "${env_names[@]}"; do
-    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station2"
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt urdf_version=${urdf_version} station_name=mk_station2"
     EvalSim
-    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station3"
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt urdf_version=${urdf_version} station_name=mk_station3"
     EvalSim
   done
 done

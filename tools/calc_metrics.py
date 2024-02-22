@@ -83,7 +83,7 @@ def get_dir_stats(dir_name, extra_pattern_require=[], succ_fail_pattern=['succes
 
 # Calculate metrics for each task
 
-def calc_pick_coke_can_stats(root_result_dir, visual_matching_urdf_version=None):
+def calc_pick_coke_can_stats(root_result_dir):
     print("***Pick coke can results***")
     # If you use a new checkpoint, please update the real evaluation results here
     coke_can_real_success = {
@@ -131,12 +131,13 @@ def calc_pick_coke_can_stats(root_result_dir, visual_matching_urdf_version=None)
     base_variants = [
         'google_pick_coke_can_1_v4/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/GraspSingleOpenedCokeCanInScene-v0_{}_True',
     ]
-    base_visual_matching_variants = [
-        'google_pick_coke_can_1_v4/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/GraspSingleOpenedCokeCanInScene-v0_{}_True',
-    ]
-    if visual_matching_urdf_version is not None:
-        for i in range(len(base_visual_matching_variants)):
-            base_visual_matching_variants[i] = base_visual_matching_variants[i] + f'_urdf_version_{visual_matching_urdf_version}'
+    base_visual_matching_variants = []
+    for visual_matching_urdf_version in ["None", "recolor_tabletop_visual_matching_1", "recolor_tabletop_visual_matching_2", "recolor_cabinet_visual_matching_1"]:
+        base_visual_matching_variants.append(
+            'google_pick_coke_can_1_v4/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/GraspSingleOpenedCokeCanInScene-v0_{}_True'
+            + f'_urdf_version_{visual_matching_urdf_version}'
+        )
+    
     background_variants = [
         'google_pick_coke_can_1_v4_alt_background/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/GraspSingleOpenedCokeCanInScene-v0_{}_True',
         'google_pick_coke_can_1_v4_alt_background_2/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/GraspSingleOpenedCokeCanInScene-v0_{}_True',
@@ -266,14 +267,14 @@ def calc_pick_coke_can_stats(root_result_dir, visual_matching_urdf_version=None)
                 
     
 
-def calc_move_near_stats(root_result_dir, visual_matching_urdf_version=None):
+def calc_move_near_stats(root_result_dir):
     print("***Move Near results***")
     # If you use a new checkpoint, please update the real evaluation results here
     move_near_real_success = {
         "rt-1-converged": 0.633,
         "rt-1-15pct": 0.583, 
         "rt-1-x": 0.45, 
-        "rt-1-begin": 0.00,
+        "rt-1-begin": 0.017,
         "octo-base": 0.11,
     }
     
@@ -291,12 +292,12 @@ def calc_move_near_stats(root_result_dir, visual_matching_urdf_version=None):
     base_variants = [
         'google_pick_coke_can_1_v4/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/MoveNearGoogleInScene-v0',
     ]
-    base_visual_matching_variants = [
-        'google_pick_coke_can_1_v4/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/MoveNearGoogleBakedTexInScene-v0_baked_except_bpb_orange',
-    ]
-    if visual_matching_urdf_version is not None:
-        for i in range(len(base_visual_matching_variants)):
-            base_visual_matching_variants[i] = base_visual_matching_variants[i].replace('MoveNearGoogleBakedTexInScene-v0', f'MoveNearGoogleBakedTexInScene-v0_urdf_version_{visual_matching_urdf_version}')
+    base_visual_matching_variants = []
+    for visual_matching_urdf_version in ["None", "recolor_tabletop_visual_matching_1", "recolor_tabletop_visual_matching_2", "recolor_cabinet_visual_matching_1"]:
+        base_visual_matching_variants.append(
+            f'google_pick_coke_can_1_v4/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/MoveNearGoogleBakedTexInScene-v0_urdf_version_{visual_matching_urdf_version}_baked_except_bpb_orange'
+        )
+    
     background_variants = [
         'google_pick_coke_can_1_v4_alt_background/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/MoveNearGoogleInScene-v0',
         'google_pick_coke_can_1_v4_alt_background_2/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/MoveNearGoogleInScene-v0',
@@ -376,7 +377,7 @@ def calc_move_near_stats(root_result_dir, visual_matching_urdf_version=None):
 
 
 
-def calc_drawer_stats(root_result_dir, visual_matching_urdf_version=None):
+def calc_drawer_stats(root_result_dir):
     print("***Drawer results***")
     # If you use a new checkpoint, please update the real evaluation results here
     drawer_real_success = {
@@ -416,15 +417,13 @@ def calc_drawer_stats(root_result_dir, visual_matching_urdf_version=None):
     base_variants = [
         'frl_apartment_stage_simple/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt',
     ]
-    if visual_matching_urdf_version is None:
-        base_visual_matching_variants = [
-            'dummy_drawer/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True',
-        ]
-    else:
+    base_visual_matching_variants = []
+    for visual_matching_urdf_version in ["recolor_tabletop_visual_matching_1", "recolor_tabletop_visual_matching_2", "recolor_cabinet_visual_matching_1"]:
         urdf_version_str = f'urdf_version_{visual_matching_urdf_version}'
-        base_visual_matching_variants = [
-            'dummy_drawer/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True_' + urdf_version_str,
-        ]
+        base_visual_matching_variants.append(
+            'dummy_drawer/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True_' + urdf_version_str
+        )
+    
     background_variants = [
         'modern_bedroom_no_roof/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt',
         'modern_office_no_roof/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt',
@@ -515,8 +514,8 @@ def calc_drawer_stats(root_result_dir, visual_matching_urdf_version=None):
               pearson_correlation(list(drawer_sim_visual_matching_success[drawer_task].values()), 
                                 list(drawer_real_success[drawer_task].values())))
         print_all_kruskal_results(
-            construct_unordered_trial_results(n_trials_per_ckpt_per_task * n_tasks, list(drawer_sim_visual_matching_success[drawer_task].values())),
-            construct_unordered_trial_results(n_trials_per_ckpt_per_task * n_tasks, list(drawer_real_success[drawer_task].values())),
+            construct_unordered_trial_results(n_trials_per_ckpt_per_task, list(drawer_sim_visual_matching_success[drawer_task].values())),
+            construct_unordered_trial_results(n_trials_per_ckpt_per_task, list(drawer_real_success[drawer_task].values())),
             f"{drawer_task} kruskal:"
         )
         
@@ -675,16 +674,11 @@ CKPT_MAPPING = {
 }
 
 
-calc_pick_coke_can_stats("./results/", visual_matching_urdf_version="recolor_tabletop_visual_matching_1")
-calc_move_near_stats("./results/", visual_matching_urdf_version="recolor_tabletop_visual_matching_1")
-calc_drawer_stats("./results/", visual_matching_urdf_version="recolor_cabinet_visual_matching_1")
-calc_bridge_put_on_env_stats("./results/")
-
-
-# calc_pick_coke_can_stats("./results/", visual_matching_urdf_version="recolor2_tabletop")
-# calc_move_near_stats("./results/", visual_matching_urdf_version="recolor2_tabletop")
-# calc_drawer_stats("./results/", visual_matching_urdf_version="recolor2")
+calc_pick_coke_can_stats("./results/")
+# calc_move_near_stats("./results/")
+# calc_drawer_stats("./results/")
 # calc_bridge_put_on_env_stats("./results/")
+
 
 
 

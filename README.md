@@ -217,7 +217,7 @@ TODO
 
 #### Asset missing errors and MS2_ASSET_DIR environment variable
 
-If you are not running scripts under the `ManiSkill2_real2sim` directory, but you create a ManiSkill2 environment in the script, then some asset missing errors might be reported. In this case, please make sure this environment variable is set:
+If you are not running scripts under the `ManiSkill2_real2sim` directory, but in the script, you need to create a ManiSkill2 environment, then some asset missing errors might be reported. In this case, please make sure this environment variable is set:
 
 ```
 export MS2_ASSET_DIR={path_to_ManiSkill2_real2sim}/data
@@ -225,7 +225,7 @@ export MS2_ASSET_DIR={path_to_ManiSkill2_real2sim}/data
 
 #### Other troubleshooting tips
 
-If you encounter out-of-gpu-memory error when running jax models (e.g., Octo), try `JAX_PLATFORM_NAME='cpu' python {script}`. However, ManiSkill2 environments require a GPU to run, so you cannot set `CUDA_VISIBLE_DEVICES=''`.
+- `[error] Failed to cook a mesh from file: {path}/collision.obj` error: this error is most likely caused by the collision mesh not being watertight or not being convex. You can use `tools/coacd_process_mesh.py` to obtain a convex collision mesh.
 
 #### More notes
 
