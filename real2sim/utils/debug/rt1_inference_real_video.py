@@ -1,7 +1,7 @@
 """
 Uses:
-1. Given a static (impainting) image (with robot arm removed), query the RT-1 model to predict actions and visualize them in the environment,
-    where the policy input is the impainting image plus the robot arm rendered in it.
+1. Given a static (inpainting) image (with robot arm removed), query the RT-1 model to predict actions and visualize them in the environment,
+    where the policy input is the inpainting image plus the robot arm rendered in it.
 2. Given a video, feed the video frames as input to the RT-1 model, and visualize the resulting actions in the environment.
 """
 
@@ -16,7 +16,7 @@ from real2sim.utils.visualization import write_video
 from real2sim.utils.env.env_builder import build_maniskill2_env
 from sapien.core import Pose
 
-def main(input_video, impainting_img_path, instruction, 
+def main(input_video, inpainting_img_path, instruction, 
          ckpt_path='rt_1_x_tf_trained_for_002272480_step',
          control_freq=3,
          control_mode='arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner',
@@ -43,7 +43,7 @@ def main(input_video, impainting_img_path, instruction,
         max_episode_steps=60,
         control_freq=control_freq,
         camera_cfgs={"add_segmentation": True},
-        rgb_overlay_path=impainting_img_path,
+        rgb_overlay_path=inpainting_img_path,
         rgb_overlay_cameras=[overlay_camera],
         **kwargs
     )
@@ -106,7 +106,7 @@ def main(input_video, impainting_img_path, instruction,
         for i in range(len(images)):
             images[i] = cv2.resize(images[i], (input_video[i].shape[1], input_video[i].shape[0]))
             images[i] = np.concatenate(
-                [images[i] if impainting_img_path is not None else np.array(images[i] * 0.7 + input_video[i] * 0.3).astype(np.uint8), 
+                [images[i] if inpainting_img_path is not None else np.array(images[i] * 0.7 + input_video[i] * 0.3).astype(np.uint8), 
                 input_video[i]], 
                 axis=1
             )
@@ -134,17 +134,17 @@ if __name__ == '__main__':
             [tf.config.LogicalDeviceConfiguration(memory_limit=4096)])
     
     mp4_path = 'ManiSkill2_real2sim/data/debug/rt1_real_standing_coke_can_1.mp4'
-    impainting_img_path = 'ManiSkill2_real2sim/data/debug/rt1_real_standing_coke_can_1_cleanup.png'
+    inpainting_img_path = 'ManiSkill2_real2sim/data/debug/rt1_real_standing_coke_can_1_cleanup.png'
     instruction = 'pick coke can'
     ckpt_path = 'checkpoints/xid77467904_000400120/'
     
     # mp4_path = None
-    # impainting_img_path = 'ManiSkill2_real2sim/data/real_impainting/move_near_real_obj_variants/move_near_real_1_1.png'
+    # inpainting_img_path = 'ManiSkill2_real2sim/data/real_inpainting/move_near_real_obj_variants/move_near_real_1_1.png'
     # instruction = 'move blue plastic bottle near pepsi can'
     # ckpt_path = 'checkpoints/xid77467904_000400120/'
     
     # mp4_path = 'data/debug/bridge_real_1.mp4'
-    # impainting_img_path = 'data/debug/bridge_real_1_cleanup.png'
+    # inpainting_img_path = 'data/debug/bridge_real_1_cleanup.png'
     # instruction = 'Place the can to the left of the pot.'
     # init_tcp_pose_at_robot_base = Pose([0.298068, -0.114657, 0.10782], [0.750753, 0.115962, 0.642171, -0.102661])
     # camera = '3rd_view_camera_bridge'
@@ -160,8 +160,8 @@ if __name__ == '__main__':
         gpus[0],
         [tf.config.LogicalDeviceConfiguration(memory_limit=3072)])
 
-    main(input_video, impainting_img_path, instruction, ckpt_path, control_freq=3)
-    # main(input_video, impainting_img_path, instruction, ckpt_path, 
+    main(input_video, inpainting_img_path, instruction, ckpt_path, control_freq=3)
+    # main(input_video, inpainting_img_path, instruction, ckpt_path, 
     #     control_freq=5,
     #     control_mode='arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos',
     #     policy_setup='widowx_bridge', robot='widowx',

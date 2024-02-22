@@ -52,7 +52,7 @@ def main(dset_iter, iter_num, episode_id,
                         control_freq=control_freq,
                         max_episode_steps=50,
                         camera_cfgs={"add_segmentation": True},
-                        rgb_overlay_path=f'ManiSkill2_real2sim/data/real_impainting/fractal/{episode_id}_0_cleanup.png',
+                        rgb_overlay_path=f'ManiSkill2_real2sim/data/real_inpainting/fractal/{episode_id}_0_cleanup.png',
                         rgb_overlay_cameras=['overhead_camera'],
             )
     

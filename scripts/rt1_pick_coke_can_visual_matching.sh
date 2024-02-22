@@ -15,7 +15,7 @@ declare -a urdf_version_arr=(None "recolor_tabletop_visual_matching_1" "recolor_
 
 env_name=GraspSingleOpenedCokeCanInScene-v0
 scene_name=google_pick_coke_can_1_v4
-rgb_overlay_path=./ManiSkill2_real2sim/data/real_impainting/google_coke_can_real_eval_1.png
+rgb_overlay_path=./ManiSkill2_real2sim/data/real_inpainting/google_coke_can_real_eval_1.png
 
 for ckpt_path in "${arr[@]}"; do echo "$ckpt_path"; done
 

@@ -53,7 +53,7 @@ def main(dset_iter, iter_num, episode_id,
                         control_freq=control_freq,
                         max_episode_steps=50,
                         camera_cfgs={"add_segmentation": True},
-                        rgb_overlay_path=f'ManiSkill2_real2sim/data/real_impainting/bridge/bridge_{episode_id}_cleanup.png',
+                        rgb_overlay_path=f'ManiSkill2_real2sim/data/real_inpainting/bridge/bridge_{episode_id}_cleanup.png',
                         rgb_overlay_cameras=[overlay_camera],
             )
     

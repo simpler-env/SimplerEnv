@@ -11,7 +11,7 @@ declare -a policy_models=(
 env_name=MoveNearGoogleBakedTexInScene-v0
 # env_name=MoveNearGoogleBakedTexInScene-v1
 scene_name=google_pick_coke_can_1_v4
-rgb_overlay_path=./ManiSkill2_real2sim/data/real_impainting/google_move_near_real_eval_1.png
+rgb_overlay_path=./ManiSkill2_real2sim/data/real_inpainting/google_move_near_real_eval_1.png
 
 # URDF variations
 declare -a urdf_version_arr=(None "recolor_tabletop_visual_matching_1" "recolor_tabletop_visual_matching_2" "recolor_cabinet_visual_matching_1")
