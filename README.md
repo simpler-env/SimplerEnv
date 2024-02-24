@@ -7,9 +7,9 @@ This repository is based in the [SAPIEN](https://sapien.ucsd.edu/) simulator and
 
 This repository encompasses 2 real-to-sim evaluation setups:
 - `Variant Aggregation` evaluation: for a real-world task (e.g., pick coke can), create different simulation environment variants for this task (encompassing different backgrounds, lightings, distractors, table textures, etc) and averaging their policy evaluation performance as the evaluation result.
-- `Visual Matching` evaluation: for a real-world task, create a single simulation environment for policy evaluation by matching the real-to-sim foreground and background visual appearances. We match background appearances by "greenscreening" real-world evaluation video backgrounds and overlaying them onto the simulation backgrounds. We match foreground appearances by baking and color-tuning the textures of object and robot assets. 
+- `Visual Matching` evaluation: for a real-world task, create simulation environments for policy evaluation by matching the real-to-sim foreground and background visual appearances. We match background appearances by "greenscreening" real-world evaluation video backgrounds and overlaying them onto the simulation backgrounds. We match foreground appearances by baking and color-tuning the textures of object and robot assets. We can also create multiple visual-matching simulation environments (with different object / robot textures) to reduce policy evaluation variance, and average their performance as the evaluation result.
 
-We hope that our work provides guidance and inspiration for future real-to-sim manipulation evaluation efforts, such as larger scale evaluations as the fields of 3D reconstruction and 3D generation progress.
+We hope that our work provides guidance and inspiration for future real-to-sim manipulation evaluation efforts, such as larger scale evaluations with automatic task creation as the fields of 3D reconstruction and 3D generation progress.
 
 - [Evaluating Real-World Robot Manipulation Policies in Simulation](#evaluating-real-world-robot-manipulation-policies-in-simulation)
   - [Installation](#installation)
@@ -18,7 +18,7 @@ We hope that our work provides guidance and inspiration for future real-to-sim m
     - [Adding New Robots](#adding-new-robots)
     - [Adding New Environments](#adding-new-environments)
     - [Adding New Policies](#adding-new-policies)
-    - [Debugging](#debugging)
+    - [Debugging Scripts and Other Tools](#debugging-scripts-and-other-tools)
   - [Appendix](#appendix)
       - [SAPIEN viewer controls](#sapien-viewer-controls)
       - [Asset missing errors and MS2\_ASSET\_DIR environment variable](#asset-missing-errors-and-ms2_asset_dir-environment-variable)
@@ -28,7 +28,7 @@ We hope that our work provides guidance and inspiration for future real-to-sim m
 
 ## Installation
 
-Prerequisites: CUDA version >=11.8
+Prerequisites: CUDA version >=11.8; an NVIDIA GPU (ideally RTX; for non-RTX GPUs, such as 1080Ti and A100, environments that involve ray tracing will be slow)
 
 Create an anaconda environment: 
 ```
@@ -102,9 +102,11 @@ pip install git+https://github.com/nathanrooy/simulated-annealing
 
 ## Reproducing Real-to-Sim Evaluation Results for Google Robot and WidowX
 
-We have provided policy inference scripts in `scripts/` to reproduce our real-to-sim evaluation results. You can also use them as a reference to write new scripts.
+We have provided policy inference scripts in `scripts/` to reproduce our Google Robot and WidowX real-to-sim evaluation results with RT-1, RT-1-X, and Octo policies. You can also use them as a reference to write new scripts.
 
-TODO: result processing
+To calculate our metrics, such as normalized rank loss, pearson correlation, and Kruskal-Wallis test, please follow the scripts in `tools/calc_metrics.py`. You can also use it as a reference to calculate metrics for your new environments.
+
+Additionally, we provide our real-to-sim evaluation videos at [this link](TODO).
 
 ## Adding New Real-to-Sim Evaluation Environments, Robots, and Policies
 
@@ -116,6 +118,7 @@ If you are adding a new robot, perform the following steps:
 
 1. Add your robot urdf to `ManiSkill2_real2sim/mani_skill2/assets/descriptions`. Then, create a test robot script in `tools/robot_object_visualization` to visualize the robot in the SAPIEN viewer. You can use the existing scripts as a reference by changing the loaded urdf path and the initial joint positions (qpos).
    - For SAPIEN viewer control, see [here](#sapien-viewer-controls)
+   - For the `visual matching` evaluation setup, you might want to recolor the robot to reduce the real-to-sim perception and evaluation gap. Given a real-world observation image, you can pick a color on the robot arm (a relatively bright color is recommended) using tools like GPick, and then use this color to bucket-paint the robot gripper or the robot arm texture images using tools like GIMP.
 
 2. Create a new robot agent implementation in `ManiSkill2_real2sim/mani_skill2/agents/robots` (which inherit `ManiSkill2_real2sim/mani_skill2/agents/base_agent.py`). You can use the existing robot implementations as a reference.
    - Add a set of controller configurations for the robot arm and the robot gripper. See more controller details in `ManiSkill2_real2sim/mani_skill2/agents/controllers/` and their base class `ManiSkill2_real2sim/mani_skill2/agents/base_controller.py`. You can also add more controller implementations there. 
@@ -126,9 +129,9 @@ If you are adding a new robot, perform the following steps:
 
 <details>
 <summary>**Notes on camera calibration**: </summary>
-Besides using regular camera calibration approaches, you can also use tools like [fSpy](https://github.com/stuffmatic/fSpy). In this case, aim your camera at a large table such that the entire table surface can be seen, and also ensure that 2 vertical wall lines can be seen. Then, input 3 pairs of lines (2 pairs of table lines + 1 pair of wall line) into fSpy to obtain intrinsic parameters for the camera. For an illustrative example, see `images/fSpy_calibration_example.png`.
+Besides using regular camera calibration approaches, you can also use tools like [fSpy](https://github.com/stuffmatic/fSpy). In this case, aim your camera at a large rectangular surface such that all 4 sides of the surface can be seen, and also ensure that 2 vertical lines that are parallel to each other (e.g., 2 lines on the wall) can be seen. Then, input 3 pairs of vanishing lines (2 pairs of lines on the horizontal surface + 1 pair of vertical lines) into fSpy to obtain intrinsic parameters for the camera. For an illustrative example, see `images/fSpy_calibration_example.png`.
 
-Additionally, if you already know the robot joint positions and the camera extrinsics for a particular real-world observation frame, you can use `ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py` to overlay a real image onto the simulation image and manually tune the intrinsic parameters such that the gripper in the real image aligns with the gripper in the simulation image.
+Additionally, if you already know the robot joint positions and the camera extrinsics for a particular real-world observation image, you can use `ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py` to overlay a real image onto the simulation image and manually tune the intrinsic parameters such that the gripper in the real image aligns with the gripper in the simulation image.
 </details>
 
 3. Perform system identification for the robot.
@@ -137,16 +140,16 @@ Additionally, if you already know the robot joint positions and the camera extri
 
 ### Adding New Environments
 
-SAPIEN uses an axis convention of x forward, y left, z up. 
+SAPIEN uses an axis convention of x forward, y left, z up for all object and scene assets.
 
 4. Add new object assets to `ManiSkill2_real2sim/data/custom`. 
    - Example object assets are in `ManiSkill2_real2sim/data/custom`. Each object asset contains two components:
      - Visual mesh (a `textured.dae` file combined with its corresponding `.png` texture files, or a single `textured.glb` file)
      - Collision mesh (`collision.obj`). The collision mesh should be watertight and convex. 
    - After adding `collision.obj`, if the collision shape is not yet convex, use `tools/coacd_process_mesh.py` to obtain a convex collision mesh.
-   - If you have good object geometry, then you can use [GeTex](https://github.com/Jiayuan-Gu/GeTex) to 
    - Use `tools/robot_object_visualization/test_object.py` to visualize the object in the SAPIEN viewer. You can click on an object / object link and press "show / hide" on the right panel to show / hide its collision mesh. 
    - For SAPIEN viewer control, see [here](#sapien-viewer-controls)
+   - For the `visual matching` evaluation setup, if you have an asset with good object geometry, then given a real-world observation image, you can use [GeTex](https://github.com/Jiayuan-Gu/GeTex) to bake the real-world object texture into the simulation asset. This is helpful for reducing the real-to-sim evaluation gap.
 
 <details>
 <summary>**Notes on modifying and exporting objects from Blender**: </summary>
@@ -174,32 +177,42 @@ You can export the `.glb` scenes from Blender. Pay attention to the axis convent
 7. Add new environments to `ManiSkill2_real2sim/mani_skill2/envs/custom_scenes`. You can use the existing environments as a reference. 
    - The environment `reset` function first assesses whether to reconfigure the environment (if so, then we call the `reconfigure` function in `ManiSkill2_real2sim/mani_skill2/envs/sapien_env.py` to load scenes, robot agents, objects, cameras, and lightings). It then calls the `initialize_episode` function to initialize the loaded robots and objects.
    - Our environments load metadata json files for the object assets (in `ManiSkill2_real2sim/data/custom/info_*.json`). Based on your environment implementation, fill in the metadata for each new object asset in existing json files or create new json files.
+   - For our existing environments, we implemented the tabletop environments without ray tracing for compatibility with non-RTX GPUs. Though, for Drawer tasks, turning on ray-tracing (`env = gym.make(**kwargs, shadow_dir='rt')`) is necessary as policies heavily rely on brightness contrasts and shadows to infer depth and accomplish the task. If you run ray-tracing environments, they are quite slow on non-RTX GPUs, such as A100.
 
-8. Test your environments using `ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`. See the script for more details.
+8. Test your environments using our interactive script `ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`. See the script for more details. In the script, you can manually control the robot and interact with the objects in the environment. You can also invoke the SAPIEN viewer to examine objects and robots. Additionally, for the visual-matching evaluation setup, you can test it to see if the real-world observation image is correctly overlaid onto the simulation observation (e.g., do the table edges align between sim and real). You can then iteratively tune the camera extrinsics and the robot poses to achieve better real-to-sim visual matching.
    - You can set different `env_reset_options` to test different environment configurations.
 
+9. Now we can turn our focus to the policy inference scripts in `./real2sim/`. The main inference script is `real2sim/main_inference.py`, which you can take a look as a reference. Based on your newly-created environments, update the utilities in `real2sim/utils/env/env_builder.py` and `real2sim/utils/env/observation_utils.py`.
 
-9. Test the real-to-sim evaluation gap using the policy inference scripts in `scripts/`, if your policy is already implemented in the repo (i.e., RT-* and Octo). You can use the existing scripts as a reference to write new scripts. Improve the quality of robot and object assets along this process, if necessary. TODO jiayuan's repo
-    - recolor shader_dir
-    
-<details>
-<summary>**Notes on Improving Foreground Object / Robot Textures for Visual Matching Evaluation:** </summary>
-
-asdf
-</details>
-
+10. If your policy is already implemented in our repo (i.e., RT-* and Octo), you can now perform policy evaluations in simulation! This is done through the policy inference scripts in `scripts/`. You can use the existing scripts as a reference to write new scripts. After running sim eval, modify the scripts in `tools/calc_metrics.py` to calculate the metrics in your newly-created environments, such as normalized rank loss, pearson correlation, and Kruskal-Wallis test.
+   
 
 ### Adding New Policies
 
-10. 
+11.  Implement new policy inference scripts in `real2sim/{your_new_policy}`, following the examples for RT-1 and Octo policies. 
+
+12.  Modify `real2sim/main_inference.py`, along with the utilities in `real2sim/utils/env/env_builder.py` and `real2sim/utils/env/observation_utils.py` to support your new policies.
+
+13.  Add policy inference scripts in `scripts/` to perform real-to-sim evaluation. Then, modify the scripts in `tools/calc_metrics.py` to calculate the metrics for your new policies.
 
 
 
 
 
-### Debugging
+### Debugging Scripts and Other Tools
 
-TODO
+To visualize robots and objects, see `tools/robot_object_visualization`.
+
+To debug robot-object interactions in an environment along with real-to-sim visual matching, see `ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`.
+
+We have also provided helpful example debugging tools in `real2sim/utils/debug` to help you debug your new robots and policies. Specifically,
+- `real2sim/utils/debug/{robot_name}_test_dataset_inference_rollout_gt_traj_in_sim.py` steps ground-truth actions in a demonstration dataset in an open-loop manner and records the resulting observation video and robot qpos. This is helpful for visualizing the real-to-sim control gap after system identification.
+- `real2sim/utils/debug/inference_real_video.py` feeds a sequence of (real evaluation) video frames into the policy and executes the resulting policy actions, which is helpful for debugging whether the behaviors of implemented policies are correct and reasonable. It can also feed an inpainting image with a robot arm rendered in simulation to the policy and sequentially execute the policy actions, which is helpful for investigating the effect of robot arm / gripper textures on the real-to-sim evaluation gap.
+- `real2sim/utils/debug/rt1_plot_dataset_inference_trajectory.py` plots ground-truth and policy-predicted demonstration action trajectories in a dataset, which is helpful for debugging whether the behaviors of implemented policies are correct and reasonable.
+
+We also provide some visualization scripts:
+- `tools/merge_videos.py` allows you to merge the simulation evaluation videos into a single video.
+- `tools/save_video_frame.py` saves a particular frame within a video.
 
 
 
@@ -225,19 +238,10 @@ export MS2_ASSET_DIR={path_to_ManiSkill2_real2sim}/data
 
 #### Other troubleshooting tips
 
-- `[error] Failed to cook a mesh from file: {path}/collision.obj` error: this error is most likely caused by the collision mesh not being watertight or not being convex. You can use `tools/coacd_process_mesh.py` to obtain a convex collision mesh.
+- `[error] Failed to cook a mesh from file: {path}/collision.obj`: this error is most likely caused by the collision mesh not being watertight or not being convex. You can use `tools/coacd_process_mesh.py` to obtain a convex collision mesh.
 
 #### More notes
 
 - The real-world Google Robot controller is non-blocking. For simplicity, currently we implement 3hz fixed frequency control (following RT-1 paper) in simulation.
+- We use `tcp` to refer to the tool center point of the robot end-effector throughout the codebase.
 
-
-
-
-real2sim/main_inference.py
-real2sim/utils/env/env_builder.py
-real2sim/utils/env/observation_utils.py
-real2sim/tools/sysid/sysid.py
-real2sim/tools/robot_object_visualization
-
-tcp = tool center point of end-effector

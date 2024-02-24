@@ -23,6 +23,7 @@ class OctoInference:
         exec_horizon=1,
         image_size=256,
         action_scale=1.0,
+        init_rng=0,
     ):
         os.environ['TOKENIZERS_PARALLELISM'] = 'false'
         if policy_setup == 'widowx_bridge':
@@ -79,7 +80,7 @@ class OctoInference:
         self.exec_horizon = exec_horizon
         self.action_ensemble = action_ensemble
         self.action_ensemble_temp = action_ensemble_temp
-        self.rng = jax.random.PRNGKey(0)
+        self.rng = jax.random.PRNGKey(init_rng)
         for _ in range(5):
             # to match octo server's inference seeds
             self.rng, _key = jax.random.split(self.rng) # each shape [2,]

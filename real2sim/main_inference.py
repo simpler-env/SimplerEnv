@@ -79,7 +79,7 @@ def main(model, ckpt_path, robot_name, env_name, scene_name,
     if instruction is not None:
         task_description = instruction
     else:
-        task_description = get_maniskill2_env_instruction(env, env_name)
+        task_description = get_maniskill2_env_instruction(env)
     # Initialize logging
     image = get_image_from_maniskill2_obs_dict(obs, robot_name, camera_name=obs_camera_name)
     images = [image]
@@ -192,6 +192,7 @@ if __name__ == '__main__':
     )
     parser.add_argument("--tmp-exp", action='store_true', help="debug flag")
     parser.add_argument("--tf-memory-limit", type=int, default=3072, help="Tensorflow memory limit")
+    parser.add_argument("--octo-init-rng", type=int, default=0, help="Octo init rng seed")
     
     args = parser.parse_args()
     
@@ -235,7 +236,7 @@ if __name__ == '__main__':
                                        policy_setup=args.policy_setup)
         else:
             model = OctoInference(model_type=args.policy_model, action_scale=args.action_scale,
-                                policy_setup=args.policy_setup)
+                                policy_setup=args.policy_setup, init_rng=args.octo_init_rng)
     else:
         raise NotImplementedError()
     

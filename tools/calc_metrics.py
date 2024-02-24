@@ -275,7 +275,7 @@ def calc_move_near_stats(root_result_dir):
         "rt-1-15pct": 0.583, 
         "rt-1-x": 0.45, 
         "rt-1-begin": 0.017,
-        "octo-base": 0.11,
+        "octo-base": 0.35,
     }
     
     ckpt_alias_keys = list(move_near_real_success.keys())
@@ -551,6 +551,11 @@ def calc_bridge_put_on_env_stats(root_result_dir):
     print("***Bridge Put On Env results***")
     # If you use a new checkpoint, please update the real evaluation results here
     real_partial_success_dict = {
+        "put_spoon_on_tablecloth": {
+            "rt-1-x": 0.042, 
+            "octo-base": 0.500,
+            "octo-small": 0.542
+        },
         "put_carrot_on_plate": {
             "rt-1-x": 0.167, 
             "octo-base": 0.500,
@@ -563,6 +568,11 @@ def calc_bridge_put_on_env_stats(root_result_dir):
         }
     }
     real_success_dict = {
+        "put_spoon_on_tablecloth": {
+            "rt-1-x": 0.000, 
+            "octo-base": 0.333,
+            "octo-small": 0.417
+        },
         "put_carrot_on_plate": {
             "rt-1-x": 0.00, 
             "octo-base": 0.25,
@@ -578,12 +588,16 @@ def calc_bridge_put_on_env_stats(root_result_dir):
     tasks = list(real_success_dict.keys())
     ckpt_alias_keys = list(real_success_dict[tasks[0]].keys())
     n_trials_per_ckpt = 24 # number of trials per checkpoint; update if it's different
+    octo_seed_range = [0, 2, 4] # we average octo performance over different random seeds to reduce variance
     
     # extra patterns required in file name; if you are using different visual matching overlay image, please update here
     extra_pattern_require_visual_matching=['rgb_overlay_bridge_real_eval_1']
     
     # hardcoded; if you have new variants, please update here
     base_visual_matching_variants_dict = {
+        "put_spoon_on_tablecloth": [
+            'bridge_table_1_v1/arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos/PutSpoonOnTableClothInScene-v0',
+        ],
         "put_carrot_on_plate": [
             'bridge_table_1_v1/arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos/PutCarrotOnPlateInScene-v0',
         ],
@@ -595,18 +609,25 @@ def calc_bridge_put_on_env_stats(root_result_dir):
     # success pattern; if different, please update here
     succ_fail_pattern = ['success_obj_episode', 'failure_obj_episode']
     # partial success pattern; if different, please update here
-    partial_succ_fail_pattern = ['is_src_obj_grasped_True', 'is_src_obj_grasped_False'] # ['consecutive_grasp_True', 'consecutive_grasp_False']
+    partial_succ_fail_pattern = ['is_src_obj_grasped_True', 'is_src_obj_grasped_False']
+    # partial_succ_fail_pattern = ['consecutive_grasp_True', 'consecutive_grasp_False']
     
     # get visual matching success
     for task in tasks:
         real_success = real_success_dict[task]
         real_partial_success = real_partial_success_dict[task]
-        base_visual_matching_variants = base_visual_matching_variants_dict[task]
         print("*" * 10, f"Results for {task}", "*" * 10)
         
         sim_visual_matching_success = {k: [] for k in ckpt_alias_keys}
         sim_visual_matching_partial_success = {k: [] for k in ckpt_alias_keys}
         for ckpt_alias in ckpt_alias_keys:
+            base_visual_matching_variants = base_visual_matching_variants_dict[task]
+            if 'octo' in ckpt_alias:
+                # we average octo performance over different random seeds
+                tmp = []
+                for seed in octo_seed_range:
+                    tmp.extend([f"{variant}_octo_init_rng_{seed}" for variant in base_visual_matching_variants])
+                base_visual_matching_variants = tmp
             for variant in base_visual_matching_variants:
                 variant = f"{root_result_dir}/{CKPT_MAPPING[ckpt_alias]}/{variant}"
                 avg_sim_success = np.mean(
@@ -624,7 +645,7 @@ def calc_bridge_put_on_env_stats(root_result_dir):
                     )
                 )
                 if np.isnan(avg_sim_success) or np.isnan(avg_sim_partial_success):
-                    raise ValueError(f"avg_sim_success is nan for {variant}")
+                    print(f"WARNING: avg_sim_success is nan for {variant}")
                 sim_visual_matching_success[ckpt_alias].append(avg_sim_success)
                 sim_visual_matching_partial_success[ckpt_alias].append(avg_sim_partial_success)
             sim_visual_matching_success[ckpt_alias] = np.mean(sim_visual_matching_success[ckpt_alias])
@@ -673,13 +694,16 @@ CKPT_MAPPING = {
     "octo-server": "octo-server"
 }
 
-
-calc_pick_coke_can_stats("./results/")
+# calc_pick_coke_can_stats("./results/")
 # calc_move_near_stats("./results/")
 # calc_drawer_stats("./results/")
-# calc_bridge_put_on_env_stats("./results/")
-
-
-
+calc_bridge_put_on_env_stats("./results/")
 
 exit(0)
+
+"""
+octo-base variant aggregation:
+pick coke can ([horizontal, vertical, standing, avg]): default urdf [0.00, 0.00, 0.00, 0.00]; recolor_sim urdf [0.009, 0.00, 0.0267, 0.012]
+move near: default urdf 0.03125; recolor_sim urdf 0.033
+drawer ([open, close, avg]): default urdf [0.00, 0.021, 0.011]; recolor_sim urdf [0.00, 0.016, 0.008]
+"""

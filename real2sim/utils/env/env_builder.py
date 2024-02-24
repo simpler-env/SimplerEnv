@@ -1,8 +1,10 @@
 import mani_skill2.envs, gymnasium as gym
 
 def build_maniskill2_env(env_name, **kwargs):
+    # Create environment
     if kwargs.get('rgb_overlay_path', None) is not None:
         if kwargs.get('rgb_overlay_cameras', None) is None:
+            # Set the default camera to overlay real images for the visual-matching evaluation setting
             if 'google_robot_static' in kwargs['robot']:
                 kwargs['rgb_overlay_cameras'] = ['overhead_camera']
             elif 'widowx' in kwargs['robot']:
@@ -14,7 +16,8 @@ def build_maniskill2_env(env_name, **kwargs):
     return env
 
 
-def get_maniskill2_env_instruction(env, env_name, **kwargs):
+def get_maniskill2_env_instruction(env, **kwargs):
+    # Get task description
     task_description = env.get_language_instruction()
     print(task_description)
     return task_description

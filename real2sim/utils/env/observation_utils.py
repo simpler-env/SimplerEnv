@@ -1,4 +1,5 @@
 def get_image_from_maniskill2_obs_dict(obs, robot_name, camera_name=None):
+    # obtain image from observation dictionary returned by ManiSkill2 environment
     if camera_name is None:
         if 'google_robot' in robot_name:
             camera_name = 'overhead_camera'

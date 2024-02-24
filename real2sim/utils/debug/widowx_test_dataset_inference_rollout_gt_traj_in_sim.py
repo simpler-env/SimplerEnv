@@ -1,5 +1,5 @@
 """
-Step ground-truth actions in a dataset and record the resulting observation video and robot qpos.
+Step ground-truth actions in a dataset in an open-loop manner and record the resulting observation video and robot qpos.
 """
 
 import numpy as np
