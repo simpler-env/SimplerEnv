@@ -1,13 +1,11 @@
-from collections import defaultdict
 import numpy as np
 import os
-import jax, cv2
+import jax
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from octo.model.octo_model import OctoModel
 
-from sapien.core import Pose
 from transforms3d.euler import euler2axangle
 from collections import deque
 from real2sim.utils.action.action_ensemble import ActionEnsembler

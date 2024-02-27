@@ -4,7 +4,6 @@ gpu_id=0
 
 declare -a policy_models=(
   "octo-base"
-  # ./checkpoints/octo_feb1_24/octo_base_gpu_final
   # "octo-small"
   # "octo-server"
 )

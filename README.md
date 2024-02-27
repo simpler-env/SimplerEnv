@@ -13,12 +13,15 @@ We hope that our work provides guidance and inspiration for future real-to-sim m
 
 - [Evaluating Real-World Robot Manipulation Policies in Simulation](#evaluating-real-world-robot-manipulation-policies-in-simulation)
   - [Installation](#installation)
-  - [Reproducing Real-to-Sim Evaluation Results for Google Robot and WidowX](#reproducing-real-to-sim-evaluation-results-for-google-robot-and-widowx)
-  - [Adding New Real-to-Sim Evaluation Environments, Robots, and Policies](#adding-new-real-to-sim-evaluation-environments-robots-and-policies)
+      - [RT-1 Inference Setup](#rt-1-inference-setup)
+      - [Octo Inference Setup](#octo-inference-setup)
+  - [Real-to-Sim Evaluation On Existing Environments](#real-to-sim-evaluation-on-existing-environments)
+    - [Running Inference on Existing Policies](#running-inference-on-existing-policies)
+    - [Implementing New Policy Inference](#implementing-new-policy-inference)
+  - [Adding New Real-to-Sim Evaluation Environments and Robots](#adding-new-real-to-sim-evaluation-environments-and-robots)
     - [Adding New Robots](#adding-new-robots)
     - [Adding New Environments](#adding-new-environments)
-    - [Adding New Policies](#adding-new-policies)
-    - [Debugging Scripts and Other Tools](#debugging-scripts-and-other-tools)
+  - [Debugging Scripts and Other Tools](#debugging-scripts-and-other-tools)
   - [Appendix](#appendix)
       - [SAPIEN viewer controls](#sapien-viewer-controls)
       - [Asset missing errors and MS2\_ASSET\_DIR environment variable](#asset-missing-errors-and-ms2_asset_dir-environment-variable)
@@ -57,6 +60,13 @@ pip install -e .
 pip install tensorflow[and-cuda] # tensorflow gpu support
 ```
 
+Install simulated annealing utils for system identification:
+```
+pip install git+https://github.com/nathanrooy/simulated-annealing
+```
+
+#### RT-1 Inference Setup
+
 Download RT-1 Checkpoint:
 ```
 # First, install gsutil following https://cloud.google.com/storage/docs/gsutil_install
@@ -85,34 +95,67 @@ Download from https://drive.google.com/drive/folders/19xWAJR9EGX86zN9LfgYSvKj27t
 After unzipping, you'll see a "rt1new_77467904_000001120" directory when you enter the unzipped directory. Move this directory to the `checkpoints` directory.
 ```
 
+#### Octo Inference Setup
+
 Install Octo:
 ```
+pip install --upgrade "jax[cuda11_pip]==0.4.20" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html # or jax[cuda12_pip] if you have CUDA 12
+
 cd {this_repo}
 git clone https://github.com/octo-models/octo/
 cd octo
-pip install --upgrade "jax[cuda11_pip]==0.4.20" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html # or jax[cuda12_pip] if you have CUDA 12
 pip install -e . 
 # You don't need to run "pip install -r requirements.txt" inside the octo repo; the package dependencies are already handled in the Real2Sim repo
 # Octo checkpoints are managed by huggingface, so you don't need to download them manually.
 ```
 
-Install simulated annealing utils for system identification:
+
+
+
+## Real-to-Sim Evaluation On Existing Environments
+
+Our codebase is structured as follows:
+- `ManiSkill2_real2sim/`: the ManiSkill2 real-to-sim environment codebase, which contains the environments, robots, and objects for real-to-sim evaluation.
+- `real2sim/`: the policy inference codebase, which contains policy inference implementations, scripts, and utilities for real-to-sim evaluation.
+
+If you want to use existing environments for evaluating policies, you can keep `./ManiSkill2_real2sim` as is and only modify `./real2sim` to add new policies.
+
+### Running Inference on Existing Policies
+
+We have provided policy inference scripts in `scripts/` to reproduce our Google Robot and WidowX real-to-sim evaluation results with RT-1, RT-1-X, and Octo policies. Additionally, we provide our real-to-sim evaluation videos at [this link](TODO).
+
+For example, to run RT-1 (RT-1 (Converged), RT-1 (15%), RT-1 (Begin), RT-1-X) checkpoints and Octo-Base on Google Robot "pick coke can" task,
 ```
-pip install git+https://github.com/nathanrooy/simulated-annealing
+# visual matching
+
+bash scripts/rt1_pick_coke_can_visual_matching.sh
+bash scripts/octo_pick_coke_can_visual_matching.sh
+
+# variant aggregation
+
+bash scripts/rt1_pick_coke_can_variant_agg.sh
+bash scripts/octo_pick_coke_can_variant_agg.sh
 ```
 
+Then, calculate the metrics (e.g., Normalized Rank Loss, pearson correlation, and Kruskal-Wallis test) for the evaluation results:
+```
+python tools/calc_metrics.py --task pick_coke_can
+```
 
-## Reproducing Real-to-Sim Evaluation Results for Google Robot and WidowX
+### Implementing New Policy Inference
 
-We have provided policy inference scripts in `scripts/` to reproduce our Google Robot and WidowX real-to-sim evaluation results with RT-1, RT-1-X, and Octo policies. You can also use them as a reference to write new scripts.
+1.  Implement new policy inference scripts in `real2sim/{your_new_policy}`, following the examples for RT-1 (`real2sim/rt1`) and Octo policies. 
 
-To calculate our metrics, such as normalized rank loss, pearson correlation, and Kruskal-Wallis test, please follow the scripts in `tools/calc_metrics.py`. You can also use it as a reference to calculate metrics for your new environments.
+2.  Modify `real2sim/main_inference.py` to support your new policies.
 
-Additionally, we provide our real-to-sim evaluation videos at [this link](TODO).
+3. Add policy inference scripts in `scripts/` to perform real-to-sim evaluation. 
+   
+4. Modify the scripts in `tools/calc_metrics.py` to calculate the real-to-sim evaluation metrics for your new policies.
 
-## Adding New Real-to-Sim Evaluation Environments, Robots, and Policies
 
-Below we provide a step-by-step guide to add new real-to-sim evaluation environments, robots, and policies. 
+## Adding New Real-to-Sim Evaluation Environments and Robots
+
+Below we provide a step-by-step guide to add new real-to-sim evaluation environments and robots. 
 
 ### Adding New Robots
 
@@ -184,24 +227,15 @@ You can export the `.glb` scenes from Blender. Pay attention to the axis convent
 8. Test your environments using our interactive script `ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`. See the script for more details. In the script, you can manually control the robot and interact with the objects in the environment. You can also invoke the SAPIEN viewer to examine objects and robots. Additionally, for the visual-matching evaluation setup, you can test it to see if the real-world observation image is correctly overlaid onto the simulation observation (e.g., do the table edges align between sim and real). You can then iteratively tune the camera extrinsics and the robot poses to achieve better real-to-sim visual matching.
    - You can set different `env_reset_options` to test different environment configurations.
 
-9. Now we can turn our focus to the policy inference scripts in `./real2sim/`. The main inference script is `real2sim/main_inference.py`, which you can take a look as a reference. Based on your newly-created environments, update the utilities in `real2sim/utils/env/env_builder.py` and `real2sim/utils/env/observation_utils.py`.
+9. Now we can turn our focus to the policy inference scripts in `./real2sim/`. The main inference script is `real2sim/main_inference.py` and `real2sim/evaluation/`, which you can take a look as a reference. Based on your newly-created environments, update the utilities in `real2sim/utils/env/env_builder.py` and `real2sim/utils/env/observation_utils.py`.
 
-10. If your policy is already implemented in our repo (i.e., RT-* and Octo), you can now perform policy evaluations in simulation! This is done through the policy inference scripts in `scripts/`. You can use the existing scripts as a reference to write new scripts. After running sim eval, modify the scripts in `tools/calc_metrics.py` to calculate the metrics in your newly-created environments, such as normalized rank loss, pearson correlation, and Kruskal-Wallis test.
-   
-
-### Adding New Policies
-
-11.  Implement new policy inference scripts in `real2sim/{your_new_policy}`, following the examples for RT-1 and Octo policies. 
-
-12.  Modify `real2sim/main_inference.py`, along with the utilities in `real2sim/utils/env/env_builder.py` and `real2sim/utils/env/observation_utils.py` to support your new policies.
-
-13.  Add policy inference scripts in `scripts/` to perform real-to-sim evaluation. Then, modify the scripts in `tools/calc_metrics.py` to calculate the metrics for your new policies.
+10. If your policy is already implemented in our repo (i.e., RT-* and Octo), you can now perform policy evaluations in simulation. If not yet, please follow [here](implementing-new-policy-inference) to implement new policies. Policy evaluation is done through the policy inference scripts in `scripts/`. You can use the existing scripts as a reference to write new scripts for new environments. After running sim eval, modify the scripts in `tools/calc_metrics.py` to calculate the metrics in your new environments.
 
 
 
 
 
-### Debugging Scripts and Other Tools
+## Debugging Scripts and Other Tools
 
 To visualize robots and objects, see `tools/robot_object_visualization`.
 

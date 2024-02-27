@@ -1,5 +1,6 @@
 import numpy as np
 import glob
+import argparse
 from pathlib import Path
 from scipy.stats import kruskal
 
@@ -694,10 +695,21 @@ CKPT_MAPPING = {
     "octo-server": "octo-server"
 }
 
-calc_pick_coke_can_stats("./results/")
-# calc_move_near_stats("./results/")
-# calc_drawer_stats("./results/")
-# calc_bridge_put_on_env_stats("./results/")
+parser = argparse.ArgumentParser()
+parser.add_argument('--task', type=str, default='pick_coke_can', help='task name')
+
+args = parser.parse_args()
+
+if args.task == "pick_coke_can":
+    calc_pick_coke_can_stats("./results/")
+elif args.task == "move_near":
+    calc_move_near_stats("./results/")
+elif args.task == "drawer":
+    calc_drawer_stats("./results/")
+elif args.task == "bridge_put_on":
+    calc_bridge_put_on_env_stats("./results/")
+else:
+    raise ValueError(f"Unknown task: {args.task}")
 
 exit(0)
 

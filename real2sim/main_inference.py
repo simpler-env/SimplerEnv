@@ -44,4 +44,5 @@ if __name__ == '__main__':
     else:
         raise NotImplementedError()
       
+    # run real-to-sim evaluation
     maniskill2_evaluator(model, args)

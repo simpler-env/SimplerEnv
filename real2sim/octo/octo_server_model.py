@@ -1,14 +1,11 @@
-from collections import defaultdict
 import numpy as np
-import os, time
-import jax, cv2
+import time
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import json, requests, urllib
 
 from numpy.lib.format import dtype_to_descr, descr_to_dtype
 from base64 import b64decode, b64encode
-from sapien.core import Pose
 from transforms3d.euler import euler2axangle
 
 
@@ -113,7 +110,7 @@ class OctoServerInference:
         self.sticky_gripper_action = 0.0
         # self.gripper_is_closed = False
         self.previous_gripper_action = None
-        _ = requests.post(urllib.parse.urljoin("http://ari.bair.berkeley.edu:8000", "reset"),)
+        _ = requests.post(urllib.parse.urljoin("http://ari.bair.berkeley.edu:8000", "reset"), timeout=100)
         time.sleep(1.0)
 
     def _get_fake_pay_load(self, image_primary, text, modality='l'):
