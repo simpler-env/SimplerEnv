@@ -15,7 +15,7 @@ import numpy as np
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input-video", type=Path, required=True)
-    parser.add_argument("-o", "--output-path", type=str)
+    parser.add_argument("-o", "--output-path", type=str, required=True)
     parser.add_argument("-n", "--frame", type=int, default=0, help="frame number")
 
     args = parser.parse_args()

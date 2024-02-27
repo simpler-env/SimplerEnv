@@ -37,7 +37,7 @@ def print_all_kruskal_results(sim, real, title):
     sim, real = np.array(sim), np.array(real)
     assert sim.shape == real.shape
     print(title)
-    print(" " * 6, "overall kruskal", kruskal(sim.reshape(-1), real.reshape(-1)))
+    # print(" " * 6, "overall kruskal", kruskal(sim.reshape(-1), real.reshape(-1)))
     print(" " * 6, "each checkpoint kruskal:")
     for i in range(sim.shape[0]):
         if np.all(sim[i] == real[i]):
@@ -694,10 +694,10 @@ CKPT_MAPPING = {
     "octo-server": "octo-server"
 }
 
-# calc_pick_coke_can_stats("./results/")
+calc_pick_coke_can_stats("./results/")
 # calc_move_near_stats("./results/")
 # calc_drawer_stats("./results/")
-calc_bridge_put_on_env_stats("./results/")
+# calc_bridge_put_on_env_stats("./results/")
 
 exit(0)
 

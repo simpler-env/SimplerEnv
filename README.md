@@ -7,7 +7,7 @@ This repository is based in the [SAPIEN](https://sapien.ucsd.edu/) simulator and
 
 This repository encompasses 2 real-to-sim evaluation setups:
 - `Variant Aggregation` evaluation: for a real-world task (e.g., pick coke can), create different simulation environment variants for this task (encompassing different backgrounds, lightings, distractors, table textures, etc) and averaging their policy evaluation performance as the evaluation result.
-- `Visual Matching` evaluation: for a real-world task, create simulation environments for policy evaluation by matching the real-to-sim foreground and background visual appearances. We match background appearances by "greenscreening" real-world evaluation video backgrounds and overlaying them onto the simulation backgrounds. We match foreground appearances by baking and color-tuning the textures of object and robot assets. We can also create multiple visual-matching simulation environments (with different object / robot textures) to reduce policy evaluation variance, and average their performance as the evaluation result.
+- `Visual Matching` evaluation: for a real-world task, create simulation environments for policy evaluation by matching the real-to-sim foreground and background visual appearances. We match background appearances by "greenscreening" real-world evaluation video backgrounds and overlaying them onto the simulation observation. We match foreground appearances by baking and color-tuning the textures of object and robot assets.
 
 We hope that our work provides guidance and inspiration for future real-to-sim manipulation evaluation efforts, such as larger scale evaluations with automatic task creation as the fields of 3D reconstruction and 3D generation progress.
 
@@ -28,7 +28,9 @@ We hope that our work provides guidance and inspiration for future real-to-sim m
 
 ## Installation
 
-Prerequisites: CUDA version >=11.8; an NVIDIA GPU (ideally RTX; for non-RTX GPUs, such as 1080Ti and A100, environments that involve ray tracing will be slow)
+Prerequisites: 
+- CUDA version >=11.8
+- An NVIDIA GPU (ideally RTX; for non-RTX GPUs, such as 1080Ti and A100, environments that involve ray tracing will be slow). Currently TPU is not supported as SAPIEN requires a GPU to run.
 
 Create an anaconda environment: 
 ```
@@ -52,7 +54,7 @@ Install this package:
 cd {this_repo}
 pip install tensorflow==2.15.0
 pip install -e .
-pip install tensorflow[and-cuda]
+pip install tensorflow[and-cuda] # tensorflow gpu support
 ```
 
 Download RT-1 Checkpoint:
