@@ -33,16 +33,19 @@ if __name__ == '__main__':
             saved_model_path=args.ckpt_path, policy_setup=args.policy_setup, action_scale=args.action_scale
         )
     elif 'octo' in args.policy_model:
-        args.ckpt_path = args.policy_model
+        if args.ckpt_path is None or args.ckpt_path == 'None':
+            args.ckpt_path = args.policy_model
         if 'server' in args.policy_model:
             model = OctoServerInference(
-                model_type=args.policy_model, policy_setup=args.policy_setup, action_scale=args.action_scale)
+                model_type=args.ckpt_path, policy_setup=args.policy_setup, action_scale=args.action_scale)
         else:
             model = OctoInference(
-                model_type=args.policy_model, policy_setup=args.policy_setup, init_rng=args.octo_init_rng, action_scale=args.action_scale,
+                model_type=args.ckpt_path, policy_setup=args.policy_setup, init_rng=args.octo_init_rng, action_scale=args.action_scale,
             )
     else:
         raise NotImplementedError()
       
     # run real-to-sim evaluation
-    maniskill2_evaluator(model, args)
+    success_arr = maniskill2_evaluator(model, args)
+    print(args)
+    print(" " * 10, "Average success", np.mean(success_arr))

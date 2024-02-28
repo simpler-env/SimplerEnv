@@ -22,7 +22,8 @@ def run_maniskill2_eval_single_episode(
         control_freq=3, sim_freq=513, max_episode_steps=80,
         instruction=None,
         enable_raytracing=False,
-        additional_env_save_tags=None,):
+        additional_env_save_tags=None,
+        logging_dir='./results'):
     
     if additional_env_build_kwargs is None:
         additional_env_build_kwargs = {}
@@ -40,8 +41,10 @@ def run_maniskill2_eval_single_episode(
         rgb_overlay_path=rgb_overlay_path,
     )
     if enable_raytracing:
-        kwargs['shader_dir'] = 'rt'
-        kwargs['render_config'] = {"rt_samples_per_pixel": 128, "rt_use_denoiser": True}
+        ray_tracing_dict = {'shader_dir': 'rt'}
+        ray_tracing_dict.update(additional_env_build_kwargs)
+        # put raytracing dict keys before other keys for compatibility with existing result naming and metric calculation
+        additional_env_build_kwargs = ray_tracing_dict
     env = build_maniskill2_env(
         env_name,
         **additional_env_build_kwargs,
@@ -139,7 +142,7 @@ def run_maniskill2_eval_single_episode(
         rgb_overlay_path_str = 'None'
     r, p, y = quat2euler(robot_init_quat)
     video_path = f'{ckpt_path_basename}/{scene_name}/{control_mode}/{env_save_name}/rob_{robot_init_x}_{robot_init_y}_rot_{r:.3f}_{p:.3f}_{y:.3f}_rgb_overlay_{rgb_overlay_path_str}/{video_name}'
-    video_path = 'results/' + video_path
+    video_path = os.path.join(logging_dir, video_path)
     write_video(video_path, images, fps=5)
     
     # save action trajectory
@@ -149,11 +152,14 @@ def run_maniskill2_eval_single_episode(
     action_path = action_root + os.path.basename(action_path)
     model.visualize_epoch(predicted_actions, images, save_path=action_path)
     
+    return (success == 'success')
+    
     
     
     
 def maniskill2_evaluator(model, args):
     control_mode = get_robot_control_mode(args.robot, args.policy_model)
+    success_arr = []
     
     # run inference
     for robot_init_x in args.robot_init_xs:
@@ -171,13 +177,16 @@ def maniskill2_evaluator(model, args):
                     enable_raytracing=args.enable_raytracing,
                     additional_env_save_tags=args.additional_env_save_tags,
                     obs_camera_name=args.obs_camera_name,
+                    logging_dir=args.logging_dir
                 )
                 if args.obj_variation_mode == 'xy':
                     for obj_init_x in args.obj_init_xs:
                         for obj_init_y in args.obj_init_ys:
-                            run_maniskill2_eval_single_episode(obj_init_x=obj_init_x, obj_init_y=obj_init_y, **kwargs)
+                            success_arr.append(run_maniskill2_eval_single_episode(obj_init_x=obj_init_x, obj_init_y=obj_init_y, **kwargs))
                 elif args.obj_variation_mode == 'episode':
                     for obj_episode_id in range(args.obj_episode_range[0], args.obj_episode_range[1]):
-                        run_maniskill2_eval_single_episode(obj_episode_id=obj_episode_id, **kwargs)
+                        success_arr.append(run_maniskill2_eval_single_episode(obj_episode_id=obj_episode_id, **kwargs))
                 else:
                     raise NotImplementedError()
+    
+    return success_arr

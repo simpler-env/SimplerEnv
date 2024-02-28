@@ -23,7 +23,7 @@ declare -a urdf_version_arr=(None "recolor_tabletop_visual_matching_1" "recolor_
 
 for urdf_version in "${urdf_version_arr[@]}"; do 
 
-EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station_recolor light_mode=simple disable_bad_material=True urdf_version=${urdf_version}"
+EXTRA_ARGS="--enable-raytracing --additional-env-build-kwargs station_name=mk_station_recolor light_mode=simple disable_bad_material=True urdf_version=${urdf_version}"
 
 EvalOverlay() {
 # A0

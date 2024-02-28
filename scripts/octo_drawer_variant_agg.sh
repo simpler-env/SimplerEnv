@@ -15,7 +15,7 @@ CloseMiddleDrawerCustomInScene-v0
 CloseBottomDrawerCustomInScene-v0
 )
 
-EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt"
+EXTRA_ARGS="--enable-raytracing"
 
 
 # base setup

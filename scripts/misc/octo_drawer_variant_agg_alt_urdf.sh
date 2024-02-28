@@ -17,7 +17,7 @@ CloseBottomDrawerCustomInScene-v0
 
 urdf_version=recolor_sim
 
-EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt urdf_version=${urdf_version}"
+EXTRA_ARGS="--enable-raytracing --additional-env-build-kwargs urdf_version=${urdf_version}"
 
 
 # base setup
