@@ -1,3 +1,13 @@
+"""
+Simple inference script for visual matching prepackaged environments
+Example:
+    cd {path_to_real2sim_repo_root}
+    MS2_ASSET_DIR=./ManiSkill2_real2sim/data python real2sim/simple_inference_visual_matching_prepackaged_envs.py --policy rt1 \
+        --ckpt-path ./checkpoints/xid77467904_000400120  --task google_robot_pick_horizontal_coke_can  --logging-dir ./results/
+    MS2_ASSET_DIR=./ManiSkill2_real2sim/data python real2sim/simple_inference_visual_matching_prepackaged_envs.py --policy octo-small \
+        --ckpt-path None --task widowx_spoon_on_towel  --logging-dir ./results/
+"""
+
 import argparse, os
 import numpy as np
 import tensorflow as tf
@@ -65,7 +75,7 @@ elif 'octo' in args.policy:
     # for octo model, inference over 3 different seeds due to nondeterministic diffusion policy
     for rng in [0, 2, 4]:
         model = OctoInference(
-            model_type=args.ckpt_path, policy_setup=policy_setup, init_rng=args.octo_init_rng
+            model_type=args.ckpt_path, policy_setup=policy_setup, init_rng=rng
         )
         for searg in sim_eval_args:
             sim_eval_arg = deepcopy(searg)

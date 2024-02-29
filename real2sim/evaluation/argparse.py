@@ -95,7 +95,7 @@ def create_prepackaged_sim_eval_args(policy_model, ckpt_path, task_name,
         args.policy_setup = 'google_robot'
         args.robot = 'google_robot_static'
         args.sim_freq, args.control_freq = 513, 3 # 3hz control for google robot
-    elif 'widowx' in args.task:
+    elif 'widowx' in task_name:
         args.policy_setup = 'widowx_bridge'
         args.robot = 'widowx'
         args.sim_freq, args.control_freq = 500, 5 # 5hz control for widowx under Bridge setup
@@ -223,7 +223,8 @@ def create_prepackaged_sim_eval_args(policy_model, ckpt_path, task_name,
                 tmp.append(arg)
         args = tmp
     elif 'move_near' in task_name:
-        pass
+        for arg in args:
+            arg.additional_env_build_kwargs = {}
     elif 'drawer' in task_name:
         for arg in args:
             arg.additional_env_build_kwargs = {
@@ -233,17 +234,19 @@ def create_prepackaged_sim_eval_args(policy_model, ckpt_path, task_name,
                 'disable_bad_material': True,
             }
     elif task_name in ['widowx_spoon_on_towel', 'widowx_carrot_on_plate', 'widowx_stack_cube']:
-        pass
+        for arg in args:
+            arg.additional_env_build_kwargs = {}
     
     # urdfs
     tmp = []
-    for a in args:
-        for urdf_version in ['None', "recolor_tabletop_visual_matching_1", "recolor_tabletop_visual_matching_2", "recolor_cabinet_visual_matching_1"]:
-            if 'drawer' in task_name and urdf_version == 'None':
-                continue
-            arg = deepcopy(a)
-            arg.additional_env_build_kwargs.update({'urdf_version': urdf_version})
-            tmp.append(arg)
+    if 'google_robot' in task_name:
+        for a in args:
+            for urdf_version in ['None', "recolor_tabletop_visual_matching_1", "recolor_tabletop_visual_matching_2", "recolor_cabinet_visual_matching_1"]:
+                if 'drawer' in task_name and urdf_version == 'None':
+                    continue
+                arg = deepcopy(a)
+                arg.additional_env_build_kwargs.update({'urdf_version': urdf_version})
+                tmp.append(arg)
     args = tmp
         
     # max episode steps
