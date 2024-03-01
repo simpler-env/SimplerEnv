@@ -9,7 +9,7 @@ from transforms3d.euler import quat2euler
 
 from real2sim.utils.visualization import write_video
 from real2sim.utils.env.env_builder import build_maniskill2_env, get_maniskill2_env_instruction, get_robot_control_mode
-from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_dict, obtain_truncation_step_success
+from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
 
 def run_maniskill2_eval_single_episode(
         model, ckpt_path, robot_name, env_name, scene_name, 
@@ -107,8 +107,7 @@ def run_maniskill2_eval_single_episode(
                 ]
             )
         )
-        if predicted_terminated and info['success']:
-            success = "success"
+        success = "success" if done else "failure"
         
         print(timestep, info)
         
@@ -117,9 +116,6 @@ def run_maniskill2_eval_single_episode(
         timestep += 1
 
     episode_stats = info.get("episode_stats", {})
-    # if policy never outputs terminate throughout a trajectory, obtain an episode's success status based on episode stats and last step's info
-    if obtain_truncation_step_success(env_name, episode_stats, info):
-        success = "success"
     
     # save video
     env_save_name = env_name

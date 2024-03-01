@@ -23,7 +23,7 @@ def build_prepackaged_maniskill2_env(task_name):
     env_name, kwargs = task_map_dict[task_name]
     kwargs['prepackaged_config'] = True
     env = gym.make(env_name, obs_mode='rgbd', **kwargs)
-    return env_name, env
+    return env
     
 
 def build_maniskill2_env(env_name, **kwargs):

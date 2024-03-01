@@ -7,7 +7,6 @@ dm-reverb[tensorflow]
 apache_beam
 tfds-nightly
 tfp-nightly
-transforms3d
 matplotlib
 IPython
 mediapy
@@ -19,5 +18,4 @@ flax
 ml_collections
 wandb
 einops
-ruckig
 transformers

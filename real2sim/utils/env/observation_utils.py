@@ -8,10 +8,3 @@ def get_image_from_maniskill2_obs_dict(env, obs, camera_name=None):
         else:
             raise NotImplementedError()
     return obs['image'][camera_name]['rgb']
-
-def obtain_truncation_step_success(env_name, episode_stats, info):
-    # obtain success indicator if policy never outputs termination
-    if 'GraspSingle' in env_name:
-        return (info['lifted_object_significantly'] or (episode_stats['n_lift_significant'] >= 5))
-    else:
-        return info['success']

@@ -14,7 +14,7 @@ import tensorflow as tf
 import mediapy as media
 
 from real2sim.utils.env.env_builder import build_prepackaged_maniskill2_env
-from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_dict, obtain_truncation_step_success
+from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
 
 parser = argparse.ArgumentParser()
 
@@ -51,7 +51,7 @@ if len(gpus) > 0:
         [tf.config.LogicalDeviceConfiguration(memory_limit=args.tf_memory_limit)])
     
 # build environment
-env_name, env = build_prepackaged_maniskill2_env(args.task)
+env = build_prepackaged_maniskill2_env(args.task)
 
 # build policy
 if 'google_robot' in args.task:
@@ -90,7 +90,7 @@ for ep_id in range(args.n_trajs):
         # step the model; "raw_action" is raw model action output; "action" is the processed action to be sent into maniskill env
         raw_action, action = model.step(image)
         predicted_terminated = bool(action['terminate_episode'][0] > 0)
-        obs, reward, done, truncated, info = env.step(
+        obs, reward, success, truncated, info = env.step(
             np.concatenate(
                 [action['world_vector'], 
                 action['rot_axangle'],
@@ -98,8 +98,6 @@ for ep_id in range(args.n_trajs):
                 ]
             )
         )
-        if predicted_terminated and done: # if policy outputs termination and the episode is successful
-            success = True
         print(timestep, info)
         # update image observation
         image = get_image_from_maniskill2_obs_dict(env, obs)
@@ -107,9 +105,6 @@ for ep_id in range(args.n_trajs):
         timestep += 1
     
     episode_stats = info.get("episode_stats", {})
-    # if policy never outputs terminate throughout a trajectory, obtain an episode's success status based on episode stats and last step's info
-    if obtain_truncation_step_success(env_name, episode_stats, info):
-        success = True
     success_arr.append(success)
     print(f"Episode {ep_id} success: {success}")
     media.write_video(f"{logging_dir}/episode_{ep_id}_success_{success}.mp4", images, fps=5)
