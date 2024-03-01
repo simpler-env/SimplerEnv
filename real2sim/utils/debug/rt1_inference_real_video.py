@@ -11,7 +11,7 @@ import tensorflow as tf
 import mediapy as media
 import cv2
 
-from real2sim.rt1.rt1_model import RT1Inference
+from real2sim.policies.rt1.rt1_model import RT1Inference
 from real2sim.utils.visualization import write_video
 from real2sim.utils.env.env_builder import build_maniskill2_env
 from sapien.core import Pose

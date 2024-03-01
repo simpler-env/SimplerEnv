@@ -9,7 +9,7 @@ from PIL import Image
 from IPython import display
 import tqdm, os
 
-from real2sim.rt1.rt1_model import RT1Inference
+from real2sim.policies.rt1.rt1_model import RT1Inference
 from real2sim.utils.visualization import plot_pred_and_gt_action_trajectory
 
 DATASETS = ['fractal20220817_data']

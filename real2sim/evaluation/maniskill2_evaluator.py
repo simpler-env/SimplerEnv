@@ -80,7 +80,7 @@ def run_maniskill2_eval_single_episode(
         task_description = get_maniskill2_env_instruction(env)
         
     # Initialize logging
-    image = get_image_from_maniskill2_obs_dict(obs, robot_name, camera_name=obs_camera_name)
+    image = get_image_from_maniskill2_obs_dict(env, obs, camera_name=obs_camera_name)
     images = [image]
     predicted_actions = []
     predicted_terminated, done, truncated = False, False, False
@@ -112,7 +112,7 @@ def run_maniskill2_eval_single_episode(
         
         print(timestep, info)
         
-        image = get_image_from_maniskill2_obs_dict(obs, robot_name, camera_name=obs_camera_name)
+        image = get_image_from_maniskill2_obs_dict(env, obs, camera_name=obs_camera_name)
         images.append(image)
         timestep += 1
 

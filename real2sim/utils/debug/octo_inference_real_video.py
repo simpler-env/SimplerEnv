@@ -10,8 +10,8 @@ import os, cv2
 import mediapy as media
 import tensorflow as tf
 
-from real2sim.octo.octo_model import OctoInference
-from real2sim.octo.octo_server_model import OctoServerInference
+from real2sim.policies.octo.octo_model import OctoInference
+from real2sim.policies.octo.octo_server_model import OctoServerInference
 from real2sim.utils.visualization import write_video
 from real2sim.utils.env.env_builder import build_maniskill2_env
 from sapien.core import Pose
