@@ -21,7 +21,7 @@ We hope that our work guides and inspires future real-to-sim evaluation efforts.
   - [Current Environments](#current-environments)
   - [Code Structure](#code-structure)
   - [Customizing Evaluation Configs](#customizing-evaluation-configs)
-  - [Implementing New Policy Inference](#implementing-new-policy-inference)
+  - [Adding New Policies](#adding-new-policies)
   - [Adding New Real-to-Sim Evaluation Environments and Robots](#adding-new-real-to-sim-evaluation-environments-and-robots)
   - [Troubleshooting](#troubleshooting)
   - [Citation](#citation)
@@ -212,12 +212,12 @@ scripts/: example bash scripts for policy inference with custom environment buil
 
 ## Customizing Evaluation Configs
 
-Please see `scripts/` for examples of how to customize evaluation configs. We have written a customized evaluator in `real2sim/main_inference.py`, and `real2sim/evaluation` to support advanced environment building and logging. For example, you can perform a sweep over (a grid) of object poses for evaluation. You can also sweep over a grid of robot poses for evaluation under the variant aggregation evaluation setup.
+Please see `scripts/` for examples of how to customize evaluation configs. The inference script `real2sim/main_inference.py` supports advanced environment building and logging. For example, you can perform a sweep over object and robot poses for evaluation. (Note, however, varying robot poses is not meaningful under the visual matching evaluation setup.)
 
 
-## Implementing New Policy Inference
+## Adding New Policies
 
-If you want to use existing environments for evaluating new policies, you can keep `./ManiSkill2_real2sim` as is and only modify `./real2sim` to add new policies.
+If you want to use existing environments for evaluating new policies, you can keep `./ManiSkill2_real2sim` as is.
 
 1. Implement new policy inference scripts in `real2sim/policies/{your_new_policy}`, following the examples for RT-1 (`real2sim/policies/rt1`) and Octo (`real2sim/policies/octo`) policies. 
 2. You can now use `real2sim/simple_inference_visual_matching_prepackaged_envs.py` to perform policy evaluations in simulation. 
