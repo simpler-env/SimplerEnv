@@ -9,7 +9,7 @@ declare -a policy_models=(
 
 declare -a env_names=(
 OpenTopDrawerCustomInScene-v0
-OpenMiddleDrawerCustomInScene-v0 
+OpenMiddleDrawerCustomInScene-v0
 OpenBottomDrawerCustomInScene-v0
 CloseTopDrawerCustomInScene-v0
 CloseMiddleDrawerCustomInScene-v0
@@ -19,7 +19,7 @@ CloseBottomDrawerCustomInScene-v0
 # URDF variations
 declare -a urdf_version_arr=(None "recolor_tabletop_visual_matching_1" "recolor_tabletop_visual_matching_2" "recolor_cabinet_visual_matching_1")
 
-for urdf_version in "${urdf_version_arr[@]}"; do 
+for urdf_version in "${urdf_version_arr[@]}"; do
 
 EXTRA_ARGS="--enable-raytracing --additional-env-build-kwargs station_name=mk_station_recolor light_mode=simple disable_bad_material=True urdf_version=${urdf_version}"
 

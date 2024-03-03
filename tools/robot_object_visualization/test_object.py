@@ -1,11 +1,11 @@
+import argparse
+from pathlib import Path
+import time
 
 import numpy as np
-import time
-import argparse
 import sapien.core as sapien
-
 from sapien.utils.viewer import Viewer
-from pathlib import Path
+
 
 def build_actor(
     model_dir: str,
@@ -16,7 +16,7 @@ def build_actor(
 ):
     builder = scene.create_actor_builder()
     model_dir = Path(model_dir)
-    
+
     collision_file = str(model_dir / "collision.obj")
     builder.add_multiple_collisions_from_file(
         filename=collision_file,
@@ -32,6 +32,7 @@ def build_actor(
 
     actor = builder.build()
     return actor
+
 
 def demo(model_dir):
     engine = sapien.Engine()
@@ -56,17 +57,15 @@ def demo(model_dir):
         scene,
         scale=1.0,
         density=1000,
-        physical_material=scene.create_physical_material(
-            static_friction=2.0, dynamic_friction=2.0, restitution=0.0
-        ),
+        physical_material=scene.create_physical_material(static_friction=2.0, dynamic_friction=2.0, restitution=0.0),
     )
     obj.set_pose(sapien.Pose([0, 0, 1], [1, 0, 0, 0]))
-    
+
     camera = scene.add_camera(
         name="camera",
         width=int(848),
         height=int(480),
-        fovy=np.deg2rad(78.0), # D435 fovy
+        fovy=np.deg2rad(78.0),  # D435 fovy
         near=0.1,
         far=10.0,
     )
@@ -83,10 +82,15 @@ def demo(model_dir):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model-dir', type=str, default='ManiSkill2_real2sim/data/custom/models/opened_coke_can')
+    parser.add_argument(
+        "--model-dir",
+        type=str,
+        default="ManiSkill2_real2sim/data/custom/models/opened_coke_can",
+    )
     args = parser.parse_args()
-    
+
     demo(args.model_dir)
-    
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     main()

@@ -1,8 +1,8 @@
+import argparse
 from pathlib import Path
-from typing import Union, List
+from typing import List, Union
 
 import numpy as np
-import argparse
 from PIL import Image
 
 
@@ -10,9 +10,7 @@ def is_path(path) -> bool:
     return isinstance(path, (str, Path))
 
 
-def load_image_pils(
-    image_paths: Union[str, List[str], np.ndarray, List[np.ndarray]]
-) -> Union[List["Image"], bool]:
+def load_image_pils(image_paths: Union[str, List[str], np.ndarray, List[np.ndarray]]) -> Union[List["Image"], bool]:
     """Load images from paths and return as a list of PIL.Image
     :return is_list: whether input is a list
     """
@@ -26,8 +24,7 @@ def load_image_pils(
             image_pil = Image.open(image_path).convert("RGB")  # load image
             image_pils.append(image_pil)
         return image_pils, True
-    elif isinstance(image_paths, list) and image_paths[0].ndim == 3 \
-            or image_paths.ndim == 4:  # [n_images, H, W, 3]
+    elif isinstance(image_paths, list) and image_paths[0].ndim == 3 or image_paths.ndim == 4:  # [n_images, H, W, 3]
         image_pils = []
         for image in image_paths:
             image_pil = Image.fromarray(image).convert("RGB")
@@ -46,17 +43,16 @@ def load_image_arrays(
     """Load images and return as a list of [H, W, 3] np.ndarray
     :return is_list: whether input is a list
     """
-    if is_path(image_paths) or \
-       isinstance(image_paths, list) and is_path(image_paths[0]):
+    if is_path(image_paths) or isinstance(image_paths, list) and is_path(image_paths[0]):
         image_pils, is_list = load_image_pils(image_paths)
         return [np.asarray(image_pil) for image_pil in image_pils], is_list
-    elif isinstance(image_paths, list) and image_paths[0].ndim == 3 \
-            or image_paths.ndim == 4:  # [n_images, H, W, 3]
+    elif isinstance(image_paths, list) and image_paths[0].ndim == 3 or image_paths.ndim == 4:  # [n_images, H, W, 3]
         return list(image_paths), True
     elif image_paths.ndim == 3:  # [H, W, 3]
         return [image_paths], False
     else:
         raise ValueError(f"Wrong format of image_paths: {type(image_paths)}")
+
 
 class DictAction(argparse.Action):
     """
@@ -109,7 +105,9 @@ class DictAction(argparse.Action):
             chars inside '()' and '[]' are treated as one element and thus ','
             inside these brackets are ignored.
             """
-            assert (string.count("(") == string.count(")")) and (string.count("[") == string.count("]")), f"Imbalanced brackets exist in {string}"
+            assert (string.count("(") == string.count(")")) and (
+                string.count("[") == string.count("]")
+            ), f"Imbalanced brackets exist in {string}"
             end = len(string)
             for idx, char in enumerate(string):
                 pre = string[:idx]

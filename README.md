@@ -2,13 +2,13 @@
 
 Significant progress has been made in building generalist robot manipulation policies, yet their scalable and reproducible evaluation remains challenging, as real-world evaluation is operationally expensive and inefficient. We propose employing physical simulators as efficient, scalable, and informative complements to real-world evaluations. These simulation evaluations offer valuable quantitative metrics for checkpoint selection, insights into potential real-world policy behaviors or failure modes, and standardized setups to enhance reproducibility.
 
-This repository is based in the [SAPIEN](https://sapien.ucsd.edu/) simulator and the [ManiSkill2](https://maniskill2.github.io/) benchmark (we will also integrate the tooling into ManiSkill3 once the latter complete). 
+This repository is based in the [SAPIEN](https://sapien.ucsd.edu/) simulator and the [ManiSkill2](https://maniskill2.github.io/) benchmark (we will also integrate the tooling into ManiSkill3 once the latter complete).
 
 This repository encompasses 2 real-to-sim evaluation setups:
 - `Visual Matching` evaluation: Matching real & sim visual appearances for policy evaluation by overlaying real-world images onto simulation backgrounds and adjusting foreground object and robot textures in simulation.
 - `Variant Aggregation` evaluation: creating different sim environment variants (e.g., different backgrounds, lightings, distractors, table textures, etc) and averaging their results.
 
-We hope that our work guides and inspires future real-to-sim evaluation efforts. 
+We hope that our work guides and inspires future real-to-sim evaluation efforts.
 
 - [Evaluating Real-World Robot Manipulation Policies in Simulation](#evaluating-real-world-robot-manipulation-policies-in-simulation)
   - [Getting Started](#getting-started)
@@ -46,7 +46,7 @@ print("Instruction", instruction)
 
 predicted_terminated, success, truncated = False, False, False
 while not (predicted_terminated or truncated):
-   # action[:3]: delta xyz; action[3:6]: delta rotation in axis-angle representation; 
+   # action[:3]: delta xyz; action[3:6]: delta rotation in axis-angle representation;
    # action[6:7]: gripper (the meaning of open / close depends on robot URDF)
    action = env.action_space.sample() # replace this with your policy inference
    predicted_terminated = False # replace this with your policy inference
@@ -63,11 +63,11 @@ Additionally, you can play with our environments in an interactive manner throug
 ## Installation
 ### Minimal Installation
 
-Prerequisites: 
+Prerequisites:
 - CUDA version >=11.8 (this is required if you want to perform a full installation of this repo and perform RT-1 or Octo inference)
 - An NVIDIA GPU (ideally RTX; for non-RTX GPUs, such as 1080Ti and A100, environments that involve ray tracing will be slow). Currently TPU is not supported as SAPIEN requires a GPU to run.
 
-Create an anaconda environment: 
+Create an anaconda environment:
 ```
 conda create -n real2sim python=3.9 (any version above 3.9 is fine)
 conda activate real2sim
@@ -122,7 +122,7 @@ mv rt_1_x_tf_trained_for_002272480_step checkpoints
 rm rt_1_x_tf_trained_for_002272480_step.zip
 
 # RT-1-Converged
-Download from https://drive.google.com/drive/folders/1pdHYzgNQqinEv0sXlKpL3ZDr2-eDFebQ 
+Download from https://drive.google.com/drive/folders/1pdHYzgNQqinEv0sXlKpL3ZDr2-eDFebQ
 (click the directory name header > download, then unzip the file)
 After unzipping, you'll see a "xid77467904_000400120" directory when you enter the unzipped directory. Move this directory to the `checkpoints` directory.
 
@@ -144,7 +144,7 @@ pip install --upgrade "jax[cuda11_pip]==0.4.20" -f https://storage.googleapis.co
 cd {this_repo}
 git clone https://github.com/octo-models/octo/
 cd octo
-pip install -e . 
+pip install -e .
 # You don't need to run "pip install -r requirements.txt" inside the octo repo; the package dependencies are already handled in the Real2Sim repo
 # Octo checkpoints are managed by huggingface, so you don't need to download them manually.
 ```
@@ -153,7 +153,7 @@ pip install -e .
 
 - Environment interactive visualization and manual control: see [`ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`](https://github.com/xuanlinli17/ManiSkill2_real2sim/blob/main/mani_skill2/examples/demo_manual_control_custom_envs.py)
 - Simple RT-1 and Octo evaluation script on prepackaged environments with visual matching evaluation setup: see [`real2sim/simple_inference_visual_matching_prepackaged_envs.py`](https://github.com/xuanlinli17/Real2Sim/blob/main/real2sim/simple_inference_visual_matching_prepackaged_envs.py).
-- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, and Octo policies. See [`scripts/`](https://github.com/xuanlinli17/Real2Sim/tree/main/scripts). 
+- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, and Octo policies. See [`scripts/`](https://github.com/xuanlinli17/Real2Sim/tree/main/scripts).
 - Real-to-sim evaluation videos from running `scripts/*.sh`: see [this link](TODO).
 
 ## Current Environments
@@ -183,7 +183,7 @@ ManiSkill2_real2sim/: the ManiSkill2 real-to-sim environment codebase, which con
       agents/: robot agents, configs, and controller implementations
       assets/: robot assets such as URDF and meshes
       envs/: environments
-      examples/demo_manual_control_custom_envs.py: interactive script for environment visualization and manual 
+      examples/demo_manual_control_custom_envs.py: interactive script for environment visualization and manual
       utils/
    ...
 real2sim/
@@ -219,12 +219,12 @@ Please see `scripts/` for examples of how to customize evaluation configs. The i
 
 If you want to use existing environments for evaluating new policies, you can keep `./ManiSkill2_real2sim` as is.
 
-1. Implement new policy inference scripts in `real2sim/policies/{your_new_policy}`, following the examples for RT-1 (`real2sim/policies/rt1`) and Octo (`real2sim/policies/octo`) policies. 
-2. You can now use `real2sim/simple_inference_visual_matching_prepackaged_envs.py` to perform policy evaluations in simulation. 
+1. Implement new policy inference scripts in `real2sim/policies/{your_new_policy}`, following the examples for RT-1 (`real2sim/policies/rt1`) and Octo (`real2sim/policies/octo`) policies.
+2. You can now use `real2sim/simple_inference_visual_matching_prepackaged_envs.py` to perform policy evaluations in simulation.
    - If the policy behaviors deviate a lot from those in the real-world, you can write similar scripts as in `real2sim/utils/debug/{policy_name}_inference_real_video.py` to debug the policy behaviors.
 3. If you'd like to perform customized evaluations,
    - Modify a few lines in `real2sim/main_inference.py` to support your new policies.
-   - Add policy inference scripts in `scripts/` with customized configs. 
+   - Add policy inference scripts in `scripts/` with customized configs.
    - Optionally, modify the scripts in `tools/calc_metrics.py` to calculate the real-to-sim evaluation metrics for your new policies.
 
 

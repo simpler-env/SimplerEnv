@@ -3,34 +3,34 @@ import tensorflow_datasets as tfds
 
 from real2sim.utils.visualization import write_video
 
-DATASETS = ['fractal20220817_data', 'bridge']
+DATASETS = ["fractal20220817_data", "bridge"]
+
 
 def dataset2path(dataset_name):
-    if dataset_name == 'robo_net':
-        version = '1.0.0'
-    elif dataset_name == 'language_table':
-        version = '0.0.1'
+    if dataset_name == "robo_net":
+        version = "1.0.0"
+    elif dataset_name == "language_table":
+        version = "0.0.1"
     else:
-        version = '0.1.0'
-    return f'gs://gresearch/robotics/{dataset_name}/{version}'
+        version = "0.1.0"
+    return f"gs://gresearch/robotics/{dataset_name}/{version}"
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     dataset_name = DATASETS[0]
     dset = tfds.builder_from_directory(builder_dir=dataset2path(dataset_name))
-    
-    dset = dset.as_dataset(split='train[:300]', read_config=tfds.ReadConfig(add_tfds_id=True))
+
+    dset = dset.as_dataset(split="train[:300]", read_config=tfds.ReadConfig(add_tfds_id=True))
     dset = list(dset)
     for i, episode in enumerate(dset):
         gt_images = []
-        episode_steps = list(episode['steps'])
+        episode_steps = list(episode["steps"])
         for j in range(len(episode_steps) - 1):
-            gt_images.append(episode_steps[j]['observation']['image'])
-        write_video(f'{dataset_name}_vis/{i}_gt.mp4', gt_images, fps=5)
-        
-        
-        
+            gt_images.append(episode_steps[j]["observation"]["image"])
+        write_video(f"{dataset_name}_vis/{i}_gt.mp4", gt_images, fps=5)
+
         # from matplotlib import pyplot as plt
-        
+
         # images = gt_images
         # ACTION_DIM_LABELS = ['x', 'y', 'z', 'yaw', 'pitch', 'roll', 'grasp']
 
