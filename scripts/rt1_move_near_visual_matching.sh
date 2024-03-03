@@ -34,8 +34,3 @@ do CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-mod
 done
 
 done
-
-
-
-
-

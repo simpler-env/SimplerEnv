@@ -10,11 +10,12 @@ except ModuleNotFoundError:
     exit(1)
 
 
-import numpy as np
-import sys
-import os
 import argparse
+import os
+import sys
+
 import coacd
+import numpy as np
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

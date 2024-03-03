@@ -8,10 +8,10 @@ declare -a policy_models=(
 
 declare -a env_names=(
 OpenTopDrawerCustomInScene-v0
-OpenMiddleDrawerCustomInScene-v0 
+OpenMiddleDrawerCustomInScene-v0
 OpenBottomDrawerCustomInScene-v0
 CloseTopDrawerCustomInScene-v0
-CloseMiddleDrawerCustomInScene-v0 
+CloseMiddleDrawerCustomInScene-v0
 CloseBottomDrawerCustomInScene-v0
 )
 

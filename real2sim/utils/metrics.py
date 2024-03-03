@@ -1,7 +1,9 @@
-import numpy as np
 import glob
 from pathlib import Path
+
+import numpy as np
 from scipy.stats import kruskal
+
 
 def pearson_correlation(x, y):
     x, y = np.array(x), np.array(y)
@@ -11,9 +13,10 @@ def pearson_correlation(x, y):
     if np.all(x == y):
         pearson = 1
     else:
-        pearson = np.sum(x * y) / (np.sqrt(np.sum(x ** 2) * np.sum(y ** 2)) + 1e-8)
+        pearson = np.sum(x * y) / (np.sqrt(np.sum(x**2) * np.sum(y**2)) + 1e-8)
     return pearson
-    
+
+
 def normalized_rank_loss(x, y):
     # assuming x is sim result and y is real result
     x, y = np.array(x), np.array(y)
@@ -25,10 +28,11 @@ def normalized_rank_loss(x, y):
                 rank_violation = max(rank_violation, np.abs(y[i] - y[j]))
     return rank_violation
 
+
 def print_all_kruskal_results(sim, real, title):
     """
     sim, real: shape [n_ckpt, n_trials]
-        The trial-by-trial success indicator of each checkpoint 
+        The trial-by-trial success indicator of each checkpoint
         (within each checkpoint, the ordering doesn't matter)
     Prints out the Kruskal-Wallis test for each checkpoint
     """
@@ -43,7 +47,8 @@ def print_all_kruskal_results(sim, real, title):
             print(" " * 12, "all same, 1.0")
         else:
             print(" " * 12, kruskal(sim[i], real[i]))
-    
+
+
 def construct_unordered_trial_results(n_trials_per_ckpt, success):
     success = np.array(success)
     success = np.where(np.isnan(success), 0, success)
@@ -53,13 +58,16 @@ def construct_unordered_trial_results(n_trials_per_ckpt, success):
         results.append([1] * nst + [0] * (n_trials_per_ckpt - nst))
     return np.array(results)
 
+
 # util to get success / failure results from a directory
-def get_dir_stats(dir_name, extra_pattern_require=[], succ_fail_pattern=['success', 'failure']):
-    if dir_name[-1] == '/':
+def get_dir_stats(
+    dir_name, extra_pattern_require=[], succ_fail_pattern=["success", "failure"]
+):
+    if dir_name[-1] == "/":
         dir_name = dir_name[:-1]
-    
+
     results = []
-    fnames = glob.glob(dir_name + '/**/*.mp4', recursive=True)
+    fnames = glob.glob(dir_name + "/**/*.mp4", recursive=True)
     for fname in fnames:
         flag = True
         for pattern in extra_pattern_require:
@@ -69,12 +77,12 @@ def get_dir_stats(dir_name, extra_pattern_require=[], succ_fail_pattern=['succes
         if not flag:
             continue
         fname = Path(fname)
-        if fname.suffix != '.mp4':
+        if fname.suffix != ".mp4":
             continue
         fname = fname.stem
         if succ_fail_pattern[0] in fname:
             results.append(1)
         elif succ_fail_pattern[1] in fname:
             results.append(0)
-            
+
     return results

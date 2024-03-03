@@ -1,14 +1,14 @@
 from collections import defaultdict
-import numpy as np
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
+import numpy as np
 import tensorflow as tf
+import tensorflow_hub as hub
 import tf_agents
 from tf_agents.policies import py_tf_eager_policy
 from tf_agents.trajectories import time_step as ts
-import tensorflow_hub as hub
-
 from transforms3d.euler import euler2axangle
+
 
 class RT1Inference:
     def __init__(
@@ -18,7 +18,7 @@ class RT1Inference:
         image_width=320,
         image_height=256,
         action_scale=1.0,
-        policy_setup='google_robot',
+        policy_setup="google_robot",
     ):
         self.lang_embed_model = hub.load(lang_embed_model_path)
         self.tfa_policy = py_tf_eager_policy.SavedModelPyTFEagerPolicy(
@@ -35,21 +35,21 @@ class RT1Inference:
         self.policy_state = None
         self.task_description = None
         self.task_description_embedding = None
-        
+
         self.policy_setup = policy_setup
-        if self.policy_setup == 'google_robot':
+        if self.policy_setup == "google_robot":
             self.unnormalize_action = False
             self.unnormalize_action_fxn = None
             self.invert_gripper_action = False
-            self.action_rotation_mode = 'axis_angle'
-        elif self.policy_setup == 'widowx_bridge':
+            self.action_rotation_mode = "axis_angle"
+        elif self.policy_setup == "widowx_bridge":
             self.unnormalize_action = True
             self.unnormalize_action_fxn = self._unnormalize_action_widowx_bridge
             self.invert_gripper_action = True
-            self.action_rotation_mode = 'rpy'
+            self.action_rotation_mode = "rpy"
         else:
             raise NotImplementedError()
-        
+
         self.time_step = 0
 
     @staticmethod
@@ -70,24 +70,24 @@ class RT1Inference:
             post_scaling_min + safety_margin,
             post_scaling_max - safety_margin,
         )
-    
+
     def _unnormalize_action_widowx_bridge(self, action):
-        action['world_vector'] = self._rescale_action_with_bound(
-            action['world_vector'],
+        action["world_vector"] = self._rescale_action_with_bound(
+            action["world_vector"],
             low=-1.75,
             high=1.75,
             post_scaling_max=0.05,
             post_scaling_min=-0.05,
         )
-        action['rotation_delta'] = self._rescale_action_with_bound(
-            action['rotation_delta'],
+        action["rotation_delta"] = self._rescale_action_with_bound(
+            action["rotation_delta"],
             low=-1.4,
             high=1.4,
             post_scaling_max=0.25,
             post_scaling_min=-0.25,
         )
         return action
-    
+
     def _initialize_model(self):
         # Perform one step of inference using dummy input to trace the tensoflow graph
         # Obtain a dummy observation, where the features are all 0
@@ -99,12 +99,10 @@ class RT1Inference:
             self.observation, reward=np.zeros((), dtype=np.float32)
         )
         # Initialize the state of the policy
-        self.policy_state = self.tfa_policy.get_initial_state(
-            batch_size=1
-        )
+        self.policy_state = self.tfa_policy.get_initial_state(batch_size=1)
         # Run inference using the policy
         _action = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
-        
+
         self.time_step = 0
 
     def _resize_image(self, image):
@@ -118,39 +116,45 @@ class RT1Inference:
         self._initialize_model()
         if task_description is not None:
             self.task_description = task_description
-            self.task_description_embedding = self.lang_embed_model([task_description])[0]
+            self.task_description_embedding = self.lang_embed_model([task_description])[
+                0
+            ]
         else:
-            self.task_description = ''
+            self.task_description = ""
             self.task_description_embedding = tf.zeros((512,), dtype=tf.float32)
 
     @staticmethod
     def _small_action_filter_google_robot(raw_action, arm_movement=False, gripper=True):
         # small action filtering for google robot
         if arm_movement:
-            raw_action['world_vector'] = tf.where(
-                tf.abs(raw_action['world_vector']) < 5e-3, tf.zeros_like(raw_action['world_vector']), raw_action['world_vector']
+            raw_action["world_vector"] = tf.where(
+                tf.abs(raw_action["world_vector"]) < 5e-3,
+                tf.zeros_like(raw_action["world_vector"]),
+                raw_action["world_vector"],
             )
-            raw_action['rotation_delta'] = tf.where(
-                tf.abs(raw_action['rotation_delta']) < 5e-3, tf.zeros_like(raw_action['rotation_delta']), raw_action['rotation_delta']
+            raw_action["rotation_delta"] = tf.where(
+                tf.abs(raw_action["rotation_delta"]) < 5e-3,
+                tf.zeros_like(raw_action["rotation_delta"]),
+                raw_action["rotation_delta"],
             )
-            raw_action['base_displacement_vector'] = tf.where(
-                raw_action['base_displacement_vector'] < 5e-3, 
-                tf.zeros_like(raw_action['base_displacement_vector']), 
-                raw_action['base_displacement_vector']
+            raw_action["base_displacement_vector"] = tf.where(
+                raw_action["base_displacement_vector"] < 5e-3,
+                tf.zeros_like(raw_action["base_displacement_vector"]),
+                raw_action["base_displacement_vector"],
             )
-            raw_action['base_displacement_vertical_rotation'] = tf.where(
-                raw_action['base_displacement_vertical_rotation'] < 1e-2,
-                tf.zeros_like(raw_action['base_displacement_vertical_rotation']),
-                raw_action['base_displacement_vertical_rotation']
+            raw_action["base_displacement_vertical_rotation"] = tf.where(
+                raw_action["base_displacement_vertical_rotation"] < 1e-2,
+                tf.zeros_like(raw_action["base_displacement_vertical_rotation"]),
+                raw_action["base_displacement_vertical_rotation"],
             )
         if gripper:
-            raw_action['gripper_closedness_action'] = tf.where(
-                tf.abs(raw_action['gripper_closedness_action']) < 1e-2,
-                tf.zeros_like(raw_action['gripper_closedness_action']),
-                raw_action['gripper_closedness_action']
+            raw_action["gripper_closedness_action"] = tf.where(
+                tf.abs(raw_action["gripper_closedness_action"]) < 1e-2,
+                tf.zeros_like(raw_action["gripper_closedness_action"]),
+                raw_action["gripper_closedness_action"],
             )
         return raw_action
-        
+
     def step(self, image):
         """
         Input:
@@ -174,55 +178,75 @@ class RT1Inference:
         )
         policy_step = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
         raw_action = policy_step.action
-        if self.policy_setup == 'google_robot':
-            raw_action = self._small_action_filter_google_robot(raw_action, arm_movement=False, gripper=True)
+        if self.policy_setup == "google_robot":
+            raw_action = self._small_action_filter_google_robot(
+                raw_action, arm_movement=False, gripper=True
+            )
         if self.unnormalize_action:
             raw_action = self.unnormalize_action_fxn(raw_action)
-            
+
         # process raw_action to obtain the action to be sent to the maniskill2 environment
         action = {}
-        action['world_vector'] = np.asarray(raw_action['world_vector'], dtype=np.float64) * self.action_scale
-        if self.action_rotation_mode == 'axis_angle':
-            action_rotation_delta = np.asarray(raw_action['rotation_delta'], dtype=np.float64)
+        action["world_vector"] = (
+            np.asarray(raw_action["world_vector"], dtype=np.float64) * self.action_scale
+        )
+        if self.action_rotation_mode == "axis_angle":
+            action_rotation_delta = np.asarray(
+                raw_action["rotation_delta"], dtype=np.float64
+            )
             action_rotation_angle = np.linalg.norm(action_rotation_delta)
-            action_rotation_ax = action_rotation_delta / action_rotation_angle if action_rotation_angle > 1e-6 else np.array([0., 1., 0.])
-            action['rot_axangle'] = action_rotation_ax * action_rotation_angle * self.action_scale
-        elif self.action_rotation_mode in ['rpy', 'ypr', 'pry']:
-            if self.action_rotation_mode == 'rpy':
-                roll, pitch, yaw = np.asarray(raw_action['rotation_delta'], dtype=np.float64)
-            elif self.action_rotation_mode == 'ypr':
-                yaw, pitch, roll = np.asarray(raw_action['rotation_delta'], dtype=np.float64)
-            elif self.action_rotation_mode == 'pry':
-                pitch, roll, yaw = np.asarray(raw_action['rotation_delta'], dtype=np.float64)
+            action_rotation_ax = (
+                action_rotation_delta / action_rotation_angle
+                if action_rotation_angle > 1e-6
+                else np.array([0.0, 1.0, 0.0])
+            )
+            action["rot_axangle"] = (
+                action_rotation_ax * action_rotation_angle * self.action_scale
+            )
+        elif self.action_rotation_mode in ["rpy", "ypr", "pry"]:
+            if self.action_rotation_mode == "rpy":
+                roll, pitch, yaw = np.asarray(
+                    raw_action["rotation_delta"], dtype=np.float64
+                )
+            elif self.action_rotation_mode == "ypr":
+                yaw, pitch, roll = np.asarray(
+                    raw_action["rotation_delta"], dtype=np.float64
+                )
+            elif self.action_rotation_mode == "pry":
+                pitch, roll, yaw = np.asarray(
+                    raw_action["rotation_delta"], dtype=np.float64
+                )
             action_rotation_ax, action_rotation_angle = euler2axangle(roll, pitch, yaw)
-            action['rot_axangle'] = action_rotation_ax * action_rotation_angle * self.action_scale
+            action["rot_axangle"] = (
+                action_rotation_ax * action_rotation_angle * self.action_scale
+            )
         else:
             raise NotImplementedError()
-        
-        raw_gripper_closedness = raw_action['gripper_closedness_action']
+
+        raw_gripper_closedness = raw_action["gripper_closedness_action"]
         if self.invert_gripper_action:
-            # rt1 policy output is uniformized such that -1 is open gripper, 1 is close gripper; 
+            # rt1 policy output is uniformized such that -1 is open gripper, 1 is close gripper;
             # thus we need to invert the rt1 output gripper action for some embodiments like WidowX, since for these embodiments -1 is close gripper, 1 is open gripper
             raw_gripper_closedness = -raw_gripper_closedness
-        if self.policy_setup == 'google_robot':
+        if self.policy_setup == "google_robot":
             # gripper controller: pd_joint_target_delta_pos_interpolate_by_planner; raw_gripper_closedness has range of [0, 1]
-            action['gripper'] = np.asarray(raw_gripper_closedness, dtype=np.float64)
-        elif self.policy_setup == 'widowx_bridge':
+            action["gripper"] = np.asarray(raw_gripper_closedness, dtype=np.float64)
+        elif self.policy_setup == "widowx_bridge":
             # gripper controller: pd_joint_pos; raw_gripper_closedness has range of [-1, 1]
-            action['gripper'] = np.asarray(raw_gripper_closedness, dtype=np.float64)
+            action["gripper"] = np.asarray(raw_gripper_closedness, dtype=np.float64)
             # binarize gripper action to be -1 or 1
-            action['gripper'] = 2.0 * (action['gripper'] > 0.0) - 1.0
+            action["gripper"] = 2.0 * (action["gripper"] > 0.0) - 1.0
         else:
             raise NotImplementedError()
-            
-        action['terminate_episode'] = raw_action['terminate_episode']
-                
+
+        action["terminate_episode"] = raw_action["terminate_episode"]
+
         # update policy state
         self.policy_state = policy_step.state
         self.time_step += 1
-        
+
         return raw_action, action
-    
+
     def visualize_epoch(self, predicted_raw_actions, images, save_path):
         images = [self._resize_image(image) for image in images]
         predicted_action_name_to_values_over_time = defaultdict(list)

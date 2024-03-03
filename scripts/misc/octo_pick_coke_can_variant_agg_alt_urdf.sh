@@ -3,8 +3,8 @@ gpu_id=0
 
 declare -a arr=("octo-base")
 
-# lr_switch=laying horizontally but flipped left-right to match real eval; upright=standing; laid_vertically=laying vertically                
-declare -a coke_can_options_arr=("lr_switch=True" "upright=True" "laid_vertically=True") 
+# lr_switch=laying horizontally but flipped left-right to match real eval; upright=standing; laid_vertically=laying vertically
+declare -a coke_can_options_arr=("lr_switch=True" "upright=True" "laid_vertically=True")
 urdf_version=recolor_sim
 # recolor_sim
 

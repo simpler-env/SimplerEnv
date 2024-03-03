@@ -8,8 +8,8 @@ declare -a policy_models=(
   # "octo-server"
 )
 
-# lr_switch=laying horizontally but flipped left-right to match real eval; upright=standing; laid_vertically=laying vertically                
-declare -a coke_can_options_arr=("lr_switch=True" "upright=True" "laid_vertically=True") 
+# lr_switch=laying horizontally but flipped left-right to match real eval; upright=standing; laid_vertically=laying vertically
+declare -a coke_can_options_arr=("lr_switch=True" "upright=True" "laid_vertically=True")
 
 # URDF variations
 declare -a urdf_version_arr=(None "recolor_tabletop_visual_matching_1" "recolor_tabletop_visual_matching_2" "recolor_cabinet_visual_matching_1")

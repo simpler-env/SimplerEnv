@@ -6,8 +6,8 @@ declare -a arr=("./checkpoints/rt_1_x_tf_trained_for_002272480_step/" \
                 "./checkpoints/rt1poor_xid77467904_000058240/" \
                 "./checkpoints/rt1new_77467904_000001120/")
 
-# lr_switch=laying horizontally but flipped left-right to match real eval; upright=standing; laid_vertically=laying vertically                
-declare -a coke_can_options_arr=("lr_switch=True" "upright=True" "laid_vertically=True") 
+# lr_switch=laying horizontally but flipped left-right to match real eval; upright=standing; laid_vertically=laying vertically
+declare -a coke_can_options_arr=("lr_switch=True" "upright=True" "laid_vertically=True")
 
 for ckpt_path in "${arr[@]}"; do echo "$ckpt_path"; done
 
