@@ -63,9 +63,7 @@ def plot_pred_and_gt_action_trajectory(predicted_actions, gt_actions, stacked_im
             for action_sub_dimension in range(action[action_name].shape[0]):
                 # print(action_name, action_sub_dimension)
                 title = f"{action_name}_{action_sub_dimension}"
-                action_name_to_values_over_time[title].append(
-                    action[action_name][action_sub_dimension]
-                )
+                action_name_to_values_over_time[title].append(action[action_name][action_sub_dimension])
                 predicted_action_name_to_values_over_time[title].append(
                     predicted_actions[i][action_name][action_sub_dimension]
                 )
@@ -80,9 +78,7 @@ def plot_pred_and_gt_action_trajectory(predicted_actions, gt_actions, stacked_im
     for i, (k, v) in enumerate(action_name_to_values_over_time.items()):
 
         axs[k].plot(v, label="ground truth")
-        axs[k].plot(
-            predicted_action_name_to_values_over_time[k], label="predicted action"
-        )
+        axs[k].plot(predicted_action_name_to_values_over_time[k], label="predicted action")
         axs[k].set_title(k)
         axs[k].set_xlabel("Time in one episode")
 
@@ -124,9 +120,7 @@ def draw_mask(rgb_img, mask, alpha=0.5, id_countour=False) -> np.ndarray:
                 color = _palette[id * 3 : id * 3 + 3]
             else:
                 color = [0, 0, 0]
-            foreground = rgb_img * (1 - alpha) + np.ones_like(
-                rgb_img
-            ) * alpha * np.asarray(color)
+            foreground = rgb_img * (1 - alpha) + np.ones_like(rgb_img) * alpha * np.asarray(color)
             binary_mask = mask == id
 
             # Compose image
@@ -184,9 +178,7 @@ def draw_bbox(
         left, top, right, bottom = bbox
         return (left - pad, top - pad, right + pad, bottom + pad)
 
-    for (x1, y1, x2, y2), pred_index, pred_score in zip(
-        bboxes, pred_indices, pred_scores
-    ):
+    for (x1, y1, x2, y2), pred_index, pred_score in zip(bboxes, pred_indices, pred_scores):
         # draw bbox (left, top, right, bottom)
         d.rectangle([x1, y1, x2, y2], fill=None, outline=(255, 0, 0), width=bbox_width)
 

@@ -72,13 +72,9 @@ def main(
     images.append(image)
 
     if "server" in model_type:
-        octo_model = OctoServerInference(
-            model_type, policy_setup=policy_setup, action_scale=1.0
-        )
+        octo_model = OctoServerInference(model_type, policy_setup=policy_setup, action_scale=1.0)
     else:
-        octo_model = OctoInference(
-            model_type, policy_setup=policy_setup, action_scale=1.0
-        )
+        octo_model = OctoInference(model_type, policy_setup=policy_setup, action_scale=1.0)
 
     # Reset Octo model
     octo_model.reset(instruction)
@@ -100,9 +96,7 @@ def main(
         print(timestep, raw_action)
 
         obs, reward, terminated, truncated, info = env.step(
-            np.concatenate(
-                [action["world_vector"], action["rot_axangle"], action["gripper"]]
-            )
+            np.concatenate([action["world_vector"], action["rot_axangle"], action["gripper"]])
         )
 
         # debug
@@ -118,16 +112,12 @@ def main(
 
     if input_video is not None:
         for i in range(len(images)):
-            images[i] = cv2.resize(
-                images[i], (input_video[i].shape[1], input_video[i].shape[0])
-            )
+            images[i] = cv2.resize(images[i], (input_video[i].shape[1], input_video[i].shape[0]))
             images[i] = np.concatenate(
                 [
                     images[i]
                     if inpainting_img_path is not None
-                    else np.array(images[i] * 0.7 + input_video[i] * 0.3).astype(
-                        np.uint8
-                    ),
+                    else np.array(images[i] * 0.7 + input_video[i] * 0.3).astype(np.uint8),
                     input_video[i],
                 ],
                 axis=1,
@@ -136,9 +126,7 @@ def main(
     os.makedirs(f"{save_root}", exist_ok=True)
     os.makedirs(f"{save_root}/save_qpos", exist_ok=True)
 
-    octo_model.visualize_epoch(
-        predicted_actions, images, save_path=f"{save_root}/{save_name}.png"
-    )
+    octo_model.visualize_epoch(predicted_actions, images, save_path=f"{save_root}/{save_name}.png")
     video_path = f"{save_root}/{save_name}.mp4"
     write_video(video_path, images, fps=5)
     np.save(f"{save_root}/save_qpos/{save_name}_qpos.npy", np.array(qpos_arr))
@@ -153,9 +141,7 @@ if __name__ == "__main__":
     os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
     gpus = tf.config.list_physical_devices("GPU")
     if len(gpus) > 0:
-        tf.config.set_logical_device_configuration(
-            gpus[0], [tf.config.LogicalDeviceConfiguration(memory_limit=3072)]
-        )
+        tf.config.set_logical_device_configuration(gpus[0], [tf.config.LogicalDeviceConfiguration(memory_limit=3072)])
 
     mp4_path = None
     inpainting_img_path = "ManiSkill2_real2sim/data/debug/bridge_real_stackcube_2.png"

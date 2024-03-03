@@ -36,9 +36,7 @@ class OctoInference:
             action_ensemble_temp = 0.0
             self.sticky_gripper_num_repeat = 15
         else:
-            raise NotImplementedError(
-                f"Policy setup {policy_setup} not supported for octo models."
-            )
+            raise NotImplementedError(f"Policy setup {policy_setup} not supported for octo models.")
         self.policy_setup = policy_setup
 
         if model_type in ["octo-base", "octo-small"]:
@@ -46,9 +44,7 @@ class OctoInference:
             self.model_type = f"hf://rail-berkeley/{model_type}"
             self.tokenizer, self.tokenizer_kwargs = None, None
             self.model = OctoModel.load_pretrained(self.model_type)
-            self.action_mean = self.model.dataset_statistics[dataset_id]["action"][
-                "mean"
-            ]
+            self.action_mean = self.model.dataset_statistics[dataset_id]["action"]["mean"]
             self.action_std = self.model.dataset_statistics[dataset_id]["action"]["std"]
             self.automatic_task_creation = True
         else:
@@ -109,9 +105,7 @@ class OctoInference:
                     ]
                 )
             else:
-                raise NotImplementedError(
-                    f"{dataset_id} not supported yet for custom octo model checkpoints."
-                )
+                raise NotImplementedError(f"{dataset_id} not supported yet for custom octo model checkpoints.")
             self.automatic_task_creation = False
 
         self.image_size = image_size
@@ -135,9 +129,7 @@ class OctoInference:
         self.task = None
         self.image_history = deque(maxlen=self.horizon)
         if self.action_ensemble:
-            self.action_ensembler = ActionEnsembler(
-                self.pred_action_horizon, self.action_ensemble_temp
-            )
+            self.action_ensembler = ActionEnsembler(self.pred_action_horizon, self.action_ensemble_temp)
         else:
             self.action_ensembler = None
         self.num_image_history = 0
@@ -211,9 +203,7 @@ class OctoInference:
 
         if self.automatic_task_creation:
             input_observation = {"image_primary": images, "pad_mask": pad_mask}
-            norm_raw_actions = self.model.sample_actions(
-                input_observation, self.task, rng=key
-            )
+            norm_raw_actions = self.model.sample_actions(input_observation, self.task, rng=key)
         else:
             input_observation = {"image_primary": images, "timestep_pad_mask": pad_mask}
             input_observation = {
@@ -222,9 +212,7 @@ class OctoInference:
                 "rng": np.concatenate([self.rng, key]),
             }
             norm_raw_actions = self.model.lc_ws2(input_observation)[:, :, :7]
-        norm_raw_actions = norm_raw_actions[
-            0
-        ]  # remove batch, becoming (action_pred_horizon, action_dim)
+        norm_raw_actions = norm_raw_actions[0]  # remove batch, becoming (action_pred_horizon, action_dim)
         assert norm_raw_actions.shape == (self.pred_action_horizon, 7)
 
         if self.action_ensemble:
@@ -235,17 +223,13 @@ class OctoInference:
         raw_action = {
             "world_vector": np.array(raw_actions[0, :3]),
             "rotation_delta": np.array(raw_actions[0, 3:6]),
-            "open_gripper": np.array(
-                raw_actions[0, 6:7]
-            ),  # range [0, 1]; 1 = open; 0 = close
+            "open_gripper": np.array(raw_actions[0, 6:7]),  # range [0, 1]; 1 = open; 0 = close
         }
 
         # process raw_action to obtain the action to be sent to the maniskill2 environment
         action = {}
         action["world_vector"] = raw_action["world_vector"] * self.action_scale
-        action_rotation_delta = np.asarray(
-            raw_action["rotation_delta"], dtype=np.float64
-        )
+        action_rotation_delta = np.asarray(raw_action["rotation_delta"], dtype=np.float64)
         roll, pitch, yaw = action_rotation_delta
         action_rotation_ax, action_rotation_angle = euler2axangle(roll, pitch, yaw)
         action_rotation_axangle = action_rotation_ax * action_rotation_angle
@@ -282,10 +266,7 @@ class OctoInference:
                 )  # google robot 1 = close; -1 = open
             self.previous_gripper_action = current_gripper_action
 
-            if (
-                np.abs(relative_gripper_action) > 0.5
-                and self.sticky_action_is_on is False
-            ):
+            if np.abs(relative_gripper_action) > 0.5 and self.sticky_action_is_on is False:
                 self.sticky_action_is_on = True
                 self.sticky_gripper_action = relative_gripper_action
 
@@ -327,17 +308,13 @@ class OctoInference:
         # plot actions
         pred_actions = np.array(
             [
-                np.concatenate(
-                    [a["world_vector"], a["rotation_delta"], a["open_gripper"]], axis=-1
-                )
+                np.concatenate([a["world_vector"], a["rotation_delta"], a["open_gripper"]], axis=-1)
                 for a in predicted_raw_actions
             ]
         )
         for action_dim, action_label in enumerate(ACTION_DIM_LABELS):
             # actions have batch, horizon, dim, in this example we just take the first action for simplicity
-            axs[action_label].plot(
-                pred_actions[:, action_dim], label="predicted action"
-            )
+            axs[action_label].plot(pred_actions[:, action_dim], label="predicted action")
             axs[action_label].set_title(action_label)
             axs[action_label].set_xlabel("Time in one episode")
 

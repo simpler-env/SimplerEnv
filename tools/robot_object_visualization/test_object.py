@@ -57,9 +57,7 @@ def demo(model_dir):
         scene,
         scale=1.0,
         density=1000,
-        physical_material=scene.create_physical_material(
-            static_friction=2.0, dynamic_friction=2.0, restitution=0.0
-        ),
+        physical_material=scene.create_physical_material(static_friction=2.0, dynamic_friction=2.0, restitution=0.0),
     )
     obj.set_pose(sapien.Pose([0, 0, 1], [1, 0, 0, 0]))
 

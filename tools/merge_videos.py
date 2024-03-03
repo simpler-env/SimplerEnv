@@ -52,9 +52,7 @@ def put_text_on_image(
         )
 
 
-def merge_videos(
-    input_dir: Path, output_path: str = None, no_text_on_video: bool = False
-):
+def merge_videos(input_dir: Path, output_path: str = None, no_text_on_video: bool = False):
     video_paths = []
     for video_path in input_dir.glob("**/*.mp4"):
         video_paths.append(video_path)
@@ -154,9 +152,7 @@ def merge_videos(
                 init_y,
             ) not in video_clips:
                 # for episode-based object pos variation, we may have empty slots since the number of episodes might not be a perfect square
-                pad_video_clip = ColorClip(
-                    size=video_clip_size, color=(0, 0, 0)
-                ).set_duration(max_duration)
+                pad_video_clip = ColorClip(size=video_clip_size, color=(0, 0, 0)).set_duration(max_duration)
                 final_clip_array[-1].append(pad_video_clip)
                 continue
             video_clip: VideoFileClip = video_clips[(init_x, init_y)][0]
@@ -169,9 +165,7 @@ def merge_videos(
                     put_text_on_image,
                     lines=[
                         "success: " + success,
-                        video_clip_additional_info
-                        if video_clip_additional_info is not None
-                        else "",
+                        video_clip_additional_info if video_clip_additional_info is not None else "",
                     ],
                     color=(255, 0, 0) if success != "success" else (0, 255, 0),
                 )

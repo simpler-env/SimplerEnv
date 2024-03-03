@@ -31,9 +31,7 @@ def main(episode, model, model_type="rt1"):
     episode_steps = list(episode["steps"])
     pred_actions, gt_actions, images = [], [], []
 
-    language_instruction = episode_steps[0]["observation"][
-        "natural_language_instruction"
-    ]
+    language_instruction = episode_steps[0]["observation"]["natural_language_instruction"]
     print(language_instruction)
     model.reset(language_instruction)
 
@@ -47,9 +45,7 @@ def main(episode, model, model_type="rt1"):
             action_gripper_closedness_action = raw_action["gripper_closedness_action"]
             gt_action_world_vector = episode_step["action"]["world_vector"]
             gt_action_rotation_delta = episode_step["action"]["rotation_delta"]
-            gt_action_gripper_closedness_action = episode_step["action"][
-                "gripper_closedness_action"
-            ]
+            gt_action_gripper_closedness_action = episode_step["action"]["gripper_closedness_action"]
             print("**STEP**", i)
             print(
                 "world pred",
@@ -73,13 +69,7 @@ def main(episode, model, model_type="rt1"):
                 "gt",
                 gt_action_gripper_closedness_action,
                 "mse",
-                np.mean(
-                    (
-                        action_gripper_closedness_action
-                        - gt_action_gripper_closedness_action
-                    )
-                    ** 2
-                ),
+                np.mean((action_gripper_closedness_action - gt_action_gripper_closedness_action) ** 2),
             )
             print(
                 "terminate pred",
@@ -108,9 +98,7 @@ if __name__ == "__main__":
     # ckpt_path = 'checkpoints/rt_1_x_tf_trained_for_002272480_step'
 
     gpus = tf.config.list_physical_devices("GPU")
-    tf.config.set_logical_device_configuration(
-        gpus[0], [tf.config.LogicalDeviceConfiguration(memory_limit=4096)]
-    )
+    tf.config.set_logical_device_configuration(gpus[0], [tf.config.LogicalDeviceConfiguration(memory_limit=4096)])
 
     dataset_name = DATASETS[0]
     dset = tfds.builder_from_directory(builder_dir=dataset2path(dataset_name))

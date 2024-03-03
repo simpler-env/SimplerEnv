@@ -15,9 +15,7 @@ def obtain_arr(s):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--log-file", type=str, default="sysid_log/opt_results_google_robot.txt"
-    )
+    parser.add_argument("--log-file", type=str, default="sysid_log/opt_results_google_robot.txt")
     args = parser.parse_args()
 
     with open(args.log_file, "r") as f:

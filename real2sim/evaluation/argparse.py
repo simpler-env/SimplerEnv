@@ -84,9 +84,7 @@ def get_args():
         choices=["xy", "episode"],
         help="Whether to vary the xy position of a single object, or to vary predetermined episodes",
     )
-    parser.add_argument(
-        "--obj-episode-range", type=int, nargs=2, default=[0, 60], help="[start, end]"
-    )
+    parser.add_argument("--obj-episode-range", type=int, nargs=2, default=[0, 60], help="[start, end]")
     parser.add_argument(
         "--obj-init-x-range",
         type=float,
@@ -113,12 +111,8 @@ def get_args():
         "is allowed.",
     )
     parser.add_argument("--logging-dir", type=str, default="./results")
-    parser.add_argument(
-        "--tf-memory-limit", type=int, default=3072, help="Tensorflow memory limit"
-    )
-    parser.add_argument(
-        "--octo-init-rng", type=int, default=0, help="Octo init rng seed"
-    )
+    parser.add_argument("--tf-memory-limit", type=int, default=3072, help="Tensorflow memory limit")
+    parser.add_argument("--octo-init-rng", type=int, default=0, help="Octo init rng seed")
 
     args = parser.parse_args()
 
@@ -129,12 +123,7 @@ def get_args():
     for r in parse_range_tuple(args.robot_init_rot_rpy_range[:3]):
         for p in parse_range_tuple(args.robot_init_rot_rpy_range[3:6]):
             for y in parse_range_tuple(args.robot_init_rot_rpy_range[6:]):
-                args.robot_init_quats.append(
-                    (
-                        Pose(q=euler2quat(r, p, y))
-                        * Pose(q=args.robot_init_rot_quat_center)
-                    ).q
-                )
+                args.robot_init_quats.append((Pose(q=euler2quat(r, p, y)) * Pose(q=args.robot_init_rot_quat_center)).q)
     # env args: object position
     if args.obj_variation_mode == "xy":
         args.obj_init_xs = parse_range_tuple(args.obj_init_x_range)
@@ -144,8 +133,6 @@ def get_args():
         if args.additional_env_save_tags is None:
             args.additional_env_save_tags = f"obs_camera_{args.obs_camera_name}"
         else:
-            args.additional_env_save_tags = (
-                args.additional_env_save_tags + f"_obs_camera_{args.obs_camera_name}"
-            )
+            args.additional_env_save_tags = args.additional_env_save_tags + f"_obs_camera_{args.obs_camera_name}"
 
     return args

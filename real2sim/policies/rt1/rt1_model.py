@@ -62,9 +62,7 @@ class RT1Inference:
         post_scaling_min: float = -1.0,
     ) -> np.ndarray:
         """Formula taken from https://stats.stackexchange.com/questions/281162/scale-a-number-between-a-range."""
-        resc_actions = (actions - low) / (high - low) * (
-            post_scaling_max - post_scaling_min
-        ) + post_scaling_min
+        resc_actions = (actions - low) / (high - low) * (post_scaling_max - post_scaling_min) + post_scaling_min
         return np.clip(
             resc_actions,
             post_scaling_min + safety_margin,
@@ -95,9 +93,7 @@ class RT1Inference:
             tf_agents.specs.from_spec(self.tfa_policy.time_step_spec.observation)
         )  # "natural_language_embedding": [512], "image", [256,320,3], "natural_language_instruction": <tf.Tensor: shape=(), dtype=string, numpy=b''>
         # Construct a tf_agents time_step from the dummy observation
-        self.tfa_time_step = ts.transition(
-            self.observation, reward=np.zeros((), dtype=np.float32)
-        )
+        self.tfa_time_step = ts.transition(self.observation, reward=np.zeros((), dtype=np.float32))
         # Initialize the state of the policy
         self.policy_state = self.tfa_policy.get_initial_state(batch_size=1)
         # Run inference using the policy
@@ -106,9 +102,7 @@ class RT1Inference:
         self.time_step = 0
 
     def _resize_image(self, image):
-        image = tf.image.resize_with_pad(
-            image, target_width=self.image_width, target_height=self.image_height
-        )
+        image = tf.image.resize_with_pad(image, target_width=self.image_width, target_height=self.image_height)
         image = tf.cast(image, tf.uint8)
         return image
 
@@ -116,9 +110,7 @@ class RT1Inference:
         self._initialize_model()
         if task_description is not None:
             self.task_description = task_description
-            self.task_description_embedding = self.lang_embed_model([task_description])[
-                0
-            ]
+            self.task_description_embedding = self.lang_embed_model([task_description])[0]
         else:
             self.task_description = ""
             self.task_description_embedding = tf.zeros((512,), dtype=tf.float32)
@@ -173,53 +165,35 @@ class RT1Inference:
         self.observation["natural_language_embedding"] = self.task_description_embedding
 
         # obtain (unnormalized and filtered) raw action from model forward pass
-        self.tfa_time_step = ts.transition(
-            self.observation, reward=np.zeros((), dtype=np.float32)
-        )
+        self.tfa_time_step = ts.transition(self.observation, reward=np.zeros((), dtype=np.float32))
         policy_step = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
         raw_action = policy_step.action
         if self.policy_setup == "google_robot":
-            raw_action = self._small_action_filter_google_robot(
-                raw_action, arm_movement=False, gripper=True
-            )
+            raw_action = self._small_action_filter_google_robot(raw_action, arm_movement=False, gripper=True)
         if self.unnormalize_action:
             raw_action = self.unnormalize_action_fxn(raw_action)
 
         # process raw_action to obtain the action to be sent to the maniskill2 environment
         action = {}
-        action["world_vector"] = (
-            np.asarray(raw_action["world_vector"], dtype=np.float64) * self.action_scale
-        )
+        action["world_vector"] = np.asarray(raw_action["world_vector"], dtype=np.float64) * self.action_scale
         if self.action_rotation_mode == "axis_angle":
-            action_rotation_delta = np.asarray(
-                raw_action["rotation_delta"], dtype=np.float64
-            )
+            action_rotation_delta = np.asarray(raw_action["rotation_delta"], dtype=np.float64)
             action_rotation_angle = np.linalg.norm(action_rotation_delta)
             action_rotation_ax = (
                 action_rotation_delta / action_rotation_angle
                 if action_rotation_angle > 1e-6
                 else np.array([0.0, 1.0, 0.0])
             )
-            action["rot_axangle"] = (
-                action_rotation_ax * action_rotation_angle * self.action_scale
-            )
+            action["rot_axangle"] = action_rotation_ax * action_rotation_angle * self.action_scale
         elif self.action_rotation_mode in ["rpy", "ypr", "pry"]:
             if self.action_rotation_mode == "rpy":
-                roll, pitch, yaw = np.asarray(
-                    raw_action["rotation_delta"], dtype=np.float64
-                )
+                roll, pitch, yaw = np.asarray(raw_action["rotation_delta"], dtype=np.float64)
             elif self.action_rotation_mode == "ypr":
-                yaw, pitch, roll = np.asarray(
-                    raw_action["rotation_delta"], dtype=np.float64
-                )
+                yaw, pitch, roll = np.asarray(raw_action["rotation_delta"], dtype=np.float64)
             elif self.action_rotation_mode == "pry":
-                pitch, roll, yaw = np.asarray(
-                    raw_action["rotation_delta"], dtype=np.float64
-                )
+                pitch, roll, yaw = np.asarray(raw_action["rotation_delta"], dtype=np.float64)
             action_rotation_ax, action_rotation_angle = euler2axangle(roll, pitch, yaw)
-            action["rot_axangle"] = (
-                action_rotation_ax * action_rotation_angle * self.action_scale
-            )
+            action["rot_axangle"] = action_rotation_ax * action_rotation_angle * self.action_scale
         else:
             raise NotImplementedError()
 
@@ -288,9 +262,7 @@ class RT1Inference:
         fig.set_size_inches([45, 10])
 
         for i, (k, v) in enumerate(predicted_action_name_to_values_over_time.items()):
-            axs[k].plot(
-                predicted_action_name_to_values_over_time[k], label="predicted action"
-            )
+            axs[k].plot(predicted_action_name_to_values_over_time[k], label="predicted action")
             axs[k].set_title(k)
             axs[k].set_xlabel("Time in one episode")
 

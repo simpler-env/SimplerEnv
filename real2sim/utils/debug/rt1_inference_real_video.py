@@ -36,9 +36,7 @@ def main(
 ):
 
     # Build RT-1 Model
-    rt1_model = RT1Inference(
-        saved_model_path=ckpt_path, action_scale=1.0, policy_setup=policy_setup
-    )
+    rt1_model = RT1Inference(saved_model_path=ckpt_path, action_scale=1.0, policy_setup=policy_setup)
 
     # Create environment
     env = build_maniskill2_env(
@@ -70,9 +68,7 @@ def main(
         cur_qpos[controller.joint_indices] = init_arm_qpos
         env.agent.reset(cur_qpos)
 
-    image = (env.get_obs()["image"][overlay_camera]["Color"][..., :3] * 255).astype(
-        np.uint8
-    )
+    image = (env.get_obs()["image"][overlay_camera]["Color"][..., :3] * 255).astype(np.uint8)
     images.append(image)
     qpos_arr.append(env.agent.robot.get_qpos())
     truncated = False
@@ -97,9 +93,7 @@ def main(
         predicted_terminated = bool(action["terminate_episode"][0] > 0)
 
         obs, reward, terminated, truncated, info = env.step(
-            np.concatenate(
-                [action["world_vector"], action["rot_axangle"], action["gripper"]]
-            )
+            np.concatenate([action["world_vector"], action["rot_axangle"], action["gripper"]])
         )
 
         image = obs["image"]["overhead_camera"]["rgb"]
@@ -109,16 +103,12 @@ def main(
 
     if input_video is not None:
         for i in range(len(images)):
-            images[i] = cv2.resize(
-                images[i], (input_video[i].shape[1], input_video[i].shape[0])
-            )
+            images[i] = cv2.resize(images[i], (input_video[i].shape[1], input_video[i].shape[0]))
             images[i] = np.concatenate(
                 [
                     images[i]
                     if inpainting_img_path is not None
-                    else np.array(images[i] * 0.7 + input_video[i] * 0.3).astype(
-                        np.uint8
-                    ),
+                    else np.array(images[i] * 0.7 + input_video[i] * 0.3).astype(np.uint8),
                     input_video[i],
                 ],
                 axis=1,
@@ -127,9 +117,7 @@ def main(
     os.makedirs(f"{save_root}", exist_ok=True)
     os.makedirs(f"{save_root}/save_qpos", exist_ok=True)
 
-    rt1_model.visualize_epoch(
-        predicted_actions, images, save_path=f"{save_root}/{save_name}.png"
-    )
+    rt1_model.visualize_epoch(predicted_actions, images, save_path=f"{save_root}/{save_name}.png")
     video_path = f"{save_root}/{save_name}.mp4"
     write_video(video_path, images, fps=5)
     np.save(f"{save_root}/save_qpos/{save_name}_qpos.npy", np.array(qpos_arr))
@@ -144,14 +132,10 @@ if __name__ == "__main__":
     os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
     gpus = tf.config.list_physical_devices("GPU")
     if len(gpus) > 0:
-        tf.config.set_logical_device_configuration(
-            gpus[0], [tf.config.LogicalDeviceConfiguration(memory_limit=4096)]
-        )
+        tf.config.set_logical_device_configuration(gpus[0], [tf.config.LogicalDeviceConfiguration(memory_limit=4096)])
 
     mp4_path = "ManiSkill2_real2sim/data/debug/rt1_real_standing_coke_can_1.mp4"
-    inpainting_img_path = (
-        "ManiSkill2_real2sim/data/debug/rt1_real_standing_coke_can_1_cleanup.png"
-    )
+    inpainting_img_path = "ManiSkill2_real2sim/data/debug/rt1_real_standing_coke_can_1_cleanup.png"
     instruction = "pick coke can"
     ckpt_path = "checkpoints/xid77467904_000400120/"
 
@@ -173,9 +157,7 @@ if __name__ == "__main__":
         input_video = None
 
     gpus = tf.config.list_physical_devices("GPU")
-    tf.config.set_logical_device_configuration(
-        gpus[0], [tf.config.LogicalDeviceConfiguration(memory_limit=3072)]
-    )
+    tf.config.set_logical_device_configuration(gpus[0], [tf.config.LogicalDeviceConfiguration(memory_limit=3072)])
 
     main(input_video, inpainting_img_path, instruction, ckpt_path, control_freq=3)
     # main(input_video, inpainting_img_path, instruction, ckpt_path,

@@ -48,9 +48,7 @@ def main(
     print("episode tfds id", episode["tfds_id"])
     episode_steps = list(episode["steps"])
 
-    language_instruction = episode_steps[0]["observation"][
-        "natural_language_instruction"
-    ]
+    language_instruction = episode_steps[0]["observation"]["natural_language_instruction"]
     print(language_instruction)
 
     sim_freq, control_freq = 510, 5
@@ -74,19 +72,12 @@ def main(
     obs, _ = env.reset()
     env.agent.robot.set_pose(Pose([0, 0, 1]))
 
-    mat_transform = np.array(
-        [[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]], dtype=np.float64
-    )
+    mat_transform = np.array([[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]], dtype=np.float64)
     # initialize robot end-effector pose to be the same as the first observation
     gt_tcp_pose_at_robot_base = Pose(
         p=episode_steps[0]["observation"]["state"][:3],
         q=mat2quat(
-            euler2mat(
-                *np.array(
-                    episode_steps[0]["observation"]["state"][3:6], dtype=np.float64
-                )
-            )
-            @ mat_transform
+            euler2mat(*np.array(episode_steps[0]["observation"]["state"][3:6], dtype=np.float64)) @ mat_transform
         ),
     )
     controller = env.agent.controller.controllers["arm"]
@@ -97,30 +88,18 @@ def main(
     qpos_arr.append(env.agent.robot.get_qpos())
 
     obs = env.get_obs()
-    images.append(
-        (obs["image"][overlay_camera]["Color"][..., :-1] * 255).astype(np.uint8)
-    )
+    images.append((obs["image"][overlay_camera]["Color"][..., :-1] * 255).astype(np.uint8))
 
     # step the environment using trajectory actions
     for i in range(len(episode_steps) - 1):
-        episode_step = episode_steps[
-            i
-        ]  # episode_step['observation']['base_pose_tool_reached'] = [xyz, quat xyzw]
+        episode_step = episode_steps[i]  # episode_step['observation']['base_pose_tool_reached'] = [xyz, quat xyzw]
         gt_images.append(episode_step["observation"]["image"])
 
-        gt_action_world_vector = np.asarray(
-            episode_step["action"]["world_vector"], dtype=np.float64
-        )
-        gt_action_rotation_delta = np.asarray(
-            episode_step["action"]["rotation_delta"], dtype=np.float64
-        )
-        gt_action_rotation_ax, gt_action_rotation_angle = euler2axangle(
-            *gt_action_rotation_delta
-        )
+        gt_action_world_vector = np.asarray(episode_step["action"]["world_vector"], dtype=np.float64)
+        gt_action_rotation_delta = np.asarray(episode_step["action"]["rotation_delta"], dtype=np.float64)
+        gt_action_rotation_ax, gt_action_rotation_angle = euler2axangle(*gt_action_rotation_delta)
         gt_action_rotation_axangle = gt_action_rotation_ax * gt_action_rotation_angle
-        gt_action_gripper_closedness_action = (
-            2.0 * (np.array(episode_step["action"]["open_gripper"])[None]) - 1.0
-        )
+        gt_action_gripper_closedness_action = 2.0 * (np.array(episode_step["action"]["open_gripper"])[None]) - 1.0
 
         action = np.concatenate(
             [
@@ -134,16 +113,12 @@ def main(
         images.append(obs["image"][overlay_camera]["rgb"])
         qpos_arr.append(env.agent.robot.get_qpos())
 
-    gt_images = [
-        gt_images[np.clip(i, 0, len(gt_images) - 1)] for i in range(len(images))
-    ]
+    gt_images = [gt_images[np.clip(i, 0, len(gt_images) - 1)] for i in range(len(images))]
     for i in range(len(images)):
         images[i] = np.concatenate(
             [
                 images[i],
-                cv2.resize(
-                    np.asarray(gt_images[i]), (images[i].shape[1], images[i].shape[0])
-                ),
+                cv2.resize(np.asarray(gt_images[i]), (images[i].shape[1], images[i].shape[0])),
             ],
             axis=1,
         )
@@ -160,9 +135,7 @@ if __name__ == "__main__":
     dset = tfds.builder_from_directory(builder_dir=dataset2path(dataset_name))
     save_root = "debug_logs/widowx_test_dataset_inference_rollout_gt_traj_in_sim/"
 
-    dset = dset.as_dataset(
-        split="train[:6]", read_config=tfds.ReadConfig(add_tfds_id=True)
-    )
+    dset = dset.as_dataset(split="train[:6]", read_config=tfds.ReadConfig(add_tfds_id=True))
     dset_iter = iter(dset)
     last_episode_id = 0
     for ep_idx in [1]:  # [0, 1, 2, 3, 4]: # [0, 1]:

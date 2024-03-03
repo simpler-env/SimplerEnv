@@ -7,11 +7,7 @@ import os
 import numpy as np
 from transforms3d.euler import quat2euler
 
-from real2sim.utils.env.env_builder import (
-    build_maniskill2_env,
-    get_maniskill2_env_instruction,
-    get_robot_control_mode,
-)
+from real2sim.utils.env.env_builder import build_maniskill2_env, get_maniskill2_env_instruction, get_robot_control_mode
 from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
 from real2sim.utils.visualization import write_video
 
@@ -116,17 +112,13 @@ def run_maniskill2_eval_single_episode(
 
         # step the environment
         obs, reward, done, truncated, info = env.step(
-            np.concatenate(
-                [action["world_vector"], action["rot_axangle"], action["gripper"]]
-            )
+            np.concatenate([action["world_vector"], action["rot_axangle"], action["gripper"]])
         )
         success = "success" if done else "failure"
 
         print(timestep, info)
 
-        image = get_image_from_maniskill2_obs_dict(
-            env, obs, camera_name=obs_camera_name
-        )
+        image = get_image_from_maniskill2_obs_dict(env, obs, camera_name=obs_camera_name)
         images.append(image)
         timestep += 1
 
@@ -205,14 +197,8 @@ def maniskill2_evaluator(model, args):
                                 )
                             )
                 elif args.obj_variation_mode == "episode":
-                    for obj_episode_id in range(
-                        args.obj_episode_range[0], args.obj_episode_range[1]
-                    ):
-                        success_arr.append(
-                            run_maniskill2_eval_single_episode(
-                                obj_episode_id=obj_episode_id, **kwargs
-                            )
-                        )
+                    for obj_episode_id in range(args.obj_episode_range[0], args.obj_episode_range[1]):
+                        success_arr.append(run_maniskill2_eval_single_episode(obj_episode_id=obj_episode_id, **kwargs))
                 else:
                     raise NotImplementedError()
 

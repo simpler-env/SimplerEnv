@@ -20,9 +20,7 @@ if __name__ == "__main__":
     dataset_name = DATASETS[0]
     dset = tfds.builder_from_directory(builder_dir=dataset2path(dataset_name))
 
-    dset = dset.as_dataset(
-        split="train[:300]", read_config=tfds.ReadConfig(add_tfds_id=True)
-    )
+    dset = dset.as_dataset(split="train[:300]", read_config=tfds.ReadConfig(add_tfds_id=True))
     dset = list(dset)
     for i, episode in enumerate(dset):
         gt_images = []

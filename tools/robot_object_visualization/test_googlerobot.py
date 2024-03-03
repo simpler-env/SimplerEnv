@@ -66,9 +66,7 @@ def demo(fix_root_link, balance_passive_force):
     link_camera = [x for x in robot.get_links() if x.name == "link_camera"][0]
     camera.set_parent(parent=link_camera, keep_pose=False)
     camera.set_local_pose(
-        sapien.Pose.from_transformation_matrix(
-            np.array([[0, -1, 0, 0], [0, 0, -1, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
-        )
+        sapien.Pose.from_transformation_matrix(np.array([[0, -1, 0, 0], [0, 0, -1, 0], [1, 0, 0, 0], [0, 0, 0, 1]]))
     )  # SAPIEN uses ros camera convention; the rotation matrix of link_camera's pose is in opencv convention, so we need to transform it to ros convention
 
     tcp_link = [x for x in robot.get_links() if x.name == "link_gripper_tcp"][0]

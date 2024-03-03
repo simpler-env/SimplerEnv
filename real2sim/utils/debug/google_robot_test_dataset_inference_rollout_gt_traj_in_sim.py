@@ -47,9 +47,7 @@ def main(
     print("episode tfds id", episode["tfds_id"])
     episode_steps = list(episode["steps"])[1:]  # removing first step
 
-    language_instruction = episode_steps[0]["observation"][
-        "natural_language_instruction"
-    ]
+    language_instruction = episode_steps[0]["observation"]["natural_language_instruction"]
     print(language_instruction)
 
     sim_freq, control_freq = 510, 3
@@ -74,9 +72,7 @@ def main(
     obs, _ = env.reset()
 
     for i in range(len(episode_steps) - 1):
-        episode_step = episode_steps[
-            i
-        ]  # episode_step['observation']['base_pose_tool_reached'] = [xyz, quat xyzw]
+        episode_step = episode_steps[i]  # episode_step['observation']['base_pose_tool_reached'] = [xyz, quat xyzw]
         gt_images.append(episode_step["observation"]["image"])
 
         current_pose_at_robot_base = env.agent.robot.pose.inv() * env.tcp.pose
@@ -85,9 +81,7 @@ def main(
             # move tcp pose in environment to the gt tcp pose wrt robot base
             this_xyz = episode_step["observation"]["base_pose_tool_reached"][:3]
             this_xyzw = episode_step["observation"]["base_pose_tool_reached"][3:]
-            this_pose_at_robot_base = Pose(
-                p=np.array(this_xyz), q=np.concatenate([this_xyzw[-1:], this_xyzw[:-1]])
-            )
+            this_pose_at_robot_base = Pose(p=np.array(this_xyz), q=np.concatenate([this_xyzw[-1:], this_xyzw[:-1]]))
             controller = env.agent.controller.controllers["arm"]
             cur_qpos = env.agent.robot.get_qpos()
             init_arm_qpos = controller.compute_ik(this_pose_at_robot_base)
@@ -97,11 +91,7 @@ def main(
 
             # get obs
             obs = env.get_obs()
-            images.append(
-                (obs["image"]["overhead_camera"]["Color"][..., :-1] * 255).astype(
-                    np.uint8
-                )
-            )
+            images.append((obs["image"]["overhead_camera"]["Color"][..., :-1] * 255).astype(np.uint8))
             ee_poses_at_base.append(current_pose_at_robot_base)
 
         qpos_arr.append(env.agent.robot.get_qpos())
@@ -118,12 +108,8 @@ def main(
                 if gt_action_rotation_angle > 1e-6
                 else np.array([0.0, 1.0, 0.0])
             )
-            gt_action_rotation_axangle = (
-                gt_action_rotation_ax * gt_action_rotation_angle
-            )
-            gt_action_gripper_closedness_action = episode_step["action"][
-                "gripper_closedness_action"
-            ]
+            gt_action_rotation_axangle = gt_action_rotation_ax * gt_action_rotation_angle
+            gt_action_gripper_closedness_action = episode_step["action"]["gripper_closedness_action"]
             action = np.concatenate(
                 [
                     gt_action_world_vector * action_scale,
@@ -136,16 +122,12 @@ def main(
             images.append(obs["image"]["overhead_camera"]["rgb"])
             ee_poses_at_base.append(env.agent.robot.pose.inv() * env.tcp.pose)
 
-    gt_images = [
-        gt_images[np.clip(i, 0, len(gt_images) - 1)] for i in range(len(images))
-    ]
+    gt_images = [gt_images[np.clip(i, 0, len(gt_images) - 1)] for i in range(len(images))]
     for i in range(len(images)):
         images[i] = np.concatenate(
             [
                 images[i],
-                cv2.resize(
-                    np.asarray(gt_images[i]), (images[i].shape[1], images[i].shape[0])
-                ),
+                cv2.resize(np.asarray(gt_images[i]), (images[i].shape[1], images[i].shape[0])),
             ],
             axis=1,
         )

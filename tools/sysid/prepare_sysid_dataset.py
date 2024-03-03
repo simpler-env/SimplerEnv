@@ -31,9 +31,7 @@ if __name__ == "__main__":
     python tools/sysid/prepare_sysid_dataset.py --save-path /home/xuanlin/Downloads/sysid_dataset_bridge.pkl --dataset-name bridge
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--save-path", type=str, default="/home/xuanlin/Downloads/sysid_dataset.pkl"
-    )
+    parser.add_argument("--save-path", type=str, default="/home/xuanlin/Downloads/sysid_dataset.pkl")
     parser.add_argument("--dataset-name", type=str, default="fractal20220817_data")
     args = parser.parse_args()
 
@@ -84,9 +82,7 @@ if __name__ == "__main__":
             if dataset_name == "fractal20220817_data":
                 if j == 0:
                     continue  # skip the first step since during the real data collection process, its action might not be reach the robot in time and be executed by the robot
-                base_pose_tool_reached = episode_step["observation"][
-                    "base_pose_tool_reached"
-                ]
+                base_pose_tool_reached = episode_step["observation"]["base_pose_tool_reached"]
                 base_pose_tool_reached = np.concatenate(
                     [
                         base_pose_tool_reached[:3],
@@ -98,12 +94,8 @@ if __name__ == "__main__":
                     "base_pose_tool_reached": np.array(
                         base_pose_tool_reached, dtype=np.float64
                     ),  # reached tool pose under the robot base frame
-                    "action_world_vector": np.array(
-                        episode_step["action"]["world_vector"], dtype=np.float64
-                    ),
-                    "action_rotation_delta": np.array(
-                        episode_step["action"]["rotation_delta"], dtype=np.float64
-                    ),
+                    "action_world_vector": np.array(episode_step["action"]["world_vector"], dtype=np.float64),
+                    "action_rotation_delta": np.array(episode_step["action"]["rotation_delta"], dtype=np.float64),
                     # 'action_gripper': np.array(episode_step['action']['gripper_closedness_action'], dtype=np.float64), # 1=close; -1=open
                 }
             elif dataset_name == "bridge":
@@ -130,12 +122,8 @@ if __name__ == "__main__":
                             np.array(base_pose_tool_reached.q, dtype=np.float64),
                         ]
                     ),  # reached tool pose under the robot base frame, [xyz, quat(wxyz)]
-                    "action_world_vector": np.array(
-                        episode_step["action"]["world_vector"], dtype=np.float64
-                    ),
-                    "action_rotation_delta": np.array(
-                        episode_step["action"]["rotation_delta"], dtype=np.float64
-                    ),
+                    "action_world_vector": np.array(episode_step["action"]["world_vector"], dtype=np.float64),
+                    "action_rotation_delta": np.array(episode_step["action"]["rotation_delta"], dtype=np.float64),
                     # 'action_gripper': np.array(2.0 * (np.array(episode_step['action']['open_gripper'])[None]) - 1.0, dtype=np.float64), # 1=open; -1=close
                 }
             else:

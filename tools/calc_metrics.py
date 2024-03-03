@@ -49,18 +49,17 @@ def calc_pick_coke_can_stats(root_result_dir):
         "vertical": "laid_vertically",
         "standing": "upright",
     }
-    n_orientations = len(
-        coke_can_orientation_map_dict
-    )  # number of coke can orientations
-    n_trials_per_ckpt_per_orientation = 25  # number of trials per checkpoint per coke can orientation; update if it is different
+    n_orientations = len(coke_can_orientation_map_dict)  # number of coke can orientations
+    n_trials_per_ckpt_per_orientation = (
+        25  # number of trials per checkpoint per coke can orientation; update if it is different
+    )
     # extra patterns required in file name; if you are using different visual matching overlay image, please update here
     extra_pattern_require_sim_variants = ["rgb_overlay_None"]
     extra_pattern_require_visual_matching = ["rgb_overlay_google_coke_can_real_eval_1"]
 
     # get simulation variant success
     coke_can_sim_variant_success = {
-        k1: {k2: [] for k2 in ckpt_alias_keys}
-        for k1 in coke_can_orientation_map_dict.keys()
+        k1: {k2: [] for k2 in ckpt_alias_keys} for k1 in coke_can_orientation_map_dict.keys()
     }
 
     # hardcoded variant aggregation result dirs; if you have new variants, please update here
@@ -103,15 +102,9 @@ def calc_pick_coke_can_stats(root_result_dir):
     for coke_can_orientation in coke_can_orientation_map_dict.keys():
         for ckpt_alias in ckpt_alias_keys:
             for variant in (
-                base_variants
-                + background_variants
-                + lighting_variants
-                + distractor_variants
-                + table_texture_variants
+                base_variants + background_variants + lighting_variants + distractor_variants + table_texture_variants
             ):
-                variant = variant.format(
-                    coke_can_orientation_map_dict[coke_can_orientation]
-                )
+                variant = variant.format(coke_can_orientation_map_dict[coke_can_orientation])
                 variant = f"{root_result_dir}/{CKPT_MAPPING[ckpt_alias]}/{variant}"
                 avg_sim_success = np.mean(
                     get_dir_stats(
@@ -121,9 +114,7 @@ def calc_pick_coke_can_stats(root_result_dir):
                 )
                 if np.isnan(avg_sim_success):
                     print(f"WARNING: avg_sim_success is nan for {variant}")
-                coke_can_sim_variant_success[coke_can_orientation][ckpt_alias].append(
-                    avg_sim_success
-                )
+                coke_can_sim_variant_success[coke_can_orientation][ckpt_alias].append(avg_sim_success)
             coke_can_sim_variant_success[coke_can_orientation][ckpt_alias] = np.mean(
                 coke_can_sim_variant_success[coke_can_orientation][ckpt_alias]
             )
@@ -162,39 +153,28 @@ def calc_pick_coke_can_stats(root_result_dir):
             avg_orientation_sim_variant_results[-1].append(
                 coke_can_sim_variant_success[coke_can_orientation][ckpt_alias]
             )
-            avg_orientation_real_results[-1].append(
-                coke_can_real_success[coke_can_orientation][ckpt_alias]
-            )
-        avg_orientation_sim_variant_results[-1] = np.mean(
-            avg_orientation_sim_variant_results[-1]
-        )
+            avg_orientation_real_results[-1].append(coke_can_real_success[coke_can_orientation][ckpt_alias])
+        avg_orientation_sim_variant_results[-1] = np.mean(avg_orientation_sim_variant_results[-1])
         avg_orientation_real_results[-1] = np.mean(avg_orientation_real_results[-1])
     print("avg_orientation_sim_variant_results", avg_orientation_sim_variant_results)
     print("avg_orientation_real_results", avg_orientation_real_results)
     print(
         "normalized_rank_loss(avg_orientation_sim_variant_results, avg_orientation_real_results)",
-        normalized_rank_loss(
-            avg_orientation_sim_variant_results, avg_orientation_real_results
-        ),
+        normalized_rank_loss(avg_orientation_sim_variant_results, avg_orientation_real_results),
     )
     print(
         "pearson_correlation(avg_orientation_sim_variant_results, avg_orientation_real_results)",
-        pearson_correlation(
-            avg_orientation_sim_variant_results, avg_orientation_real_results
-        ),
+        pearson_correlation(avg_orientation_sim_variant_results, avg_orientation_real_results),
     )
 
     # get visual matching success
     coke_can_sim_visual_matching_success = {
-        k1: {k2: [] for k2 in ckpt_alias_keys}
-        for k1 in coke_can_orientation_map_dict.keys()
+        k1: {k2: [] for k2 in ckpt_alias_keys} for k1 in coke_can_orientation_map_dict.keys()
     }
     for coke_can_orientation in coke_can_orientation_map_dict.keys():
         for ckpt_alias in ckpt_alias_keys:
             for variant in base_visual_matching_variants:
-                variant = variant.format(
-                    coke_can_orientation_map_dict[coke_can_orientation]
-                )
+                variant = variant.format(coke_can_orientation_map_dict[coke_can_orientation])
                 variant = f"{root_result_dir}/{CKPT_MAPPING[ckpt_alias]}/{variant}"
                 avg_sim_success = np.mean(
                     get_dir_stats(
@@ -204,12 +184,8 @@ def calc_pick_coke_can_stats(root_result_dir):
                 )
                 if np.isnan(avg_sim_success):
                     print(f"WARNING: avg_sim_success is nan for {variant}")
-                coke_can_sim_visual_matching_success[coke_can_orientation][
-                    ckpt_alias
-                ].append(avg_sim_success)
-            coke_can_sim_visual_matching_success[coke_can_orientation][
-                ckpt_alias
-            ] = np.mean(
+                coke_can_sim_visual_matching_success[coke_can_orientation][ckpt_alias].append(avg_sim_success)
+            coke_can_sim_visual_matching_success[coke_can_orientation][ckpt_alias] = np.mean(
                 coke_can_sim_visual_matching_success[coke_can_orientation][ckpt_alias]
             )
 
@@ -226,27 +202,21 @@ def calc_pick_coke_can_stats(root_result_dir):
         print(
             f"{coke_can_orientation} normalized rank loss",
             normalized_rank_loss(
-                list(
-                    coke_can_sim_visual_matching_success[coke_can_orientation].values()
-                ),
+                list(coke_can_sim_visual_matching_success[coke_can_orientation].values()),
                 list(coke_can_real_success[coke_can_orientation].values()),
             ),
         )
         print(
             f"{coke_can_orientation} pearson correlation",
             pearson_correlation(
-                list(
-                    coke_can_sim_visual_matching_success[coke_can_orientation].values()
-                ),
+                list(coke_can_sim_visual_matching_success[coke_can_orientation].values()),
                 list(coke_can_real_success[coke_can_orientation].values()),
             ),
         )
         print_all_kruskal_results(
             construct_unordered_trial_results(
                 n_trials_per_ckpt_per_orientation,
-                list(
-                    coke_can_sim_visual_matching_success[coke_can_orientation].values()
-                ),
+                list(coke_can_sim_visual_matching_success[coke_can_orientation].values()),
             ),
             construct_unordered_trial_results(
                 n_trials_per_ckpt_per_orientation,
@@ -264,12 +234,8 @@ def calc_pick_coke_can_stats(root_result_dir):
             avg_orientation_sim_visual_matching_results[-1].append(
                 coke_can_sim_visual_matching_success[coke_can_orientation][ckpt_alias]
             )
-            avg_orientation_real_results[-1].append(
-                coke_can_real_success[coke_can_orientation][ckpt_alias]
-            )
-        avg_orientation_sim_visual_matching_results[-1] = np.mean(
-            avg_orientation_sim_visual_matching_results[-1]
-        )
+            avg_orientation_real_results[-1].append(coke_can_real_success[coke_can_orientation][ckpt_alias])
+        avg_orientation_sim_visual_matching_results[-1] = np.mean(avg_orientation_sim_visual_matching_results[-1])
         avg_orientation_real_results[-1] = np.mean(avg_orientation_real_results[-1])
     print(
         "avg_orientation_sim_visual_matching_results",
@@ -278,15 +244,11 @@ def calc_pick_coke_can_stats(root_result_dir):
     print("avg_orientation_real_results", avg_orientation_real_results)
     print(
         "normalized_rank_loss(avg_orientation_sim_visual_matching_results, avg_orientation_real_results)",
-        normalized_rank_loss(
-            avg_orientation_sim_visual_matching_results, avg_orientation_real_results
-        ),
+        normalized_rank_loss(avg_orientation_sim_visual_matching_results, avg_orientation_real_results),
     )
     print(
         "pearson_correlation(avg_orientation_sim_visual_matching_results, avg_orientation_real_results)",
-        pearson_correlation(
-            avg_orientation_sim_visual_matching_results, avg_orientation_real_results
-        ),
+        pearson_correlation(avg_orientation_sim_visual_matching_results, avg_orientation_real_results),
     )
     print_all_kruskal_results(
         construct_unordered_trial_results(
@@ -363,24 +325,14 @@ def calc_move_near_stats(root_result_dir):
 
     for ckpt_alias in ckpt_alias_keys:
         for variant in (
-            base_variants
-            + background_variants
-            + lighting_variants
-            + distractor_variants
-            + table_texture_variants
+            base_variants + background_variants + lighting_variants + distractor_variants + table_texture_variants
         ):
             variant = f"{root_result_dir}/{CKPT_MAPPING[ckpt_alias]}/{variant}"
-            avg_sim_success = np.mean(
-                get_dir_stats(
-                    variant, extra_pattern_require=extra_pattern_require_sim_variants
-                )
-            )
+            avg_sim_success = np.mean(get_dir_stats(variant, extra_pattern_require=extra_pattern_require_sim_variants))
             if np.isnan(avg_sim_success):
                 print(f"WARNING: avg_sim_success is nan for {variant}")
             move_near_sim_variant_success[ckpt_alias].append(avg_sim_success)
-        move_near_sim_variant_success[ckpt_alias] = np.mean(
-            move_near_sim_variant_success[ckpt_alias]
-        )
+        move_near_sim_variant_success[ckpt_alias] = np.mean(move_near_sim_variant_success[ckpt_alias])
 
     print("-" * 20)
     print("sim variant avg success", move_near_sim_variant_success)
@@ -406,16 +358,12 @@ def calc_move_near_stats(root_result_dir):
         for variant in base_visual_matching_variants:
             variant = f"{root_result_dir}/{CKPT_MAPPING[ckpt_alias]}/{variant}"
             avg_sim_success = np.mean(
-                get_dir_stats(
-                    variant, extra_pattern_require=extra_pattern_require_visual_matching
-                )
+                get_dir_stats(variant, extra_pattern_require=extra_pattern_require_visual_matching)
             )
             if np.isnan(avg_sim_success):
                 print(f"WARNING: avg_sim_success is nan for {variant}")
             move_near_sim_visual_matching_success[ckpt_alias].append(avg_sim_success)
-        move_near_sim_visual_matching_success[ckpt_alias] = np.mean(
-            move_near_sim_visual_matching_success[ckpt_alias]
-        )
+        move_near_sim_visual_matching_success[ckpt_alias] = np.mean(move_near_sim_visual_matching_success[ckpt_alias])
 
     print("-" * 20)
 
@@ -436,12 +384,8 @@ def calc_move_near_stats(root_result_dir):
         ),
     )
     print_all_kruskal_results(
-        construct_unordered_trial_results(
-            n_trials_per_ckpt, list(move_near_sim_visual_matching_success.values())
-        ),
-        construct_unordered_trial_results(
-            n_trials_per_ckpt, list(move_near_real_success.values())
-        ),
+        construct_unordered_trial_results(n_trials_per_ckpt, list(move_near_sim_visual_matching_success.values())),
+        construct_unordered_trial_results(n_trials_per_ckpt, list(move_near_real_success.values())),
         "avg kruskal:",
     )
 
@@ -484,15 +428,15 @@ def calc_drawer_stats(root_result_dir):
         ],
     }
     n_tasks = len(drawer_task_map_dict)
-    n_trials_per_ckpt_per_task = 27  # number of trials per checkpoint for all open / all close tasks; update if it is different
+    n_trials_per_ckpt_per_task = (
+        27  # number of trials per checkpoint for all open / all close tasks; update if it is different
+    )
     # extra patterns required in file name; if you are using different visual matching overlay image, please update here
     extra_pattern_require_sim_variants = ["rgb_overlay_None"]
     extra_pattern_require_visual_matching = ["rgb_overlay_open_drawer"]
 
     # get simulation variant success
-    drawer_sim_variant_success = {
-        k1: {k2: [] for k2 in ckpt_alias_keys} for k1 in drawer_task_map_dict.keys()
-    }
+    drawer_sim_variant_success = {k1: {k2: [] for k2 in ckpt_alias_keys} for k1 in drawer_task_map_dict.keys()}
 
     # hardcoded variant aggregation result dirs; if you have new variants, please update here
     base_variants = [
@@ -526,12 +470,7 @@ def calc_drawer_stats(root_result_dir):
     for drawer_task in drawer_task_map_dict.keys():
         for ckpt_alias in ckpt_alias_keys:
             for specific_task in drawer_task_map_dict[drawer_task]:
-                for variant in (
-                    base_variants
-                    + background_variants
-                    + lighting_variants
-                    + table_texture_variants
-                ):
+                for variant in base_variants + background_variants + lighting_variants + table_texture_variants:
                     variant = variant.format(specific_task)
                     variant = f"{root_result_dir}/{CKPT_MAPPING[ckpt_alias]}/{variant}"
                     avg_sim_success = np.mean(
@@ -542,9 +481,7 @@ def calc_drawer_stats(root_result_dir):
                     )
                     if np.isnan(avg_sim_success):
                         print(f"WARNING: avg_sim_success is nan for {variant}")
-                    drawer_sim_variant_success[drawer_task][ckpt_alias].append(
-                        avg_sim_success
-                    )
+                    drawer_sim_variant_success[drawer_task][ckpt_alias].append(avg_sim_success)
             drawer_sim_variant_success[drawer_task][ckpt_alias] = np.mean(
                 drawer_sim_variant_success[drawer_task][ckpt_alias]
             )
@@ -577,9 +514,7 @@ def calc_drawer_stats(root_result_dir):
         avg_sim_variant_results.append([])
         avg_real_results.append([])
         for drawer_task in drawer_task_map_dict.keys():
-            avg_sim_variant_results[-1].append(
-                drawer_sim_variant_success[drawer_task][ckpt_alias]
-            )
+            avg_sim_variant_results[-1].append(drawer_sim_variant_success[drawer_task][ckpt_alias])
             avg_real_results[-1].append(drawer_real_success[drawer_task][ckpt_alias])
         avg_sim_variant_results[-1] = np.mean(avg_sim_variant_results[-1])
         avg_real_results[-1] = np.mean(avg_real_results[-1])
@@ -595,9 +530,7 @@ def calc_drawer_stats(root_result_dir):
     )
 
     # get visual matching success
-    drawer_sim_visual_matching_success = {
-        k1: {k2: [] for k2 in ckpt_alias_keys} for k1 in drawer_task_map_dict.keys()
-    }
+    drawer_sim_visual_matching_success = {k1: {k2: [] for k2 in ckpt_alias_keys} for k1 in drawer_task_map_dict.keys()}
     for drawer_task in drawer_task_map_dict.keys():
         for ckpt_alias in ckpt_alias_keys:
             for specific_task in drawer_task_map_dict[drawer_task]:
@@ -612,9 +545,7 @@ def calc_drawer_stats(root_result_dir):
                     )
                     if np.isnan(avg_sim_success):
                         print(f"WARNING: avg_sim_success is nan for {variant}")
-                    drawer_sim_visual_matching_success[drawer_task][ckpt_alias].append(
-                        avg_sim_success
-                    )
+                    drawer_sim_visual_matching_success[drawer_task][ckpt_alias].append(avg_sim_success)
             drawer_sim_visual_matching_success[drawer_task][ckpt_alias] = np.mean(
                 drawer_sim_visual_matching_success[drawer_task][ckpt_alias]
             )
@@ -658,13 +589,9 @@ def calc_drawer_stats(root_result_dir):
         avg_sim_visual_matching_results.append([])
         avg_real_results.append([])
         for drawer_task in drawer_task_map_dict.keys():
-            avg_sim_visual_matching_results[-1].append(
-                drawer_sim_visual_matching_success[drawer_task][ckpt_alias]
-            )
+            avg_sim_visual_matching_results[-1].append(drawer_sim_visual_matching_success[drawer_task][ckpt_alias])
             avg_real_results[-1].append(drawer_real_success[drawer_task][ckpt_alias])
-        avg_sim_visual_matching_results[-1] = np.mean(
-            avg_sim_visual_matching_results[-1]
-        )
+        avg_sim_visual_matching_results[-1] = np.mean(avg_sim_visual_matching_results[-1])
         avg_real_results[-1] = np.mean(avg_real_results[-1])
     print("avg_sim_visual_matching_results", avg_sim_visual_matching_results)
     print("avg_real_results", avg_real_results)
@@ -677,12 +604,8 @@ def calc_drawer_stats(root_result_dir):
         pearson_correlation(avg_sim_visual_matching_results, avg_real_results),
     )
     print_all_kruskal_results(
-        construct_unordered_trial_results(
-            n_trials_per_ckpt_per_task * n_tasks, avg_sim_visual_matching_results
-        ),
-        construct_unordered_trial_results(
-            n_trials_per_ckpt_per_task * n_tasks, avg_real_results
-        ),
+        construct_unordered_trial_results(n_trials_per_ckpt_per_task * n_tasks, avg_sim_visual_matching_results),
+        construct_unordered_trial_results(n_trials_per_ckpt_per_task * n_tasks, avg_real_results),
         "avg kruskal:",
     )
 
@@ -770,12 +693,7 @@ def calc_bridge_put_on_env_stats(root_result_dir):
                 # we average octo performance over different random seeds
                 tmp = []
                 for seed in octo_seed_range:
-                    tmp.extend(
-                        [
-                            f"{variant}_octo_init_rng_{seed}"
-                            for variant in base_visual_matching_variants
-                        ]
-                    )
+                    tmp.extend([f"{variant}_octo_init_rng_{seed}" for variant in base_visual_matching_variants])
                 base_visual_matching_variants = tmp
             for variant in base_visual_matching_variants:
                 variant = f"{root_result_dir}/{CKPT_MAPPING[ckpt_alias]}/{variant}"
@@ -796,19 +714,11 @@ def calc_bridge_put_on_env_stats(root_result_dir):
                 if np.isnan(avg_sim_success) or np.isnan(avg_sim_partial_success):
                     print(f"WARNING: avg_sim_success is nan for {variant}")
                 sim_visual_matching_success[ckpt_alias].append(avg_sim_success)
-                sim_visual_matching_partial_success[ckpt_alias].append(
-                    avg_sim_partial_success
-                )
-            sim_visual_matching_success[ckpt_alias] = np.mean(
-                sim_visual_matching_success[ckpt_alias]
-            )
-            sim_visual_matching_partial_success[ckpt_alias] = np.mean(
-                sim_visual_matching_partial_success[ckpt_alias]
-            )
+                sim_visual_matching_partial_success[ckpt_alias].append(avg_sim_partial_success)
+            sim_visual_matching_success[ckpt_alias] = np.mean(sim_visual_matching_success[ckpt_alias])
+            sim_visual_matching_partial_success[ckpt_alias] = np.mean(sim_visual_matching_partial_success[ckpt_alias])
 
-        print(
-            "sim visual matching partial success", sim_visual_matching_partial_success
-        )
+        print("sim visual matching partial success", sim_visual_matching_partial_success)
         print("real partial success", real_partial_success)
         print(
             "visual matching normalized rank loss (partial success)",
@@ -825,12 +735,8 @@ def calc_bridge_put_on_env_stats(root_result_dir):
             ),
         )
         print_all_kruskal_results(
-            construct_unordered_trial_results(
-                n_trials_per_ckpt, list(sim_visual_matching_partial_success.values())
-            ),
-            construct_unordered_trial_results(
-                n_trials_per_ckpt, list(real_partial_success.values())
-            ),
+            construct_unordered_trial_results(n_trials_per_ckpt, list(sim_visual_matching_partial_success.values())),
+            construct_unordered_trial_results(n_trials_per_ckpt, list(real_partial_success.values())),
             "avg kruskal (partial success):",
         )
 
@@ -838,23 +744,15 @@ def calc_bridge_put_on_env_stats(root_result_dir):
         print("real success", real_success)
         print(
             "visual matching normalized rank loss",
-            normalized_rank_loss(
-                list(sim_visual_matching_success.values()), list(real_success.values())
-            ),
+            normalized_rank_loss(list(sim_visual_matching_success.values()), list(real_success.values())),
         )
         print(
             "visual matching pearson correlation",
-            pearson_correlation(
-                list(sim_visual_matching_success.values()), list(real_success.values())
-            ),
+            pearson_correlation(list(sim_visual_matching_success.values()), list(real_success.values())),
         )
         print_all_kruskal_results(
-            construct_unordered_trial_results(
-                n_trials_per_ckpt, list(sim_visual_matching_success.values())
-            ),
-            construct_unordered_trial_results(
-                n_trials_per_ckpt, list(real_success.values())
-            ),
+            construct_unordered_trial_results(n_trials_per_ckpt, list(sim_visual_matching_success.values())),
+            construct_unordered_trial_results(n_trials_per_ckpt, list(real_success.values())),
             "avg kruskal:",
         )
 
@@ -877,9 +775,7 @@ CKPT_MAPPING = {
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--task", type=str, default="pick_coke_can", help="task name")
-parser.add_argument(
-    "--log-dir-root", type=str, default="./results/", help="log directory"
-)
+parser.add_argument("--log-dir-root", type=str, default="./results/", help="log directory")
 
 args = parser.parse_args()
 

@@ -60,9 +60,7 @@ def construct_unordered_trial_results(n_trials_per_ckpt, success):
 
 
 # util to get success / failure results from a directory
-def get_dir_stats(
-    dir_name, extra_pattern_require=[], succ_fail_pattern=["success", "failure"]
-):
+def get_dir_stats(dir_name, extra_pattern_require=[], succ_fail_pattern=["success", "failure"]):
     if dir_name[-1] == "/":
         dir_name = dir_name[:-1]
 

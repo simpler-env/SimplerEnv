@@ -20,9 +20,7 @@ from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_d
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument(
-    "--policy", default="rt1", choices=["rt1", "octo-base", "octo-small"]
-)
+parser.add_argument("--policy", default="rt1", choices=["rt1", "octo-base", "octo-small"])
 parser.add_argument(
     "--ckpt-path",
     type=str,
@@ -60,9 +58,7 @@ if args.policy in ["octo-base", "octo-small"]:
         args.ckpt_path = args.policy
 if args.ckpt_path[-1] == "/":
     args.ckpt_path = args.ckpt_path[:-1]
-logging_dir = os.path.join(
-    args.logging_root, args.task, args.policy, os.path.basename(args.ckpt_path)
-)
+logging_dir = os.path.join(args.logging_root, args.task, args.policy, os.path.basename(args.ckpt_path))
 os.makedirs(logging_dir, exist_ok=True)
 
 os.environ["DISPLAY"] = ""
@@ -94,9 +90,7 @@ if args.policy == "rt1":
 elif "octo" in args.policy:
     from real2sim.policies.octo.octo_model import OctoInference
 
-    model = OctoInference(
-        model_type=args.ckpt_path, policy_setup=policy_setup, init_rng=0
-    )
+    model = OctoInference(model_type=args.ckpt_path, policy_setup=policy_setup, init_rng=0)
 else:
     raise NotImplementedError()
 
@@ -108,9 +102,7 @@ for ep_id in range(args.n_trajs):
     model.reset(instruction)
     print(instruction)
 
-    image = get_image_from_maniskill2_obs_dict(
-        env, obs
-    )  # np.ndarray of shape (H, W, 3), uint8
+    image = get_image_from_maniskill2_obs_dict(env, obs)  # np.ndarray of shape (H, W, 3), uint8
     images = [image]
     predicted_terminated, success, truncated = False, False, False
     timestep = 0
@@ -119,9 +111,7 @@ for ep_id in range(args.n_trajs):
         raw_action, action = model.step(image)
         predicted_terminated = bool(action["terminate_episode"][0] > 0)
         obs, reward, success, truncated, info = env.step(
-            np.concatenate(
-                [action["world_vector"], action["rot_axangle"], action["gripper"]]
-            )
+            np.concatenate([action["world_vector"], action["rot_axangle"], action["gripper"]])
         )
         print(timestep, info)
         # update image observation
@@ -132,9 +122,7 @@ for ep_id in range(args.n_trajs):
     episode_stats = info.get("episode_stats", {})
     success_arr.append(success)
     print(f"Episode {ep_id} success: {success}")
-    media.write_video(
-        f"{logging_dir}/episode_{ep_id}_success_{success}.mp4", images, fps=5
-    )
+    media.write_video(f"{logging_dir}/episode_{ep_id}_success_{success}.mp4", images, fps=5)
 
 print(
     "**Overall Success**",

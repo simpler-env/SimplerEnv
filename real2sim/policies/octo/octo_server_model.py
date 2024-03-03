@@ -14,9 +14,7 @@ from transforms3d.euler import euler2axangle
 def default(obj):
     if isinstance(obj, (np.ndarray, np.generic)):
         return {
-            "__numpy__": b64encode(
-                obj.data if obj.flags.c_contiguous else obj.tobytes()
-            ).decode("ascii"),
+            "__numpy__": b64encode(obj.data if obj.flags.c_contiguous else obj.tobytes()).decode("ascii"),
             "dtype": dtype_to_descr(obj.dtype),
             "shape": obj.shape,
         }
@@ -25,9 +23,7 @@ def default(obj):
 
 def object_hook(dct):
     if "__numpy__" in dct:
-        np_obj = np.frombuffer(
-            b64decode(dct["__numpy__"]), descr_to_dtype(dct["dtype"])
-        )
+        np_obj = np.frombuffer(b64decode(dct["__numpy__"]), descr_to_dtype(dct["dtype"]))
         shape = dct["shape"]
         return np_obj.reshape(shape) if shape else np_obj[0]  # Scalar test
     return dct
@@ -87,9 +83,7 @@ class OctoServerInference:
             self.sticky_gripper_num_repeat = 15
             self.dataset_name = "fractal20220817_data"
         else:
-            raise NotImplementedError(
-                f"Policy setup {policy_setup} not supported for octo models."
-            )
+            raise NotImplementedError(f"Policy setup {policy_setup} not supported for octo models.")
         self.policy_setup = policy_setup
 
         self.sticky_action_is_on = False
@@ -171,17 +165,13 @@ class OctoServerInference:
         raw_action = {
             "world_vector": np.array(raw_action[:3]),
             "rotation_delta": np.array(raw_action[3:6]),
-            "open_gripper": np.array(
-                raw_action[-1:]
-            ),  # range [0, 1]; 1 = open; 0 = close
+            "open_gripper": np.array(raw_action[-1:]),  # range [0, 1]; 1 = open; 0 = close
         }
 
         # process raw_action to obtain the action to be sent to the maniskill2 environment
         action = {}
         action["world_vector"] = raw_action["world_vector"] * self.action_scale
-        action_rotation_delta = np.asarray(
-            raw_action["rotation_delta"], dtype=np.float64
-        )
+        action_rotation_delta = np.asarray(raw_action["rotation_delta"], dtype=np.float64)
         roll, pitch, yaw = action_rotation_delta
         action_rotation_ax, action_rotation_angle = euler2axangle(roll, pitch, yaw)
         action_rotation_axangle = action_rotation_ax * action_rotation_angle
@@ -218,10 +208,7 @@ class OctoServerInference:
                 )  # google robot 1 = close; -1 = open
             self.previous_gripper_action = current_gripper_action
 
-            if (
-                np.abs(relative_gripper_action) > 0.5
-                and self.sticky_action_is_on is False
-            ):
+            if np.abs(relative_gripper_action) > 0.5 and self.sticky_action_is_on is False:
                 self.sticky_action_is_on = True
                 self.sticky_gripper_action = relative_gripper_action
 
@@ -263,17 +250,13 @@ class OctoServerInference:
         # plot actions
         pred_actions = np.array(
             [
-                np.concatenate(
-                    [a["world_vector"], a["rotation_delta"], a["open_gripper"]], axis=-1
-                )
+                np.concatenate([a["world_vector"], a["rotation_delta"], a["open_gripper"]], axis=-1)
                 for a in predicted_raw_actions
             ]
         )
         for action_dim, action_label in enumerate(ACTION_DIM_LABELS):
             # actions have batch, horizon, dim, in this example we just take the first action for simplicity
-            axs[action_label].plot(
-                pred_actions[:, action_dim], label="predicted action"
-            )
+            axs[action_label].plot(pred_actions[:, action_dim], label="predicted action")
             axs[action_label].set_title(action_label)
             axs[action_label].set_xlabel("Time in one episode")
 

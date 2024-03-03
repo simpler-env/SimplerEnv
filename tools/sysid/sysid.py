@@ -56,9 +56,7 @@ def calc_pose_err_single_ep(episode, arm_stiffness, arm_damping, robot, control_
     for step_id, episode_step in enumerate(episode):
         gt_tcp_xyz_at_base = episode_step["base_pose_tool_reached"][:3]
         gt_tcp_wxyz_at_base = episode_step["base_pose_tool_reached"][3:]
-        gt_tcp_pose_at_robot_base = Pose(
-            p=np.array(gt_tcp_xyz_at_base), q=np.array(gt_tcp_wxyz_at_base)
-        )
+        gt_tcp_pose_at_robot_base = Pose(p=np.array(gt_tcp_xyz_at_base), q=np.array(gt_tcp_wxyz_at_base))
         tcp_pose_at_robot_base = get_tcp_pose_at_robot_base()
 
         if step_id == 0:
@@ -74,9 +72,7 @@ def calc_pose_err_single_ep(episode, arm_stiffness, arm_damping, robot, control_
         gt_tcp_poses_at_base.append(gt_tcp_pose_at_robot_base)
 
         gt_action_world_vector = episode_step["action_world_vector"]
-        gt_action_rotation_delta = np.asarray(
-            episode_step["action_rotation_delta"], dtype=np.float64
-        )
+        gt_action_rotation_delta = np.asarray(episode_step["action_rotation_delta"], dtype=np.float64)
         if robot == "google_robot_static":
             # the recorded demonstration actions are in the form of axis-angle representation
             gt_action_rotation_angle = np.linalg.norm(gt_action_rotation_delta)
@@ -85,17 +81,11 @@ def calc_pose_err_single_ep(episode, arm_stiffness, arm_damping, robot, control_
                 if gt_action_rotation_angle > 1e-6
                 else np.array([0.0, 1.0, 0.0])
             )
-            gt_action_rotation_axangle = (
-                gt_action_rotation_ax * gt_action_rotation_angle
-            )
+            gt_action_rotation_axangle = gt_action_rotation_ax * gt_action_rotation_angle
         elif robot == "widowx":
             # the recorded demonstration actions are in the form of raw, pitch, yaw euler angles
-            gt_action_rotation_ax, gt_action_rotation_angle = euler2axangle(
-                *gt_action_rotation_delta
-            )
-            gt_action_rotation_axangle = (
-                gt_action_rotation_ax * gt_action_rotation_angle
-            )
+            gt_action_rotation_ax, gt_action_rotation_angle = euler2axangle(*gt_action_rotation_delta)
+            gt_action_rotation_axangle = gt_action_rotation_ax * gt_action_rotation_angle
 
         action = np.concatenate(
             [
@@ -111,9 +101,7 @@ def calc_pose_err_single_ep(episode, arm_stiffness, arm_damping, robot, control_
     this_traj_err = []
     this_traj_raw_transl_err = []
     this_traj_raw_rot_err = []
-    for (tcp_pose_at_base, gt_tcp_pose_at_base) in zip(
-        tcp_poses_at_base, gt_tcp_poses_at_base
-    ):
+    for (tcp_pose_at_base, gt_tcp_pose_at_base) in zip(tcp_poses_at_base, gt_tcp_poses_at_base):
         raw_transl_err = np.linalg.norm(tcp_pose_at_base.p - gt_tcp_pose_at_base.p)
         err = raw_transl_err
         this_traj_raw_transl_err.append(raw_transl_err)
@@ -122,9 +110,7 @@ def calc_pose_err_single_ep(episode, arm_stiffness, arm_damping, robot, control_
         R_gt = quat2mat(gt_tcp_pose_at_base.q)
         raw_rot_err = np.arcsin(
             np.clip(
-                1
-                / (2 * np.sqrt(2))
-                * np.sqrt(np.trace((R_pred - R_gt).T @ (R_pred - R_gt))),
+                1 / (2 * np.sqrt(2)) * np.sqrt(np.trace((R_pred - R_gt).T @ (R_pred - R_gt))),
                 0.0,
                 1.0,
             )
@@ -135,9 +121,7 @@ def calc_pose_err_single_ep(episode, arm_stiffness, arm_damping, robot, control_
         this_traj_err.append(err)
 
     if np.mean(this_traj_err) > 0.15:
-        for (tcp_pose_at_base, gt_tcp_pose_at_base) in zip(
-            tcp_poses_at_base, gt_tcp_poses_at_base
-        ):
+        for (tcp_pose_at_base, gt_tcp_pose_at_base) in zip(tcp_poses_at_base, gt_tcp_poses_at_base):
             print(tcp_pose_at_base, gt_tcp_pose_at_base)
         print("*" * 10)
         print(this_traj_err)
@@ -204,12 +188,8 @@ if __name__ == "__main__":
     os.environ["DISPLAY"] = ""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--dataset-path", type=str, default="sysid_log/sysid_dataset.pkl"
-    )
-    parser.add_argument(
-        "--log-path", type=str, default="sysid_log/opt_results_google_robot.txt"
-    )
+    parser.add_argument("--dataset-path", type=str, default="sysid_log/sysid_dataset.pkl")
+    parser.add_argument("--log-path", type=str, default="sysid_log/opt_results_google_robot.txt")
     parser.add_argument("--robot", type=str, default="google_robot_static")
     args = parser.parse_args()
 
@@ -217,9 +197,7 @@ if __name__ == "__main__":
         dset = pickle.load(f)
 
     if args.robot == "google_robot_static":
-        control_mode = (
-            "arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_pos"
-        )
+        control_mode = "arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_pos"
 
         # these are just examples of the stiffness / damping ranges and initial values;
 
@@ -259,14 +237,9 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError()
 
-    raw_action_to_stiffness = (
-        lambda x: stiffness_low
-        + (stiffness_high - stiffness_low) * x[: len(stiffness_high)]
-    )
+    raw_action_to_stiffness = lambda x: stiffness_low + (stiffness_high - stiffness_low) * x[: len(stiffness_high)]
     raw_action_to_damping = (
-        lambda x: damping_low
-        + (damping_high - damping_low)
-        * x[len(stiffness_high) : 2 * len(stiffness_high)]
+        lambda x: damping_low + (damping_high - damping_low) * x[len(stiffness_high) : 2 * len(stiffness_high)]
     )
 
     init_action = np.concatenate(
