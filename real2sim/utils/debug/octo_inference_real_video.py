@@ -10,7 +10,6 @@ import os
 import cv2
 import mediapy as media
 import numpy as np
-from sapien.core import Pose
 import tensorflow as tf
 
 from real2sim.policies.octo.octo_model import OctoInference

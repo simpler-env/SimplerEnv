@@ -2,22 +2,16 @@
 Step ground-truth actions in a dataset in an open-loop manner and record the resulting observation video and robot qpos.
 """
 
-from copy import deepcopy
 import os
 
 import cv2
 import gymnasium as gym
-from IPython import display
 import mani_skill2.envs
 import numpy as np
-from PIL import Image
 from sapien.core import Pose
-import tensorflow as tf
 import tensorflow_datasets as tfds
-import tqdm
-from transforms3d.axangles import mat2axangle
-from transforms3d.euler import euler2axangle, euler2mat, euler2quat
-from transforms3d.quaternions import axangle2quat, mat2quat, quat2axangle
+from transforms3d.euler import euler2axangle, euler2mat
+from transforms3d.quaternions import mat2quat
 
 from real2sim.utils.visualization import write_video
 

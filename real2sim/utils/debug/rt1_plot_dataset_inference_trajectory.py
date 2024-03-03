@@ -2,14 +2,9 @@
 Run RT-1 model on a dataset and plot the predicted and ground truth action trajectory.
 """
 
-import os
-
-from IPython import display
 import numpy as np
-from PIL import Image
 import tensorflow as tf
 import tensorflow_datasets as tfds
-import tqdm
 
 from real2sim.policies.rt1.rt1_model import RT1Inference
 from real2sim.utils.visualization import plot_pred_and_gt_action_trajectory
