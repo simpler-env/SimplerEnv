@@ -15,7 +15,7 @@ import mediapy as media
 import numpy as np
 import tensorflow as tf
 
-from real2sim.utils.env.env_builder import build_prepackaged_maniskill2_env
+import real2sim
 from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
 
 parser = argparse.ArgumentParser()
@@ -73,7 +73,7 @@ if len(gpus) > 0:
     )
 
 # build environment
-env = build_prepackaged_maniskill2_env(args.task)
+env = real2sim.make(args.task)
 
 # build policy
 if "google_robot" in args.task:

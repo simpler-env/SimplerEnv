@@ -13,55 +13,50 @@ We hope that our work guides and inspires future real-to-sim evaluation efforts.
 - [Evaluating Real-World Robot Manipulation Policies in Simulation](#evaluating-real-world-robot-manipulation-policies-in-simulation)
   - [Getting Started](#getting-started)
   - [Installation](#installation)
-    - [Minimal Installation](#minimal-installation)
-    - [Full Installation](#full-installation)
-      - [RT-1 Inference Setup](#rt-1-inference-setup)
-      - [Octo Inference Setup](#octo-inference-setup)
   - [Examples](#examples)
   - [Current Environments](#current-environments)
-  - [Code Structure](#code-structure)
   - [Customizing Evaluation Configs](#customizing-evaluation-configs)
+  - [Code Structure](#code-structure)
   - [Adding New Policies](#adding-new-policies)
   - [Adding New Real-to-Sim Evaluation Environments and Robots](#adding-new-real-to-sim-evaluation-environments-and-robots)
+  - [Full Installation (RT-1 and Octo Inference, Env Building)](#full-installation-rt-1-and-octo-inference-env-building)
+    - [RT-1 Inference Setup](#rt-1-inference-setup)
+    - [Octo Inference Setup](#octo-inference-setup)
   - [Troubleshooting](#troubleshooting)
   - [Citation](#citation)
 
 
 ## Getting Started
 
-Follow the [Minimal Installation](#minimal-installation) section to install the minimal requirements for our environments. Then you can run the following minimal inference script with interactive python (invoke through `MS2_ASSET_DIR=./ManiSkill2_real2sim/data python`). The scripts creates prepackaged environments for our `visual matching` evaluation setup.
+Follow the [Installation](#installation) section to install the minimal requirements for our environments. Then you can run the following minimal inference script with interactive python (invoke through `MS2_ASSET_DIR=./ManiSkill2_real2sim/data python`). The scripts creates prepackaged environments for our `visual matching` evaluation setup.
 
 (The `MS2_ASSET_DIR` specifies the directory to the data assets. You can also set `export MS2_ASSET_DIR=${PWD}/ManiSkill2_real2sim/data` if you'd like to.)
 
 ```python
-from real2sim.utils.env.env_builder import build_prepackaged_maniskill2_env
+import real2sim
 from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
 
-env = build_prepackaged_maniskill2_env('google_robot_pick_coke_can')
+env = real2sim.make('google_robot_pick_coke_can')
 obs, reset_info = env.reset()
-image = get_image_from_maniskill2_obs_dict(env, obs)
 instruction = env.get_language_instruction()
 print("Reset info", reset_info)
 print("Instruction", instruction)
 
-predicted_terminated, success, truncated = False, False, False
-while not (predicted_terminated or truncated):
+done, truncated = False, False
+while not (done or truncated):
    # action[:3]: delta xyz; action[3:6]: delta rotation in axis-angle representation;
    # action[6:7]: gripper (the meaning of open / close depends on robot URDF)
-   action = env.action_space.sample() # replace this with your policy inference
-   predicted_terminated = False # replace this with your policy inference
-   obs, _, success, truncated, info = env.step(action)
    image = get_image_from_maniskill2_obs_dict(env, obs)
+   action = env.action_space.sample() # replace this with your policy inference
+   obs, reward, done, truncated, info = env.step(action)
 
 episode_stats = info.get('episode_stats', {})
 print("Episode stats", episode_stats)
-print("Episode success", success)
 ```
 
 Additionally, you can play with our environments in an interactive manner through [`ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`](https://github.com/xuanlinli17/ManiSkill2_real2sim/blob/main/mani_skill2/examples/demo_manual_control_custom_envs.py). See the script for more details and commands.
 
 ## Installation
-### Minimal Installation
 
 Prerequisites:
 - CUDA version >=11.8 (this is required if you want to perform a full installation of this repo and perform RT-1 or Octo inference)
@@ -90,66 +85,8 @@ cd {this_repo}
 pip install -e .
 ```
 
-### Full Installation
+**If you'd like to perform evaluations on our provided agents (e.g., RT-1, Octo), or add new robots and environments, please additionally follow the full installation instructions [here](#full-installation-rt-1-and-octo-inference-env-building).**
 
-If you'd like to perform evaluations on our provided agents (e.g., RT-1, Octo), or add new robots and environments, please follow the full installation instructions below.
-
-```
-pip install tensorflow==2.15.0
-pip install -r requirements_full_install.txt
-pip install tensorflow[and-cuda] # tensorflow gpu support
-```
-
-Install simulated annealing utils for system identification:
-```
-pip install git+https://github.com/nathanrooy/simulated-annealing
-```
-
-#### RT-1 Inference Setup
-
-Download RT-1 Checkpoint:
-```
-# First, install gsutil following https://cloud.google.com/storage/docs/gsutil_install
-
-# Make a checkpoint dir:
-mkdir {this_repo}/checkpoints
-
-# RT-1-X
-cd {this_repo}
-gsutil -m cp -r gs://gdm-robotics-open-x-embodiment/open_x_embodiment_and_rt_x_oss/rt_1_x_tf_trained_for_002272480_step.zip .
-unzip rt_1_x_tf_trained_for_002272480_step.zip
-mv rt_1_x_tf_trained_for_002272480_step checkpoints
-rm rt_1_x_tf_trained_for_002272480_step.zip
-
-# RT-1-Converged
-cd {this_repo}
-gsutil -m cp -r gs://gdm-robotics-open-x-embodiment/open_x_embodiment_and_rt_x_oss/rt_1_tf_trained_for_000400120 .
-mv rt_1_tf_trained_for_000400120 checkpoints
-
-# RT-1-15%
-cd {this_repo}
-gsutil -m cp -r gs://gdm-robotics-open-x-embodiment/open_x_embodiment_and_rt_x_oss/rt_1_tf_trained_for_000058240 .
-mv rt_1_tf_trained_for_000058240 checkpoints
-
-# RT-1-Begin
-cd {this_repo}
-gsutil -m cp -r gs://gdm-robotics-open-x-embodiment/open_x_embodiment_and_rt_x_oss/rt_1_tf_trained_for_000001120 .
-mv rt_1_tf_trained_for_000001120 checkpoints      
-```
-
-#### Octo Inference Setup
-
-Install Octo:
-```
-pip install --upgrade "jax[cuda11_pip]==0.4.20" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html # or jax[cuda12_pip] if you have CUDA 12
-
-cd {this_repo}
-git clone https://github.com/octo-models/octo/
-cd octo
-pip install -e .
-# You don't need to run "pip install -r requirements.txt" inside the octo repo; the package dependencies are already handled in the Real2Sim repo
-# Octo checkpoints are managed by huggingface, so you don't need to download them manually.
-```
 
 ## Examples
 
@@ -159,6 +96,12 @@ pip install -e .
 - Real-to-sim evaluation videos from running `scripts/*.sh`: see [this link](TODO).
 
 ## Current Environments
+
+To get a list of all available environments, run:
+```
+import real2sim
+print(real2sim.ENVIRONMENTS)
+```
 
 | Task Name | ManiSkill2 Env Name | Image (Visual Matching) |
 | ----------- | ----- | ----- |
@@ -171,6 +114,12 @@ pip install -e .
 | widowx_stack_cube        | StackGreenCubeOnYellowCubeBakedTexInScene-v0  | <img src="./images/example_visualization/widowx_stack_cube_visual_matching.png" width="150" height="150" > |
 
 We also support creating sub-tasks such as `google_robot_pick_{horizontal/vertical/standing}_coke_can`, `google_robot_open_{top/middle/bottom}_drawer`, and `google_robot_close_{top/middle/bottom}_drawer`.
+
+## Customizing Evaluation Configs
+
+Please see `scripts/` for examples of how to customize evaluation configs. The inference script `real2sim/main_inference.py` supports advanced environment building and logging. For example, you can perform a sweep over object and robot poses for evaluation. (Note, however, varying robot poses is not meaningful under the visual matching evaluation setup.)
+
+
 
 ## Code Structure
 
@@ -212,11 +161,6 @@ scripts/: example bash scripts for policy inference with custom environment buil
 ...
 ```
 
-## Customizing Evaluation Configs
-
-Please see `scripts/` for examples of how to customize evaluation configs. The inference script `real2sim/main_inference.py` supports advanced environment building and logging. For example, you can perform a sweep over object and robot poses for evaluation. (Note, however, varying robot poses is not meaningful under the visual matching evaluation setup.)
-
-
 ## Adding New Policies
 
 If you want to use existing environments for evaluating new policies, you can keep `./ManiSkill2_real2sim` as is.
@@ -233,6 +177,68 @@ If you want to use existing environments for evaluating new policies, you can ke
 ## Adding New Real-to-Sim Evaluation Environments and Robots
 
 We provide a step-by-step guide to add new real-to-sim evaluation environments and robots in [this README](ADDING_NEW_ENVS_ROBOTS.md)
+
+
+## Full Installation (RT-1 and Octo Inference, Env Building)
+
+If you'd like to perform evaluations on our provided agents (e.g., RT-1, Octo), or add new robots and environments, please follow the full installation instructions below.
+
+```
+pip install tensorflow==2.15.0
+pip install -r requirements_full_install.txt
+pip install tensorflow[and-cuda] # tensorflow gpu support
+```
+
+Install simulated annealing utils for system identification:
+```
+pip install git+https://github.com/nathanrooy/simulated-annealing
+```
+
+### RT-1 Inference Setup
+
+Download RT-1 Checkpoint:
+```
+# First, install gsutil following https://cloud.google.com/storage/docs/gsutil_install
+
+# Make a checkpoint dir:
+mkdir {this_repo}/checkpoints
+
+# RT-1-X
+cd {this_repo}
+gsutil -m cp -r gs://gdm-robotics-open-x-embodiment/open_x_embodiment_and_rt_x_oss/rt_1_x_tf_trained_for_002272480_step.zip .
+unzip rt_1_x_tf_trained_for_002272480_step.zip
+mv rt_1_x_tf_trained_for_002272480_step checkpoints
+rm rt_1_x_tf_trained_for_002272480_step.zip
+
+# RT-1-Converged
+cd {this_repo}
+gsutil -m cp -r gs://gdm-robotics-open-x-embodiment/open_x_embodiment_and_rt_x_oss/rt_1_tf_trained_for_000400120 .
+mv rt_1_tf_trained_for_000400120 checkpoints
+
+# RT-1-15%
+cd {this_repo}
+gsutil -m cp -r gs://gdm-robotics-open-x-embodiment/open_x_embodiment_and_rt_x_oss/rt_1_tf_trained_for_000058240 .
+mv rt_1_tf_trained_for_000058240 checkpoints
+
+# RT-1-Begin
+cd {this_repo}
+gsutil -m cp -r gs://gdm-robotics-open-x-embodiment/open_x_embodiment_and_rt_x_oss/rt_1_tf_trained_for_000001120 .
+mv rt_1_tf_trained_for_000001120 checkpoints      
+```
+
+### Octo Inference Setup
+
+Install Octo:
+```
+pip install --upgrade "jax[cuda11_pip]==0.4.20" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html # or jax[cuda12_pip] if you have CUDA 12
+
+cd {this_repo}
+git clone https://github.com/octo-models/octo/
+cd octo
+pip install -e .
+# You don't need to run "pip install -r requirements.txt" inside the octo repo; the package dependencies are already handled in the Real2Sim repo
+# Octo checkpoints are managed by huggingface, so you don't need to download them manually.
+```
 
 ## Troubleshooting
 

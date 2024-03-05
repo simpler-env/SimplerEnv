@@ -5,8 +5,8 @@ Step ground-truth actions in a dataset in an open-loop manner and record the res
 import os
 
 import cv2
-import mani_skill2.envs
 import gymnasium as gym
+import mani_skill2.envs
 import numpy as np
 from sapien.core import Pose
 import tensorflow_datasets as tfds
