@@ -3,7 +3,7 @@ Simple script for real-to-sim eval using the prepackaged visual matching setup i
 Example:
     cd {path_to_real2sim_repo_root}
     MS2_ASSET_DIR=./ManiSkill2_real2sim/data python real2sim/simple_inference_visual_matching_prepackaged_envs.py --policy rt1 \
-        --ckpt-path ./checkpoints/xid77467904_000400120  --task google_robot_pick_coke_can  --logging-root ./results_simple_eval/  --n-trajs 10
+        --ckpt-path ./checkpoints/rt_1_tf_trained_for_000400120  --task google_robot_pick_coke_can  --logging-root ./results_simple_eval/  --n-trajs 10
     MS2_ASSET_DIR=./ManiSkill2_real2sim/data python real2sim/simple_inference_visual_matching_prepackaged_envs.py --policy octo-small \
         --ckpt-path None --task widowx_spoon_on_towel  --logging-root ./results_simple_eval/  --n-trajs 10
 """

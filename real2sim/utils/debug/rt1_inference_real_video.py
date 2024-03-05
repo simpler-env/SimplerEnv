@@ -137,12 +137,12 @@ if __name__ == "__main__":
     mp4_path = "ManiSkill2_real2sim/data/debug/rt1_real_standing_coke_can_1.mp4"
     inpainting_img_path = "ManiSkill2_real2sim/data/debug/rt1_real_standing_coke_can_1_cleanup.png"
     instruction = "pick coke can"
-    ckpt_path = "checkpoints/xid77467904_000400120/"
+    ckpt_path = "checkpoints/rt_1_tf_trained_for_000400120/"
 
     # mp4_path = None
     # inpainting_img_path = 'ManiSkill2_real2sim/data/real_inpainting/move_near_real_obj_variants/move_near_real_1_1.png'
     # instruction = 'move blue plastic bottle near pepsi can'
-    # ckpt_path = 'checkpoints/xid77467904_000400120/'
+    # ckpt_path = 'checkpoints/rt_1_tf_trained_for_000400120/'
 
     # mp4_path = 'data/debug/bridge_real_1.mp4'
     # inpainting_img_path = 'data/debug/bridge_real_1_cleanup.png'

@@ -122,17 +122,19 @@ mv rt_1_x_tf_trained_for_002272480_step checkpoints
 rm rt_1_x_tf_trained_for_002272480_step.zip
 
 # RT-1-Converged
-Download from https://drive.google.com/drive/folders/1pdHYzgNQqinEv0sXlKpL3ZDr2-eDFebQ
-(click the directory name header > download, then unzip the file)
-After unzipping, you'll see a "xid77467904_000400120" directory when you enter the unzipped directory. Move this directory to the `checkpoints` directory.
+cd {this_repo}
+gsutil -m cp -r gs://gdm-robotics-open-x-embodiment/open_x_embodiment_and_rt_x_oss/rt_1_tf_trained_for_000400120 .
+mv rt_1_tf_trained_for_000400120 checkpoints
 
 # RT-1-15%
-Download from https://drive.google.com/drive/folders/1nzOfnyNzxKkr3aXj3kqekfXdxAPU15aY
-After unzipping, you'll see a "rt1poor_xid77467904_000058240" directory when you enter the unzipped directory. Move this directory to the `checkpoints` directory.
+cd {this_repo}
+gsutil -m cp -r gs://gdm-robotics-open-x-embodiment/open_x_embodiment_and_rt_x_oss/rt_1_tf_trained_for_000058240 .
+mv rt_1_tf_trained_for_000058240 checkpoints
 
 # RT-1-Begin
-Download from https://drive.google.com/drive/folders/19xWAJR9EGX86zN9LfgYSvKj27t_4kNry
-After unzipping, you'll see a "rt1new_77467904_000001120" directory when you enter the unzipped directory. Move this directory to the `checkpoints` directory.
+cd {this_repo}
+gsutil -m cp -r gs://gdm-robotics-open-x-embodiment/open_x_embodiment_and_rt_x_oss/rt_1_tf_trained_for_000001120 .
+mv rt_1_tf_trained_for_000001120 checkpoints      
 ```
 
 #### Octo Inference Setup

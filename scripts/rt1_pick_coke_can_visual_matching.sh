@@ -2,10 +2,10 @@ export MS2_ASSET_DIR=./ManiSkill2_real2sim/data
 
 gpu_id=0
 
-declare -a arr=("./checkpoints/xid77467904_000400120/" \
-                "./checkpoints/rt1poor_xid77467904_000058240/" \
+declare -a arr=("./checkpoints/rt_1_tf_trained_for_000400120/" \
+                "./checkpoints/rt_1_tf_trained_for_000058240/" \
                 "./checkpoints/rt_1_x_tf_trained_for_002272480_step/" \
-                "./checkpoints/rt1new_77467904_000001120/" )
+                "./checkpoints/rt_1_tf_trained_for_000001120/" )
 
 # lr_switch=laying horizontally but flipped left-right to match real eval; upright=standing; laid_vertically=laying vertically
 declare -a coke_can_options_arr=("lr_switch=True" "upright=True" "laid_vertically=True")

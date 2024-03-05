@@ -2,9 +2,9 @@ export MS2_ASSET_DIR=./ManiSkill2_real2sim/data
 gpu_id=0
 
 declare -a arr=("./checkpoints/rt_1_x_tf_trained_for_002272480_step/" \
-                "./checkpoints/xid77467904_000400120/" \
-                "./checkpoints/rt1poor_xid77467904_000058240/" \
-                "./checkpoints/rt1new_77467904_000001120/")
+                "./checkpoints/rt_1_tf_trained_for_000400120/" \
+                "./checkpoints/rt_1_tf_trained_for_000058240/" \
+                "./checkpoints/rt_1_tf_trained_for_000001120/")
 
 for ckpt_path in "${arr[@]}"; do echo "$ckpt_path"; done
 

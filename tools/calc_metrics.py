@@ -166,6 +166,7 @@ def calc_pick_coke_can_stats(root_result_dir):
         "pearson_correlation(avg_orientation_sim_variant_results, avg_orientation_real_results)",
         pearson_correlation(avg_orientation_sim_variant_results, avg_orientation_real_results),
     )
+    print("-" * 20)
 
     # get visual matching success
     coke_can_sim_visual_matching_success = {
@@ -185,11 +186,11 @@ def calc_pick_coke_can_stats(root_result_dir):
                 if np.isnan(avg_sim_success):
                     print(f"WARNING: avg_sim_success is nan for {variant}")
                 coke_can_sim_visual_matching_success[coke_can_orientation][ckpt_alias].append(avg_sim_success)
+            print(f"Orientation {coke_can_orientation}, ckpt {ckpt_alias} all robot arm visual matching success: {coke_can_sim_visual_matching_success[coke_can_orientation][ckpt_alias]}")
             coke_can_sim_visual_matching_success[coke_can_orientation][ckpt_alias] = np.mean(
                 coke_can_sim_visual_matching_success[coke_can_orientation][ckpt_alias]
             )
 
-    print("-" * 20)
     for coke_can_orientation in coke_can_orientation_map_dict.keys():
         print(
             f"{coke_can_orientation} visual matching sim success",
@@ -351,6 +352,7 @@ def calc_move_near_stats(root_result_dir):
             list(move_near_real_success.values()),
         ),
     )
+    print("-" * 20)
 
     # get visual matching success
     move_near_sim_visual_matching_success = {k: [] for k in ckpt_alias_keys}
@@ -363,9 +365,10 @@ def calc_move_near_stats(root_result_dir):
             if np.isnan(avg_sim_success):
                 print(f"WARNING: avg_sim_success is nan for {variant}")
             move_near_sim_visual_matching_success[ckpt_alias].append(avg_sim_success)
+            
+        print(f"Ckpt {ckpt_alias} all robot arm visual matching success: {move_near_sim_visual_matching_success[ckpt_alias]}")
         move_near_sim_visual_matching_success[ckpt_alias] = np.mean(move_near_sim_visual_matching_success[ckpt_alias])
 
-    print("-" * 20)
 
     print("sim visual matching success", move_near_sim_visual_matching_success)
     print("real success", move_near_real_success)
@@ -528,6 +531,7 @@ def calc_drawer_stats(root_result_dir):
         "pearson_correlation(avg_sim_variant_results, avg_real_results)",
         pearson_correlation(avg_sim_variant_results, avg_real_results),
     )
+    print("-" * 20)
 
     # get visual matching success
     drawer_sim_visual_matching_success = {k1: {k2: [] for k2 in ckpt_alias_keys} for k1 in drawer_task_map_dict.keys()}
@@ -546,11 +550,16 @@ def calc_drawer_stats(root_result_dir):
                     if np.isnan(avg_sim_success):
                         print(f"WARNING: avg_sim_success is nan for {variant}")
                     drawer_sim_visual_matching_success[drawer_task][ckpt_alias].append(avg_sim_success)
+            tmp_variant_avg_each_robot_arm = []
+            for i in range(len(base_visual_matching_variants)):
+                tmp_variant_avg_each_robot_arm.append(
+                    np.mean(drawer_sim_visual_matching_success[drawer_task][ckpt_alias][i::len(drawer_task_map_dict[drawer_task])])
+                )
+            print(f"Drawer task {drawer_task}, ckpt {ckpt_alias} all robot arm visual matching success: {tmp_variant_avg_each_robot_arm}")
             drawer_sim_visual_matching_success[drawer_task][ckpt_alias] = np.mean(
                 drawer_sim_visual_matching_success[drawer_task][ckpt_alias]
             )
 
-    print("-" * 20)
     for drawer_task in drawer_task_map_dict.keys():
         print(
             f"{drawer_task} visual matching sim success",
@@ -764,10 +773,10 @@ def calc_bridge_put_on_env_stats(root_result_dir):
 # Define checkpoint alias-to-directory mapping; If you use a new checkpoint, please update the dict
 
 CKPT_MAPPING = {
-    "rt-1-converged": "xid77467904_000400120",
-    "rt-1-15pct": "rt1poor_xid77467904_000058240",
+    "rt-1-converged": "rt_1_tf_trained_for_000400120",
+    "rt-1-15pct": "rt_1_tf_trained_for_000058240",
     "rt-1-x": "rt_1_x_tf_trained_for_002272480_step",
-    "rt-1-begin": "rt1new_77467904_000001120",
+    "rt-1-begin": "rt_1_tf_trained_for_000001120",
     "octo-base": "octo-base",
     "octo-small": "octo-small",
     "octo-server": "octo-server",

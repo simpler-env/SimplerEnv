@@ -88,8 +88,8 @@ def main(episode, model, model_type="rt1"):
 
 if __name__ == "__main__":
     ckpt_path = "checkpoints/rt_1_x_tf_trained_for_002272480_step/"
-    # ckpt_path = "checkpoints/xid77467904_000400120/"
-    # ckpt_path = "checkpoints/rt1poor_xid77467904_000058240/"
+    # ckpt_path = "checkpoints/rt_1_tf_trained_for_000400120/"
+    # ckpt_path = "checkpoints/rt_1_tf_trained_for_000058240/"
     # ckpt_path = 'checkpoints/rt_1_x_tf_trained_for_002272480_step'
 
     gpus = tf.config.list_physical_devices("GPU")
