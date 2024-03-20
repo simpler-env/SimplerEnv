@@ -25,21 +25,21 @@ def calc_pick_coke_can_stats(root_result_dir):
             "rt-1-15pct": 1.0,
             "rt-1-x": 0.88,
             "rt-1-begin": 0.20,
-            "octo-base": 0.52,
+            "octo-base": 0.44,
         },
         "vertical": {
             "rt-1-converged": 0.88,
             "rt-1-15pct": 0.96,
             "rt-1-x": 0.56,
             "rt-1-begin": 0.00,
-            "octo-base": 0.24,
+            "octo-base": 0.20,
         },
         "standing": {
             "rt-1-converged": 0.72,
             "rt-1-15pct": 0.80,
             "rt-1-x": 0.84,
             "rt-1-begin": 0.20,
-            "octo-base": 0.32,
+            "octo-base": 0.24,
         },
     }
 

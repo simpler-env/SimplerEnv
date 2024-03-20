@@ -64,7 +64,7 @@ Prerequisites:
 
 Create an anaconda environment:
 ```
-conda create -n real2sim python=3.9 (any version above 3.9 is fine)
+conda create -n real2sim python=3.10 (any version above 3.10 should be fine)
 conda activate real2sim
 ```
 
