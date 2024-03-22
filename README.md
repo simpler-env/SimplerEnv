@@ -187,7 +187,7 @@ If you'd like to perform evaluations on our provided agents (e.g., RT-1, Octo), 
 ```
 pip install tensorflow==2.15.0
 pip install -r requirements_full_install.txt
-pip install tensorflow[and-cuda] # tensorflow gpu support
+pip install tensorflow[and-cuda]==2.15.1 # tensorflow gpu support
 ```
 
 Install simulated annealing utils for system identification:
