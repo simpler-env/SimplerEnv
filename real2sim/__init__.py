@@ -18,6 +18,7 @@ ENVIRONMENTS = [
     "widowx_spoon_on_towel",
     "widowx_carrot_on_plate",
     "widowx_stack_cube",
+    "widowx_put_eggplant_in_basket",
 ]
 
 ENVIRONMENT_MAP = {
@@ -46,12 +47,13 @@ ENVIRONMENT_MAP = {
     "widowx_spoon_on_towel": ("PutSpoonOnTableClothInScene-v0", {}),
     "widowx_carrot_on_plate": ("PutCarrotOnPlateInScene-v0", {}),
     "widowx_stack_cube": ("StackGreenCubeOnYellowCubeBakedTexInScene-v0", {}),
+    "widowx_put_eggplant_in_basket": ("PutEggplantInBasketScene-v0", {}),
 }
 
 
 def make(task_name):
     """Creates simulated eval environment from task name."""
-    assert task_name in ENVIRONMENTS, f"Task {task_name} is not supported. Environments: \n {ENVIRONMENTS.keys()}"
+    assert task_name in ENVIRONMENTS, f"Task {task_name} is not supported. Environments: \n {ENVIRONMENTS}"
     env_name, kwargs = ENVIRONMENT_MAP[task_name]
     kwargs["prepackaged_config"] = True
     env = gym.make(env_name, obs_mode="rgbd", **kwargs)

@@ -642,6 +642,11 @@ def calc_bridge_put_on_env_stats(root_result_dir):
             "octo-base": 0.292,
             "octo-small": 0.583,
         },
+        "put_eggplant_in_basket": {
+            "rt-1-x": 0.000,
+            "octo-base": 0.400,
+            "octo-small": 0.600,
+        },
     }
     real_success_dict = {
         "put_spoon_on_tablecloth": {
@@ -655,6 +660,11 @@ def calc_bridge_put_on_env_stats(root_result_dir):
             "octo-base": 0.000,
             "octo-small": 0.125,
         },
+        "put_eggplant_in_basket": {
+            "rt-1-x": 0.000,
+            "octo-base": 0.250,
+            "octo-small": 0.400,
+        },
     }
 
     tasks = list(real_success_dict.keys())
@@ -667,7 +677,12 @@ def calc_bridge_put_on_env_stats(root_result_dir):
     ]  # we average octo performance over different random seeds to reduce variance
 
     # extra patterns required in file name; if you are using different visual matching overlay image, please update here
-    extra_pattern_require_visual_matching = ["rgb_overlay_bridge_real_eval_1"]
+    extra_pattern_require_visual_matching = {
+        "put_spoon_on_tablecloth": "rgb_overlay_bridge_real_eval_1",
+        "put_carrot_on_plate": "rgb_overlay_bridge_real_eval_1",
+        "stack_green_block_on_yellow_block": "rgb_overlay_bridge_real_eval_1",
+        "put_eggplant_in_basket": "rgb_overlay_bridge_sink",
+    }
 
     # hardcoded; if you have new variants, please update here
     base_visual_matching_variants_dict = {
@@ -679,6 +694,9 @@ def calc_bridge_put_on_env_stats(root_result_dir):
         ],
         "stack_green_block_on_yellow_block": [
             "bridge_table_1_v1/arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos/StackGreenCubeOnYellowCubeBakedTexInScene-v0",
+        ],
+        "put_eggplant_in_basket": [
+            "bridge_table_1_v2/arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos/PutEggplantInBasketScene-v0",
         ],
     }
 
@@ -709,14 +727,14 @@ def calc_bridge_put_on_env_stats(root_result_dir):
                 avg_sim_success = np.mean(
                     get_dir_stats(
                         variant,
-                        extra_pattern_require=extra_pattern_require_visual_matching,
+                        extra_pattern_require=extra_pattern_require_visual_matching[task],
                         succ_fail_pattern=succ_fail_pattern,
                     )
                 )
                 avg_sim_partial_success = np.mean(
                     get_dir_stats(
                         variant,
-                        extra_pattern_require=extra_pattern_require_visual_matching,
+                        extra_pattern_require=extra_pattern_require_visual_matching[task],
                         succ_fail_pattern=partial_succ_fail_pattern,
                     )
                 )

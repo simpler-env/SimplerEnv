@@ -2,7 +2,7 @@
 
 Significant progress has been made in building generalist robot manipulation policies, yet their scalable and reproducible evaluation remains challenging, as real-world evaluation is operationally expensive and inefficient. We propose employing physical simulators as efficient, scalable, and informative complements to real-world evaluations. These simulation evaluations offer valuable quantitative metrics for checkpoint selection, insights into potential real-world policy behaviors or failure modes, and standardized setups to enhance reproducibility.
 
-This repository is based in the [SAPIEN](https://sapien.ucsd.edu/) simulator and the [ManiSkill2](https://maniskill2.github.io/) benchmark (we will also integrate the tooling into ManiSkill3 once the latter complete).
+This repository is based in the [SAPIEN](https://sapien.ucsd.edu/) simulator and the [ManiSkill2](https://maniskill2.github.io/) benchmark (we will also integrate the evaluation envs into ManiSkill3 once it is complete).
 
 This repository encompasses 2 real-to-sim evaluation setups:
 - `Visual Matching` evaluation: Matching real & sim visual appearances for policy evaluation by overlaying real-world images onto simulation backgrounds and adjusting foreground object and robot textures in simulation.
@@ -112,6 +112,7 @@ print(real2sim.ENVIRONMENTS)
 | widowx_spoon_on_towel    | PutSpoonOnTableClothInScene-v0                | <img src="./images/example_visualization/widowx_spoon_on_towel_visual_matching.png" width="150" height="150" > |
 | widowx_carrot_on_plate   | PutCarrotOnPlateInScene-v0                    | <img src="./images/example_visualization/widowx_carrot_on_plate_visual_matching.png" width="150" height="150" > |
 | widowx_stack_cube        | StackGreenCubeOnYellowCubeBakedTexInScene-v0  | <img src="./images/example_visualization/widowx_stack_cube_visual_matching.png" width="150" height="150" > |
+| widowx_put_eggplant_in_basket        | PutEggplantInBasketScene-v0  | <img src="./images/example_visualization/widowx_put_eggplant_in_basket_visual_matching.png" width="150" height="150" > |
 
 We also support creating sub-tasks such as `google_robot_pick_{horizontal/vertical/standing}_coke_can`, `google_robot_open_{top/middle/bottom}_drawer`, and `google_robot_close_{top/middle/bottom}_drawer`.
 
@@ -167,7 +168,7 @@ If you want to use existing environments for evaluating new policies, you can ke
 
 1. Implement new policy inference scripts in `real2sim/policies/{your_new_policy}`, following the examples for RT-1 (`real2sim/policies/rt1`) and Octo (`real2sim/policies/octo`) policies.
 2. You can now use `real2sim/simple_inference_visual_matching_prepackaged_envs.py` to perform policy evaluations in simulation.
-   - If the policy behaviors deviate a lot from those in the real-world, you can write similar scripts as in `real2sim/utils/debug/{policy_name}_inference_real_video.py` to debug the policy behaviors.
+   - If the policy behaviors deviate a lot from those in the real-world, you can write similar scripts as in `real2sim/utils/debug/{policy_name}_inference_real_video.py` to debug the policy behaviors. The debugging script performs policy inference by feeding real eval video frames into the policy. If the policy behavior still deviates significantly from real, this may suggest that policy actions are processed incorrectly into the simulation environments. Please double check action orderings and action spaces.
 3. If you'd like to perform customized evaluations,
    - Modify a few lines in `real2sim/main_inference.py` to support your new policies.
    - Add policy inference scripts in `scripts/` with customized configs.
@@ -242,7 +243,7 @@ pip install -e .
 
 ## Troubleshooting
 
-If you encounter issues such as
+1. If you encounter issues such as
 
 ```
 RuntimeError: vk::Instance::enumeratePhysicalDevices: ErrorInitializationFailed
@@ -251,6 +252,7 @@ Segmentation fault (core dumped)
 ```
 
 Follow [this link](https://haosulab.github.io/ManiSkill2/getting_started/installation.html#troubleshooting) to troubleshoot the issue.
+
 
 ## Citation
 

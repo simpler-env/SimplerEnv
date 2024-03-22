@@ -9,6 +9,7 @@ If you are adding a new robot, perform the following steps:
 1. Add your robot urdf to `ManiSkill2_real2sim/mani_skill2/assets/descriptions`. Then, create a test robot script in `tools/robot_object_visualization` to visualize the robot in the SAPIEN viewer. You can use the existing scripts as a reference by changing the loaded urdf path and the initial joint positions (qpos).
    - For SAPIEN viewer control, see [here](#sapien-viewer-controls)
    - For the `visual matching` evaluation setup, you might want to recolor the robot to reduce the real-to-sim perception and evaluation gap. Given a real-world observation image, you can pick a color on the robot arm (a relatively bright color is recommended) using tools like GPick, and then use this color to bucket-paint the robot gripper or the robot arm texture images using tools like GIMP.
+   - If you notice strange behaviors on certain robot links, this is most likely caused by mesh penetration. In this case, you can either (1) remesh the corresponding links in Blender and modify robot urdf when necessary; (2) ignore the collision between the problem-causing robot link and the relevant links (see agents/robots/widowx.py for an example).
 
 2. Create a new robot agent implementation in `ManiSkill2_real2sim/mani_skill2/agents/robots` (which inherit `ManiSkill2_real2sim/mani_skill2/agents/base_agent.py`). You can use the existing robot implementations as a reference.
    - Add a set of controller configurations for the robot arm and the robot gripper. See more controller details in `ManiSkill2_real2sim/mani_skill2/agents/controllers/` and their base class `ManiSkill2_real2sim/mani_skill2/agents/base_controller.py`. You can also add more controller implementations there.
@@ -40,6 +41,8 @@ SAPIEN uses an axis convention of x forward, y left, z up for all object and sce
    - Use `tools/robot_object_visualization/test_object.py` to visualize the object in the SAPIEN viewer. You can click on an object / object link and press "show / hide" on the right panel to show / hide its collision mesh.
    - For SAPIEN viewer control, see [here](#sapien-viewer-controls)
    - For the `visual matching` evaluation setup, if you have an asset with good object geometry, then given a real-world observation image, you can use [GeTex](https://github.com/Jiayuan-Gu/GeTex) to bake the real-world object texture into the simulation asset. This is helpful for reducing the real-to-sim evaluation gap.
+
+The collision mesh does not need to have the same geometry as the visual mesh. This can be helpful for cases like e.g., carrot in "PutCarrotOnPlateInScene-v0" (where placing the carrot on the plate can cause the carrot to roll off the plate), and eggplant in "PutEggplantInBasketScene-v0" (where the eggplant can roll to the sides of the sink when it falls down into the sink during env init, making it significantly more challenging to grasp than real). In these cases, you can create collision meshes using a combination of simple geometric shapes like frustrums.
 
 <details>
 <summary>**Notes on modifying and exporting objects from Blender**: </summary>
