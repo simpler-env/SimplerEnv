@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 from scipy.stats import kruskal
 
-from real2sim.utils.metrics import (
+from realsimple.utils.metrics import (
     construct_unordered_trial_results,
     get_dir_stats,
     normalized_rank_loss,

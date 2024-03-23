@@ -7,9 +7,9 @@ import os
 import numpy as np
 from transforms3d.euler import quat2euler
 
-from real2sim.utils.env.env_builder import build_maniskill2_env, get_maniskill2_env_instruction, get_robot_control_mode
-from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
-from real2sim.utils.visualization import write_video
+from realsimple.utils.env.env_builder import build_maniskill2_env, get_maniskill2_env_instruction, get_robot_control_mode
+from realsimple.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
+from realsimple.utils.visualization import write_video
 
 
 def run_maniskill2_eval_single_episode(

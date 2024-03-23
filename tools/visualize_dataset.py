@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow_datasets as tfds
 
-from real2sim.utils.visualization import write_video
+from realsimple.utils.visualization import write_video
 
 DATASETS = ["fractal20220817_data", "bridge"]
 

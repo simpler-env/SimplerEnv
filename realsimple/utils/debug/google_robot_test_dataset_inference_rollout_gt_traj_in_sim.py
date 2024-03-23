@@ -11,7 +11,7 @@ import numpy as np
 from sapien.core import Pose
 import tensorflow_datasets as tfds
 
-from real2sim.utils.visualization import write_video
+from realsimple.utils.visualization import write_video
 
 DATASETS = ["fractal20220817_data", "bridge"]
 

@@ -1,10 +1,10 @@
 """
 Simple script for real-to-sim eval using the prepackaged visual matching setup in ManiSkill2.
 Example:
-    cd {path_to_real2sim_repo_root}
-    MS2_ASSET_DIR=./ManiSkill2_real2sim/data python real2sim/simple_inference_visual_matching_prepackaged_envs.py --policy rt1 \
+    cd {path_to_realsimple_repo_root}
+    MS2_ASSET_DIR=./ManiSkill2_real2sim/data python realsimple/simple_inference_visual_matching_prepackaged_envs.py --policy rt1 \
         --ckpt-path ./checkpoints/rt_1_tf_trained_for_000400120  --task google_robot_pick_coke_can  --logging-root ./results_simple_eval/  --n-trajs 10
-    MS2_ASSET_DIR=./ManiSkill2_real2sim/data python real2sim/simple_inference_visual_matching_prepackaged_envs.py --policy octo-small \
+    MS2_ASSET_DIR=./ManiSkill2_real2sim/data python realsimple/simple_inference_visual_matching_prepackaged_envs.py --policy octo-small \
         --ckpt-path None --task widowx_spoon_on_towel  --logging-root ./results_simple_eval/  --n-trajs 10
 """
 
@@ -15,8 +15,8 @@ import mediapy as media
 import numpy as np
 import tensorflow as tf
 
-import real2sim
-from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
+import realsimple
+from realsimple.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
 
 parser = argparse.ArgumentParser()
 
@@ -74,7 +74,7 @@ if len(gpus) > 0:
     )
 
 # build environment
-env = real2sim.make(args.task)
+env = realsimple.make(args.task)
 
 # build policy
 if "google_robot" in args.task:
@@ -85,11 +85,11 @@ else:
     raise NotImplementedError()
 
 if args.policy == "rt1":
-    from real2sim.policies.rt1.rt1_model import RT1Inference
+    from realsimple.policies.rt1.rt1_model import RT1Inference
 
     model = RT1Inference(saved_model_path=args.ckpt_path, policy_setup=policy_setup)
 elif "octo" in args.policy:
-    from real2sim.policies.octo.octo_model import OctoInference
+    from realsimple.policies.octo.octo_model import OctoInference
 
     model = OctoInference(model_type=args.ckpt_path, policy_setup=policy_setup, init_rng=0)
 else:

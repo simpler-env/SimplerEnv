@@ -75,7 +75,7 @@ You can export the `.glb` scenes from Blender. Pay attention to the axis convent
 8. Test your environments using our interactive script `ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`. See the script for more details. In the script, you can manually control the robot and interact with the objects in the environment. You can also invoke the SAPIEN viewer to examine objects and robots. Additionally, for the visual-matching evaluation setup, you can test it to see if the real-world observation image is correctly overlaid onto the simulation observation (e.g., do the table edges align between sim and real). You can then iteratively tune the camera extrinsics and the robot poses to achieve better real-to-sim visual matching.
    - You can set different `env_reset_options` to test different environment configurations.
 
-9. Now we can turn our focus to the policy inference scripts in `./real2sim/`. The main inference script is `real2sim/main_inference.py` and `real2sim/evaluation/`, which you can take a look as a reference. Based on your newly-created environments, update the utilities in `real2sim/utils/env/env_builder.py` and `real2sim/utils/env/observation_utils.py`.
+9. Now we can turn our focus to the policy inference scripts in `./realsimple/`. The main inference script is `realsimple/main_inference.py` and `realsimple/evaluation/`, which you can take a look as a reference. Based on your newly-created environments, update the utilities in `realsimple/utils/env/env_builder.py` and `realsimple/utils/env/observation_utils.py`.
 
 10. If your policy is already implemented in our repo (i.e., RT-* and Octo), you can now perform policy evaluations in simulation. If not yet, please follow the main README to implement new policies. Policy evaluation is done through the policy inference scripts in `scripts/`. You can use the existing scripts as a reference to write new scripts for new environments. After running sim eval, modify the scripts in `tools/calc_metrics.py` to calculate the metrics in your new environments.
 
@@ -89,14 +89,14 @@ To visualize robots and objects, see `tools/robot_object_visualization`.
 
 To debug robot-object interactions in an environment along with real-to-sim visual matching, see `ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`.
 
-We have also provided helpful example debugging tools in `real2sim/utils/debug` to help you debug your new robots and policies.
+We have also provided helpful example debugging tools in `realsimple/utils/debug` to help you debug your new robots and policies.
 <details>
-<summary>Click here for more `real2sim/utils/debug` details </summary>
+<summary>Click here for more `realsimple/utils/debug` details </summary>
 Specifically,
 
-- `real2sim/utils/debug/{robot_name}_test_dataset_inference_rollout_gt_traj_in_sim.py` steps ground-truth actions in a demonstration dataset in an open-loop manner and records the resulting observation video and robot qpos. This is helpful for visualizing the real-to-sim control gap after system identification.
-- `real2sim/utils/debug/{policy_name}_inference_real_video.py` feeds a sequence of (real evaluation) video frames into the policy and executes the resulting policy actions, which is helpful for debugging whether the behaviors of implemented policies are correct and reasonable. It can also feed an inpainting image with a robot arm rendered in simulation to the policy and sequentially execute the policy actions, which is helpful for investigating the effect of robot arm / gripper textures on the real-to-sim evaluation gap.
-- `real2sim/utils/debug/rt1_plot_dataset_inference_trajectory.py` plots ground-truth and policy-predicted demonstration action trajectories in a dataset, which is helpful for debugging whether the behaviors of implemented policies are correct and reasonable.
+- `realsimple/utils/debug/{robot_name}_test_dataset_inference_rollout_gt_traj_in_sim.py` steps ground-truth actions in a demonstration dataset in an open-loop manner and records the resulting observation video and robot qpos. This is helpful for visualizing the real-to-sim control gap after system identification.
+- `realsimple/utils/debug/{policy_name}_inference_real_video.py` feeds a sequence of (real evaluation) video frames into the policy and executes the resulting policy actions, which is helpful for debugging whether the behaviors of implemented policies are correct and reasonable. It can also feed an inpainting image with a robot arm rendered in simulation to the policy and sequentially execute the policy actions, which is helpful for investigating the effect of robot arm / gripper textures on the real-to-sim evaluation gap.
+- `realsimple/utils/debug/rt1_plot_dataset_inference_trajectory.py` plots ground-truth and policy-predicted demonstration action trajectories in a dataset, which is helpful for debugging whether the behaviors of implemented policies are correct and reasonable.
 </details>
 
 We also provide some visualization scripts:

@@ -9,7 +9,7 @@ import tensorflow as tf
 from transformers import AutoTokenizer
 from transforms3d.euler import euler2axangle
 
-from real2sim.utils.action.action_ensemble import ActionEnsembler
+from realsimple.utils.action.action_ensemble import ActionEnsembler
 
 
 class OctoInference:

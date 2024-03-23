@@ -3,13 +3,13 @@ import os
 import numpy as np
 import tensorflow as tf
 
-from real2sim.evaluation.argparse import get_args
-from real2sim.evaluation.maniskill2_evaluator import maniskill2_evaluator
-from real2sim.policies.octo.octo_server_model import OctoServerInference
-from real2sim.policies.rt1.rt1_model import RT1Inference
+from realsimple.evaluation.argparse import get_args
+from realsimple.evaluation.maniskill2_evaluator import maniskill2_evaluator
+from realsimple.policies.octo.octo_server_model import OctoServerInference
+from realsimple.policies.rt1.rt1_model import RT1Inference
 
 try:
-    from real2sim.policies.octo.octo_model import OctoInference
+    from realsimple.policies.octo.octo_model import OctoInference
 except ImportError as e:
     print("Octo is not correctly imported.")
     print(e)

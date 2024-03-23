@@ -4,7 +4,7 @@ import numpy as np
 from sapien.core import Pose
 from transforms3d.euler import euler2quat
 
-from real2sim.utils.io import DictAction
+from realsimple.utils.io import DictAction
 
 
 def parse_range_tuple(t):

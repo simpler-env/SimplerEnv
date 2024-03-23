@@ -37,6 +37,6 @@ if __name__ == "__main__":
     main()
 
 """
-python tools/save_video_frame.py -i /home/xuanlin/Real2Sim/results/rt_1_x_tf_trained_for_002272480_step/google_pick_coke_can_1_v4_alt_background/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/MoveNearGoogleInScene-v0/rob_0.35_0.21_rot_0.000_-0.000_3.052_rgb_overlay_None/failure_obj_episode_0_all_obj_keep_height_True_moved_correct_obj_False_moved_wrong_obj_True_near_tgt_obj_False_is_closest_to_tgt_False.mp4 \
-    -o /home/xuanlin/Real2Sim/ManiSkill2_real2sim/data/robustness_visualization/move_near_tab4_alt_bg_frame0.png
+python tools/save_video_frame.py -i /home/xuanlin/RealSimple/results/rt_1_x_tf_trained_for_002272480_step/google_pick_coke_can_1_v4_alt_background/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/MoveNearGoogleInScene-v0/rob_0.35_0.21_rot_0.000_-0.000_3.052_rgb_overlay_None/failure_obj_episode_0_all_obj_keep_height_True_moved_correct_obj_False_moved_wrong_obj_True_near_tgt_obj_False_is_closest_to_tgt_False.mp4 \
+    -o /home/xuanlin/RealSimple/ManiSkill2_real2sim/data/robustness_visualization/move_near_tab4_alt_bg_frame0.png
 """

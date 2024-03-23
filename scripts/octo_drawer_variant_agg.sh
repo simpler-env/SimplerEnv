@@ -24,7 +24,7 @@ scene_name=frl_apartment_stage_simple
 EvalSim() {
   echo ${policy_model} ${env_name}
 
-  python real2sim/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+  python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path None \
     --robot google_robot_static \
     --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
     --env-name ${env_name} --scene-name ${scene_name} \

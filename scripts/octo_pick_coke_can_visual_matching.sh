@@ -27,7 +27,7 @@ do for policy_model in "${policy_models[@]}";
 
 do for coke_can_option in "${coke_can_options_arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static  --policy-setup google_robot \
   --control-freq 3 --sim-freq 501 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \

@@ -20,7 +20,7 @@ for coke_can_option in "${coke_can_options_arr[@]}";
 
 do for policy_model in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -47,7 +47,7 @@ do for scene_name in "${scene_arr[@]}";
 
 do for policy_model in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -73,7 +73,7 @@ for coke_can_option in "${coke_can_options_arr[@]}";
 
 do for policy_model in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -81,7 +81,7 @@ do CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-mod
   --robot-init-rot-quat-center 0 0 0 1 --robot-init-rot-rpy-range 0 0 1 0 0 1 0 0 1 \
   --additional-env-build-kwargs ${coke_can_option} urdf_version=${urdf_version};
 
-CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -108,7 +108,7 @@ do for scene_name in "${scene_arr[@]}";
 
 do for policy_model in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -133,7 +133,7 @@ for coke_can_option in "${coke_can_options_arr[@]}";
 
 do for policy_model in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -141,7 +141,7 @@ do CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-mod
   --robot-init-rot-quat-center 0 0 0 1 --robot-init-rot-rpy-range 0 0 1 0 0 1 0 0 1 \
   --additional-env-build-kwargs ${coke_can_option} urdf_version=${urdf_version} slightly_darker_lighting=True;
 
-CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -168,7 +168,7 @@ do for env_name in "${env_arr[@]}";
 
 do for policy_model in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python real2sim/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \

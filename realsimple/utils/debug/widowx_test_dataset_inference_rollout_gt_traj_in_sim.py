@@ -13,7 +13,7 @@ import tensorflow_datasets as tfds
 from transforms3d.euler import euler2axangle, euler2mat
 from transforms3d.quaternions import mat2quat
 
-from real2sim.utils.visualization import write_video
+from realsimple.utils.visualization import write_video
 
 DATASETS = ["fractal20220817_data", "bridge"]
 

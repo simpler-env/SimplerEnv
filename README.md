@@ -1,4 +1,4 @@
-# Evaluating Real-World Robot Manipulation Policies in Simulation
+# RealSimple: Simulated Manipulation Policy Evaluation for Real-World Robots
 
 Significant progress has been made in building generalist robot manipulation policies, yet their scalable and reproducible evaluation remains challenging, as real-world evaluation is operationally expensive and inefficient. We propose employing physical simulators as efficient, scalable, and informative complements to real-world evaluations. These simulation evaluations offer valuable quantitative metrics for checkpoint selection, insights into potential real-world policy behaviors or failure modes, and standardized setups to enhance reproducibility.
 
@@ -10,7 +10,7 @@ This repository encompasses 2 real-to-sim evaluation setups:
 
 We hope that our work guides and inspires future real-to-sim evaluation efforts.
 
-- [Evaluating Real-World Robot Manipulation Policies in Simulation](#evaluating-real-world-robot-manipulation-policies-in-simulation)
+- [RealSimple: Simulated Manipulation Policy Evaluation for Real-World Robots](#realsimple-simulated-manipulation-policy-evaluation-for-real-world-robots)
   - [Getting Started](#getting-started)
   - [Installation](#installation)
   - [Examples](#examples)
@@ -33,10 +33,10 @@ Follow the [Installation](#installation) section to install the minimal requirem
 (The `MS2_ASSET_DIR` specifies the directory to the data assets. You can also set `export MS2_ASSET_DIR=${PWD}/ManiSkill2_real2sim/data` if you'd like to.)
 
 ```python
-import real2sim
-from real2sim.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
+import realsimple
+from realsimple.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
 
-env = real2sim.make('google_robot_pick_coke_can')
+env = realsimple.make('google_robot_pick_coke_can')
 obs, reset_info = env.reset()
 instruction = env.get_language_instruction()
 print("Reset info", reset_info)
@@ -64,13 +64,13 @@ Prerequisites:
 
 Create an anaconda environment:
 ```
-conda create -n real2sim python=3.10 (any version above 3.10 should be fine)
-conda activate real2sim
+conda create -n realsimple python=3.10 (any version above 3.10 should be fine)
+conda activate realsimple
 ```
 
 Clone this repo:
 ```
-git clone https://github.com/xuanlinli17/Real2Sim --recurse-submodules
+git clone https://github.com/xuanlinli17/RealSimple --recurse-submodules
 ```
 
 Install ManiSkill2 real-to-sim environments and their dependencies:
@@ -91,16 +91,16 @@ pip install -e .
 ## Examples
 
 - Environment interactive visualization and manual control: see [`ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`](https://github.com/xuanlinli17/ManiSkill2_real2sim/blob/main/mani_skill2/examples/demo_manual_control_custom_envs.py)
-- Simple RT-1 and Octo evaluation script on prepackaged environments with visual matching evaluation setup: see [`real2sim/simple_inference_visual_matching_prepackaged_envs.py`](https://github.com/xuanlinli17/Real2Sim/blob/main/real2sim/simple_inference_visual_matching_prepackaged_envs.py).
-- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, and Octo policies. See [`scripts/`](https://github.com/xuanlinli17/Real2Sim/tree/main/scripts).
+- Simple RT-1 and Octo evaluation script on prepackaged environments with visual matching evaluation setup: see [`realsimple/simple_inference_visual_matching_prepackaged_envs.py`](https://github.com/xuanlinli17/RealSimple/blob/main/realsimple/simple_inference_visual_matching_prepackaged_envs.py).
+- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, and Octo policies. See [`scripts/`](https://github.com/xuanlinli17/RealSimple/tree/main/scripts).
 - Real-to-sim evaluation videos from running `scripts/*.sh`: see [this link](TODO).
 
 ## Current Environments
 
 To get a list of all available environments, run:
 ```
-import real2sim
-print(real2sim.ENVIRONMENTS)
+import realsimple
+print(realsimple.ENVIRONMENTS)
 ```
 
 | Task Name | ManiSkill2 Env Name | Image (Visual Matching) |
@@ -120,7 +120,7 @@ By default, Google Robot environments use 3hz control, and Bridge environments u
 
 ## Customizing Evaluation Configs
 
-Please see `scripts/` for examples of how to customize evaluation configs. The inference script `real2sim/main_inference.py` supports advanced environment building and logging. For example, you can perform a sweep over object and robot poses for evaluation. (Note, however, varying robot poses is not meaningful under the visual matching evaluation setup.)
+Please see `scripts/` for examples of how to customize evaluation configs. The inference script `realsimple/main_inference.py` supports advanced environment building and logging. For example, you can perform a sweep over object and robot poses for evaluation. (Note, however, varying robot poses is not meaningful under the visual matching evaluation setup.)
 
 
 
@@ -140,7 +140,7 @@ ManiSkill2_real2sim/: the ManiSkill2 real-to-sim environment codebase, which con
       examples/demo_manual_control_custom_envs.py: interactive script for environment visualization and manual
       utils/
    ...
-real2sim/
+realsimple/
    evaluation/: real-to-sim evaluator with advanced environment building and logging
       argparse.py: argument parser supporting custom policy and environment building
       maniskill2_evaluator.py: evaluator that supports environment parameter sweeps and advanced logging
@@ -168,11 +168,11 @@ scripts/: example bash scripts for policy inference with custom environment buil
 
 If you want to use existing environments for evaluating new policies, you can keep `./ManiSkill2_real2sim` as is.
 
-1. Implement new policy inference scripts in `real2sim/policies/{your_new_policy}`, following the examples for RT-1 (`real2sim/policies/rt1`) and Octo (`real2sim/policies/octo`) policies.
-2. You can now use `real2sim/simple_inference_visual_matching_prepackaged_envs.py` to perform policy evaluations in simulation.
-   - If the policy behaviors deviate a lot from those in the real-world, you can write similar scripts as in `real2sim/utils/debug/{policy_name}_inference_real_video.py` to debug the policy behaviors. The debugging script performs policy inference by feeding real eval video frames into the policy. If the policy behavior still deviates significantly from real, this may suggest that policy actions are processed incorrectly into the simulation environments. Please double check action orderings and action spaces.
+1. Implement new policy inference scripts in `realsimple/policies/{your_new_policy}`, following the examples for RT-1 (`realsimple/policies/rt1`) and Octo (`realsimple/policies/octo`) policies.
+2. You can now use `realsimple/simple_inference_visual_matching_prepackaged_envs.py` to perform policy evaluations in simulation.
+   - If the policy behaviors deviate a lot from those in the real-world, you can write similar scripts as in `realsimple/utils/debug/{policy_name}_inference_real_video.py` to debug the policy behaviors. The debugging script performs policy inference by feeding real eval video frames into the policy. If the policy behavior still deviates significantly from real, this may suggest that policy actions are processed incorrectly into the simulation environments. Please double check action orderings and action spaces.
 3. If you'd like to perform customized evaluations,
-   - Modify a few lines in `real2sim/main_inference.py` to support your new policies.
+   - Modify a few lines in `realsimple/main_inference.py` to support your new policies.
    - Add policy inference scripts in `scripts/` with customized configs.
    - Optionally, modify the scripts in `tools/calc_metrics.py` to calculate the real-to-sim evaluation metrics for your new policies.
 
@@ -239,7 +239,7 @@ cd {this_repo}
 git clone https://github.com/octo-models/octo/
 cd octo
 pip install -e .
-# You don't need to run "pip install -r requirements.txt" inside the octo repo; the package dependencies are already handled in the Real2Sim repo
+# You don't need to run "pip install -r requirements.txt" inside the octo repo; the package dependencies are already handled in the RealSimple repo
 # Octo checkpoints are managed by huggingface, so you don't need to download them manually.
 ```
 
