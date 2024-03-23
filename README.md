@@ -116,6 +116,8 @@ print(real2sim.ENVIRONMENTS)
 
 We also support creating sub-tasks such as `google_robot_pick_{horizontal/vertical/standing}_coke_can`, `google_robot_open_{top/middle/bottom}_drawer`, and `google_robot_close_{top/middle/bottom}_drawer`.
 
+By default, Google Robot environments use 3hz control, and Bridge environments use 5hz control. Simulation frequency is ~500hz.
+
 ## Customizing Evaluation Configs
 
 Please see `scripts/` for examples of how to customize evaluation configs. The inference script `real2sim/main_inference.py` supports advanced environment building and logging. For example, you can perform a sweep over object and robot poses for evaluation. (Note, however, varying robot poses is not meaningful under the visual matching evaluation setup.)
@@ -252,6 +254,12 @@ Segmentation fault (core dumped)
 ```
 
 Follow [this link](https://haosulab.github.io/ManiSkill2/getting_started/installation.html#troubleshooting) to troubleshoot the issue.
+
+2. You can ignore the following error if it is caused by tensorflow's internal code. Sometimes this error will occur when running the inference or debugging scripts.
+
+```
+TypeError: 'NoneType' object is not subscriptable
+```
 
 
 ## Citation

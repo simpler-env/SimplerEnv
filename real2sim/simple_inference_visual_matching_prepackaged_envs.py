@@ -46,6 +46,7 @@ parser.add_argument(
         "widowx_spoon_on_towel",
         "widowx_carrot_on_plate",
         "widowx_stack_cube",
+        "widowx_put_eggplant_in_basket",
     ],
 )
 parser.add_argument("--logging-root", type=str, default="./results_simple_random_eval")

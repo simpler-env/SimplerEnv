@@ -148,7 +148,8 @@ if __name__ == "__main__":
     # inpainting_img_path = 'data/debug/bridge_real_1_cleanup.png'
     # instruction = 'Place the can to the left of the pot.'
     # init_tcp_pose_at_robot_base = Pose([0.298068, -0.114657, 0.10782], [0.750753, 0.115962, 0.642171, -0.102661])
-    # camera = '3rd_view_camera_bridge'
+    # camera = '3rd_view_camera'
+    # robot = 'widowx_bridge_dataset_camera_setup' # change this to "widowx" / "widowx_sink_camera_setup", etc if you are not debugging using Bridge dataset
     # ckpt_path = 'checkpoints/rt_1_x_tf_trained_for_002272480_step/'
 
     if mp4_path is not None:
@@ -163,7 +164,7 @@ if __name__ == "__main__":
     # main(input_video, inpainting_img_path, instruction, ckpt_path,
     #     control_freq=5,
     #     control_mode='arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos',
-    #     policy_setup='widowx_bridge', robot='widowx',
+    #     policy_setup='widowx_bridge', robot=robot,
     #     init_tcp_pose_at_robot_base=init_tcp_pose_at_robot_base,
-    #     overlay_camera='3rd_view_camera_bridge'
+    #     overlay_camera='3rd_view_camera'
     # )

@@ -34,7 +34,7 @@ def main(
     episode_id,
     control_mode="arm_pd_ee_target_delta_pose_align2_gripper_pd_joint_pos",
     save_root="debug_logs/widowx_test_dataset_inference_rollout_gt_traj_in_sim/",
-    overlay_camera="3rd_view_camera_bridge",
+    overlay_camera="3rd_view_camera",
 ):
 
     for _ in range(iter_num):
@@ -51,7 +51,7 @@ def main(
         "GraspSingleDummy-v0",
         control_mode=control_mode,
         obs_mode="rgbd",
-        robot="widowx",
+        robot="widowx_bridge_dataset_camera_setup",
         sim_freq=sim_freq,
         control_freq=control_freq,
         max_episode_steps=50,
