@@ -54,7 +54,7 @@ episode_stats = info.get('episode_stats', {})
 print("Episode stats", episode_stats)
 ```
 
-Additionally, you can play with our environments in an interactive manner through [`ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`](https://github.com/xuanlinli17/ManiSkill2_real2sim/blob/main/mani_skill2/examples/demo_manual_control_custom_envs.py). See the script for more details and commands.
+Additionally, you can play with our environments in an interactive manner through [`ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`](https://github.com/simple-env/ManiSkill2_real2sim/blob/main/mani_skill2/examples/demo_manual_control_custom_envs.py). See the script for more details and commands.
 
 ## Installation
 
@@ -70,7 +70,7 @@ conda activate realsimple
 
 Clone this repo:
 ```
-git clone https://github.com/xuanlinli17/RealSimple --recurse-submodules
+git clone https://github.com/simple-env/RealSimple --recurse-submodules
 ```
 
 Install ManiSkill2 real-to-sim environments and their dependencies:
@@ -90,9 +90,9 @@ pip install -e .
 
 ## Examples
 
-- Environment interactive visualization and manual control: see [`ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`](https://github.com/xuanlinli17/ManiSkill2_real2sim/blob/main/mani_skill2/examples/demo_manual_control_custom_envs.py)
-- Simple RT-1 and Octo evaluation script on prepackaged environments with visual matching evaluation setup: see [`realsimple/simple_inference_visual_matching_prepackaged_envs.py`](https://github.com/xuanlinli17/RealSimple/blob/main/realsimple/simple_inference_visual_matching_prepackaged_envs.py).
-- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, and Octo policies. See [`scripts/`](https://github.com/xuanlinli17/RealSimple/tree/main/scripts).
+- Environment interactive visualization and manual control: see [`ManiSkill2_real2sim/mani_skill2/examples/demo_manual_control_custom_envs.py`](https://github.com/simple-env/ManiSkill2_real2sim/blob/main/mani_skill2/examples/demo_manual_control_custom_envs.py)
+- Simple RT-1 and Octo evaluation script on prepackaged environments with visual matching evaluation setup: see [`realsimple/simple_inference_visual_matching_prepackaged_envs.py`](https://github.com/simple-env/RealSimple/blob/main/realsimple/simple_inference_visual_matching_prepackaged_envs.py).
+- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, and Octo policies. See [`scripts/`](https://github.com/simple-env/RealSimple/tree/main/scripts).
 - Real-to-sim evaluation videos from running `scripts/*.sh`: see [this link](TODO).
 
 ## Current Environments
