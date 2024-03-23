@@ -1,24 +1,3 @@
 [submodule "ManiSkill2_real2sim"]
 	path = ManiSkill2_real2sim
 	url = git@github.com:xuanlinli17/ManiSkill2_real2sim
-[submodule "robotics_transformer"]
-	path = robotics_transformer
-	url = git@github.com:xuanlinli17/robotics_transformer
-[submodule "tensor2robot"]
-	path = tensor2robot
-	url = git@github.com:xuanlinli17/tensor2robot
-[submodule "TensoRF"]
-	path = TensoRF
-	url = https://github.com/xuanlinli17/TensoRF
-[submodule "diff_dmc"]
-	path = diff_dmc
-	url = https://github.com/SarahWeiii/diff_dmc.git
-[submodule "diffrec_ddmc"]
-	path = diffrec_ddmc
-	url = https://github.com/SarahWeiii/diffrec_ddmc
-[submodule "instant-nsr-pl"]
-	path = instant-nsr-pl
-	url = https://github.com/xuanlinli17/instant-nsr-pl
-[submodule "octo"]
-	path = octo
-	url = https://github.com/octo-models/octo
