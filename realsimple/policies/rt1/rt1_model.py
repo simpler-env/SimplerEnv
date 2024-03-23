@@ -203,7 +203,7 @@ class RT1Inference:
             # thus we need to invert the rt1 output gripper action for some embodiments like WidowX, since for these embodiments -1 is close gripper, 1 is open gripper
             raw_gripper_closedness = -raw_gripper_closedness
         if self.policy_setup == "google_robot":
-            # gripper controller: pd_joint_target_delta_pos_interpolate_by_planner; raw_gripper_closedness has range of [0, 1]
+            # gripper controller: pd_joint_target_delta_pos_interpolate_by_planner; raw_gripper_closedness has range of [-1, 1]
             action["gripper"] = np.asarray(raw_gripper_closedness, dtype=np.float64)
         elif self.policy_setup == "widowx_bridge":
             # gripper controller: pd_joint_pos; raw_gripper_closedness has range of [-1, 1]

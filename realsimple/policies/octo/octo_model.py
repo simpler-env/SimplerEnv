@@ -238,6 +238,7 @@ class OctoInference:
         if self.policy_setup == "google_robot":
             current_gripper_action = raw_action["open_gripper"]
 
+            # This is one of the ways to implement gripper actions; we use an alternative implementation below for consistency with real
             # gripper_close_commanded = (current_gripper_action < 0.5)
             # relative_gripper_action = 1 if gripper_close_commanded else -1 # google robot 1 = close; -1 = open
 
@@ -322,14 +323,3 @@ class OctoInference:
         axs["image"].set_xlabel("Time in one episode (subsampled)")
         plt.legend()
         plt.savefig(save_path)
-
-
-"""
-Bridge:
-self.action_mean = np.array([
-    0.00021161, 0.00012614, -0.00017022, -0.00015062, -0.00023831, 0.00025646, 0.0
-])
-self.action_std = np.array([
-    0.00963721, 0.0135066, 0.01251861, 0.02806791, 0.03016905, 0.07632624, 1.0
-])
-"""

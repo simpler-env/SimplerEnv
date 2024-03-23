@@ -180,6 +180,7 @@ class OctoServerInference:
         if self.policy_setup == "google_robot":
             current_gripper_action = raw_action["open_gripper"]
 
+            # This is one of the ways to implement gripper actions; we use an alternative implementation below for consistency with real
             # gripper_close_commanded = (current_gripper_action < 0.5)
             # relative_gripper_action = 1 if gripper_close_commanded else -1 # google robot 1 = close; -1 = open
 
