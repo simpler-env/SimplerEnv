@@ -10,11 +10,6 @@ rgb_overlay_path=ManiSkill2_real2sim/data/real_inpainting/bridge_real_eval_1.png
 robot_init_x=0.147
 robot_init_y=0.028
 
-# scene_name=bridge_table_1_v2
-# robot=widowx_camera_setup2
-# rgb_overlay_path=ManiSkill2_real2sim/data/real_inpainting/bridge_real_eval_2.png
-# robot_init_x=0.147
-# robot_init_y=0.070
 
 CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} \
   --robot ${robot} --policy-setup widowx_bridge \
