@@ -42,7 +42,7 @@ SAPIEN uses an axis convention of x forward, y left, z up for all object and sce
    - For SAPIEN viewer control, see [here](#sapien-viewer-controls)
    - For the `visual matching` evaluation setup, if you have an asset with good object geometry, then given a real-world observation image, you can use [GeTex](https://github.com/Jiayuan-Gu/GeTex) to bake the real-world object texture into the simulation asset. This is helpful for reducing the real-to-sim evaluation gap.
 
-The collision mesh does not need to have the same geometry as the visual mesh. This can be helpful for cases like e.g., carrot in "PutCarrotOnPlateInScene-v0" (where placing the carrot on the plate can cause the carrot to roll off the plate), and eggplant in "PutEggplantInBasketScene-v0" (where the eggplant can roll to the sides of the sink when it falls down into the sink during env init, making it significantly more challenging to grasp than real). In these cases, you can create collision meshes using a combination of simple geometric shapes like frustrums.
+The collision mesh does not need to have the same geometry as the visual mesh. This can be helpful for cases like e.g., carrot in "PutCarrotOnPlateInScene-v0" (where placing the carrot on the plate can cause the carrot to roll off the plate). In these cases, you can create collision meshes using a combination of simple geometric shapes like frustrums. Additionally, it is helpful to make the bottom of an object's collision shape flat (e.g., cans, bottles, plates), such that objects do not fall over when dropped onto a surface. For objects like sinks, it is also helpful to make their surfaces flat such that objects do not roll over to the sides when placed in them.
 
 <details>
 <summary>**Notes on modifying and exporting objects from Blender**: </summary>
@@ -55,7 +55,7 @@ The collision mesh does not need to have the same geometry as the visual mesh. T
 
 </details>
 
-5. Add custom simulation scene backgrounds to `ManiSkill2_real2sim/data/hab2_bench_assets/stages`.
+1. Add custom simulation scene backgrounds to `ManiSkill2_real2sim/data/hab2_bench_assets/stages`.
    - In our environments, scene backgrounds are loaded in the `_load_arena_helper` function in `ManiSkill2_real2sim/mani_skill2/envs/custom_scenes/base_env.py`. The existing scenes use the Habitat convention (y-axis up).
 
 <details>
