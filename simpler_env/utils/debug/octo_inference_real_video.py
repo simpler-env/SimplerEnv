@@ -12,10 +12,10 @@ import mediapy as media
 import numpy as np
 import tensorflow as tf
 
-from realsimple.policies.octo.octo_model import OctoInference
-from realsimple.policies.octo.octo_server_model import OctoServerInference
-from realsimple.utils.env.env_builder import build_maniskill2_env
-from realsimple.utils.visualization import write_video
+from simpler_env.policies.octo.octo_model import OctoInference
+from simpler_env.policies.octo.octo_server_model import OctoServerInference
+from simpler_env.utils.env.env_builder import build_maniskill2_env
+from simpler_env.utils.visualization import write_video
 
 
 def main(
@@ -133,7 +133,7 @@ def main(
 
 if __name__ == "__main__":
     """
-    MS2_ASSET_DIR=./ManiSkill2_real2sim/data python realsimple/utils/debug/octo_inference_real_video.py
+    MS2_ASSET_DIR=./ManiSkill2_real2sim/data python simpler_env/utils/debug/octo_inference_real_video.py
     """
 
     os.environ["DISPLAY"] = ""

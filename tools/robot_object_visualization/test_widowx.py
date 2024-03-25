@@ -29,7 +29,7 @@ def demo(fix_root_link, balance_passive_force):
     loader.load_multiple_collisions_from_file = True
 
     robot: sapien.Articulation = loader.load(
-        "ManiSkill2_real2sim/mani_skill2/assets/descriptions/widowx_description/wx250s.urdf"
+        "ManiSkill2_real2sim/mani_skill2_real2sim/assets/descriptions/widowx_description/wx250s.urdf"
     )
     print(robot.get_links())
     robot.set_root_pose(sapien.Pose([0, 0, 0.2], [1, 0, 0, 0]))

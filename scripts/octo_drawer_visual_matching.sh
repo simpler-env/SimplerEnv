@@ -25,7 +25,7 @@ EXTRA_ARGS="--enable-raytracing --additional-env-build-kwargs station_name=mk_st
 
 EvalOverlay() {
 # A0
-python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -36,7 +36,7 @@ python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_m
   ${EXTRA_ARGS}
 
 # A1
-python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -47,7 +47,7 @@ python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_m
   ${EXTRA_ARGS}
 
 # A2
-python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -58,7 +58,7 @@ python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_m
   ${EXTRA_ARGS}
 
 # B0
-python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -69,7 +69,7 @@ python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_m
   ${EXTRA_ARGS}
 
 # B1
-python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -80,7 +80,7 @@ python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_m
   ${EXTRA_ARGS}
 
 # B2
-python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -91,7 +91,7 @@ python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_m
   ${EXTRA_ARGS}
 
 # C0
-python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -102,7 +102,7 @@ python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_m
   ${EXTRA_ARGS}
 
 # C1
-python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -113,7 +113,7 @@ python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_m
   ${EXTRA_ARGS}
 
 # C2
-python realsimple/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \

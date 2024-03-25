@@ -29,9 +29,9 @@ def demo(fix_root_link, balance_passive_force):
     loader.load_multiple_collisions_from_file = True
 
     robot: sapien.Articulation = loader.load(
-        "ManiSkill2_real2sim/mani_skill2/assets/descriptions/googlerobot_description/google_robot_meta_sim_fix_wheel_fix_fingertip.urdf"
+        "ManiSkill2_real2sim/mani_skill2_real2sim/assets/descriptions/googlerobot_description/google_robot_meta_sim_fix_wheel_fix_fingertip.urdf"
     )
-    # robot: sapien.Articulation = loader.load("ManiSkill2_real2sim/mani_skill2/assets/descriptions/googlerobot_description/google_robot_meta_sim_fix_wheel_fix_fingertip_recolor_cabinet_visual_matching_1.urdf")
+    # robot: sapien.Articulation = loader.load("ManiSkill2_real2sim/mani_skill2_real2sim/assets/descriptions/googlerobot_description/google_robot_meta_sim_fix_wheel_fix_fingertip_recolor_cabinet_visual_matching_1.urdf")
     print(robot.get_links())
     robot.set_root_pose(sapien.Pose([0, 0, 0.06205], [1, 0, 0, 0]))
 

@@ -6,14 +6,14 @@ import os
 
 import cv2
 import gymnasium as gym
-import mani_skill2.envs
+import mani_skill2_real2sim.envs
 import numpy as np
 from sapien.core import Pose
 import tensorflow_datasets as tfds
 from transforms3d.euler import euler2axangle, euler2mat
 from transforms3d.quaternions import mat2quat
 
-from realsimple.utils.visualization import write_video
+from simpler_env.utils.visualization import write_video
 
 DATASETS = ["fractal20220817_data", "bridge"]
 

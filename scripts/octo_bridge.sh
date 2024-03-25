@@ -19,7 +19,7 @@ for init_rng in 0 2 4;
 
 do for policy_model in "${policy_models[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} \
   --robot ${robot} --policy-setup widowx_bridge --octo-init-rng ${init_rng} \
   --control-freq 5 --sim-freq 500 --max-episode-steps 60 \
   --env-name StackGreenCubeOnYellowCubeBakedTexInScene-v0 --scene-name ${scene_name} \
@@ -28,7 +28,7 @@ do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-m
   --robot-init-rot-quat-center 0 0 0 1 --robot-init-rot-rpy-range 0 0 1 0 0 1 0 0 1 \
   --additional-env-save-tags octo_init_rng_${init_rng};
 
-CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} \
+CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} \
   --robot ${robot} --policy-setup widowx_bridge --octo-init-rng ${init_rng} \
   --control-freq 5 --sim-freq 500 --max-episode-steps 60 \
   --env-name PutCarrotOnPlateInScene-v0 --scene-name ${scene_name} \
@@ -37,7 +37,7 @@ CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-mode
   --robot-init-rot-quat-center 0 0 0 1 --robot-init-rot-rpy-range 0 0 1 0 0 1 0 0 1 \
   --additional-env-save-tags octo_init_rng_${init_rng};
 
-CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} \
+CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} \
   --robot ${robot} --policy-setup widowx_bridge --octo-init-rng ${init_rng} \
   --control-freq 5 --sim-freq 500 --max-episode-steps 60 \
   --env-name PutSpoonOnTableClothInScene-v0 --scene-name ${scene_name} \
@@ -64,7 +64,7 @@ for init_rng in 0 2 4;
 
 do for policy_model in "${policy_models[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} \
   --robot ${robot} --policy-setup widowx_bridge --octo-init-rng ${init_rng} \
   --control-freq 5 --sim-freq 500 --max-episode-steps 120 \
   --env-name PutEggplantInBasketScene-v0 --scene-name ${scene_name} \

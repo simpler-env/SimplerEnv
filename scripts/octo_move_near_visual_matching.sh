@@ -23,7 +23,7 @@ for urdf_version in "${urdf_version_arr[@]}";
 
 do for policy_model in "${policy_models[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -33,7 +33,7 @@ do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-m
   --additional-env-build-kwargs urdf_version=${urdf_version} \
   --additional-env-save-tags baked_except_bpb_orange; # google_move_near_real_eval_1.png
 
-# do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+# do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
 #   --robot google_robot_static \
 #   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
 #   --env-name ${env_name} --scene-name ${scene_name} \

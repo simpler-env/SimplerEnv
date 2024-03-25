@@ -15,7 +15,7 @@ from transforms3d.quaternions import axangle2quat, quat2axangle, quat2mat
 
 def calc_pose_err_single_ep(episode, arm_stiffness, arm_damping, robot, control_mode):
     import gymnasium as gym
-    import mani_skill2.envs
+    import mani_skill2_real2sim.envs
     from sapien.core import Pose
 
     assert robot in ["google_robot_static", "widowx"]

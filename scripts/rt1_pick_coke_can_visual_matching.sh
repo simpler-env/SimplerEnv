@@ -27,7 +27,7 @@ do for coke_can_option in "${coke_can_options_arr[@]}";
 
 do for ckpt_path in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python realsimple/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path} \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \

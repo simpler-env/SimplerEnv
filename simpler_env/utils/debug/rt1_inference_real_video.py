@@ -13,9 +13,9 @@ import numpy as np
 from sapien.core import Pose
 import tensorflow as tf
 
-from realsimple.policies.rt1.rt1_model import RT1Inference
-from realsimple.utils.env.env_builder import build_maniskill2_env
-from realsimple.utils.visualization import write_video
+from simpler_env.policies.rt1.rt1_model import RT1Inference
+from simpler_env.utils.env.env_builder import build_maniskill2_env
+from simpler_env.utils.visualization import write_video
 
 
 def main(
@@ -125,7 +125,7 @@ def main(
 
 if __name__ == "__main__":
     """
-    MS2_ASSET_DIR=./ManiSkill2_real2sim/data python realsimple/utils/debug/rt1_inference_real_video.py
+    MS2_ASSET_DIR=./ManiSkill2_real2sim/data python simpler_env/utils/debug/rt1_inference_real_video.py
     """
 
     os.environ["DISPLAY"] = ""

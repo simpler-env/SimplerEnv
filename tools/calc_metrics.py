@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 from scipy.stats import kruskal
 
-from realsimple.utils.metrics import (
+from simpler_env.utils.metrics import (
     construct_unordered_trial_results,
     get_dir_stats,
     normalized_rank_loss,

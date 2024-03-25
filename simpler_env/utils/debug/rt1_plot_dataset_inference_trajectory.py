@@ -6,8 +6,8 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
-from realsimple.policies.rt1.rt1_model import RT1Inference
-from realsimple.utils.visualization import plot_pred_and_gt_action_trajectory
+from simpler_env.policies.rt1.rt1_model import RT1Inference
+from simpler_env.utils.visualization import plot_pred_and_gt_action_trajectory
 
 DATASETS = ["fractal20220817_data"]
 
