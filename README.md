@@ -1,6 +1,6 @@
-# simpler_env: Simulated Manipulation Policy Evaluation Environments for Real Robot Setups
+# SimplerEnv: Simulated Manipulation Policy Evaluation Environments for Real Robot Setups
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/simple-env/RealSimple/blob/main/example.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/simpler-env/SimplerEnv/blob/main/example.ipynb)
 
 Significant progress has been made in building generalist robot manipulation policies, yet their scalable and reproducible evaluation remains challenging, as real-world evaluation is operationally expensive and inefficient. We propose employing physical simulators as efficient, scalable, and informative complements to real-world evaluations. These simulation evaluations offer valuable quantitative metrics for checkpoint selection, insights into potential real-world policy behaviors or failure modes, and standardized setups to enhance reproducibility.
 
@@ -12,7 +12,7 @@ This repository encompasses 2 real-to-sim evaluation setups:
 
 We hope that our work guides and inspires future real-to-sim evaluation efforts.
 
-- [simpler\_env: Simulated Manipulation Policy Evaluation Environments for Real Robot Setups](#simpler_env-simulated-manipulation-policy-evaluation-environments-for-real-robot-setups)
+- [SimplerEnv: Simulated Manipulation Policy Evaluation Environments for Real Robot Setups](#simplerenv-simulated-manipulation-policy-evaluation-environments-for-real-robot-setups)
   - [Getting Started](#getting-started)
   - [Installation](#installation)
   - [Examples](#examples)
@@ -72,7 +72,7 @@ conda activate simpler_env
 
 Clone this repo:
 ```
-git clone https://github.com/simpler-env/simpler_env --recurse-submodules
+git clone https://github.com/simpler-env/SimplerEnv --recurse-submodules
 ```
 
 Install ManiSkill2 real-to-sim environments and their dependencies:
@@ -93,9 +93,9 @@ pip install -e .
 ## Examples
 
 - Environment interactive visualization and manual control: see [`ManiSkill2_real2sim/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py`](https://github.com/simpler-env/ManiSkill2_real2sim/blob/main/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py)
-- Simple RT-1 and Octo evaluation script on prepackaged environments with visual matching evaluation setup: see [`simpler_env/simple_inference_visual_matching_prepackaged_envs.py`](https://github.com/simpler-env/simpler_env/blob/main/simpler_env/simple_inference_visual_matching_prepackaged_envs.py).
-- Colab notebook for RT-1 and Octo inference: see [this link](https://colab.research.google.com/github/simple-env/simpler_env/blob/main/example.ipynb).
-- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, and Octo policies. See [`scripts/`](https://github.com/simpler-env/simpler_env/tree/main/scripts).
+- Simple RT-1 and Octo evaluation script on prepackaged environments with visual matching evaluation setup: see [`simpler_env/simple_inference_visual_matching_prepackaged_envs.py`](https://github.com/simpler-env/SimplerEnv/blob/main/simpler_env/simple_inference_visual_matching_prepackaged_envs.py).
+- Colab notebook for RT-1 and Octo inference: see [this link](https://colab.research.google.com/github/simpler-env/SimplerEnv/blob/main/example.ipynb).
+- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, and Octo policies. See [`scripts/`](https://github.com/simpler-env/SimplerEnv/tree/main/scripts).
 - Real-to-sim evaluation videos from running `scripts/*.sh`: see [this link](TODO).
 
 ## Current Environments
