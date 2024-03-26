@@ -30,9 +30,7 @@ We hope that our work guides and inspires future real-to-sim evaluation efforts.
 
 ## Getting Started
 
-Follow the [Installation](#installation) section to install the minimal requirements for our environments. Then you can run the following minimal inference script with interactive python (invoke through `MS2_ASSET_DIR=./ManiSkill2_real2sim/data python`). The scripts creates prepackaged environments for our `visual matching` evaluation setup.
-
-(The `MS2_ASSET_DIR` specifies the directory to the data assets. You can also set `export MS2_ASSET_DIR=${PWD}/ManiSkill2_real2sim/data` if you'd like to.)
+Follow the [Installation](#installation) section to install the minimal requirements for our environments. Then you can run the following minimal inference script with interactive python. The scripts creates prepackaged environments for our `visual matching` evaluation setup.
 
 ```python
 import simpler_env

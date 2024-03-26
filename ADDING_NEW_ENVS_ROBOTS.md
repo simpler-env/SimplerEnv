@@ -117,14 +117,6 @@ We also provide some visualization scripts:
 - Press "pause" on the top left to pause the simulation.
 - Press "g" to grab object; "g" + "x"/"y"/"z" to move object along x/y/z axis.
 
-#### Asset missing errors and MS2_ASSET_DIR environment variable
-
-If you are not running scripts under the `ManiSkill2_real2sim` directory, but in the script, you need to create a ManiSkill2 environment, then some asset missing errors might be reported. In this case, please make sure this environment variable is set:
-
-```
-export MS2_ASSET_DIR={absolute_path_to_ManiSkill2_real2sim}/data
-```
-
 #### Other troubleshooting tips
 
 - `[error] Failed to cook a mesh from file: {path}/collision.obj`: this error is most likely caused by the collision mesh not being watertight or not being convex. You can use `tools/coacd_process_mesh.py` to obtain a convex collision mesh.

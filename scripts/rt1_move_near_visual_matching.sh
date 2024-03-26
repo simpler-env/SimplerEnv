@@ -1,4 +1,4 @@
-export MS2_ASSET_DIR=./ManiSkill2_real2sim/data
+
 gpu_id=0
 
 declare -a arr=("./checkpoints/rt_1_tf_trained_for_000400120/" \

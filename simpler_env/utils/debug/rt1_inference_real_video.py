@@ -124,10 +124,6 @@ def main(
 
 
 if __name__ == "__main__":
-    """
-    MS2_ASSET_DIR=./ManiSkill2_real2sim/data python simpler_env/utils/debug/rt1_inference_real_video.py
-    """
-
     os.environ["DISPLAY"] = ""
     os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
     gpus = tf.config.list_physical_devices("GPU")
