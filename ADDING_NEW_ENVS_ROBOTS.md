@@ -16,13 +16,11 @@ If you are adding a new robot, perform the following steps:
      - Other relevant functions are the `step_action` function in `ManiSkill2_real2sim/mani_skill2_real2sim/envs/sapien_env.py` and the `set_action`, `before_simulation_step` functions in `ManiSkill2_real2sim/mani_skill2_real2sim/agents/base_agent.py`.
    - Add dummy stiffness and damping controller parameters; we will do system identification later.
    - Add cameras to the robot; camera poses are with respect to the link on the robot specified by `actor_uid`. In SAPIEN, camera pose follows ROS convention, i.e., x forward, y left, z up.
-     - To minimize the real-to-sim evaluation gap, it is **highly** recommended to calibrate your cameras and input the intrinsic parameters in the robot agent implementation. We found that current policies are quite brittle to camera calibration errors during sim eval.
+     - To minimize the real-to-sim evaluation gap, it is recommended to calibrate your cameras and input the intrinsic parameters in the robot agent implementation.
 
 <details>
 <summary>**Notes on camera calibration**: </summary>
 Besides using regular camera calibration approaches, you can also use tools like [fSpy](https://github.com/stuffmatic/fSpy). In this case, aim your camera at a large rectangular surface such that all 4 sides of the surface can be seen, and also ensure that 2 vertical lines that are parallel to each other (e.g., 2 lines on the wall) can be seen. Then, input 3 pairs of vanishing lines (2 pairs of lines on the horizontal surface + 1 pair of vertical lines) into fSpy to obtain intrinsic parameters for the camera. For an illustrative example, see `images/fSpy_calibration_example.png`.
-
-Additionally, if you already know the robot joint positions and the camera extrinsics for a particular real-world observation image, you can use `ManiSkill2_real2sim/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py` to overlay a real image onto the simulation image and manually tune the intrinsic parameters such that the gripper in the real image aligns with the gripper in the simulation image.
 </details>
 
 3. Perform system identification for the robot.
@@ -40,7 +38,7 @@ SAPIEN uses an axis convention of x forward, y left, z up for all object and sce
    - After adding `collision.obj`, if the collision shape is not yet convex, use `tools/coacd_process_mesh.py` to obtain a convex collision mesh.
    - Use `tools/robot_object_visualization/test_object.py` to visualize the object in the SAPIEN viewer. You can click on an object / object link and press "show / hide" on the right panel to show / hide its collision mesh.
    - For SAPIEN viewer control, see [here](#sapien-viewer-controls)
-   - For the `visual matching` evaluation setup, if you have an asset with good object geometry, then given a real-world observation image, you can use [GeTex](https://github.com/Jiayuan-Gu/GeTex) to bake the real-world object texture into the simulation asset. This is helpful for reducing the real-to-sim evaluation gap.
+   - For the `visual matching` evaluation setup, if you have an asset with good object geometry (either ), then given a real-world observation image, you can use [GeTex](https://github.com/Jiayuan-Gu/GeTex) to automatically bake the real-world object texture into the simulation asset. This is helpful for reducing the real-to-sim evaluation gap.
 
 The collision mesh does not need to have the same geometry as the visual mesh. This can be helpful for cases like e.g., carrot in "PutCarrotOnPlateInScene-v0" (where placing the carrot on the plate can cause the carrot to roll off the plate). In these cases, you can create collision meshes using a combination of simple geometric shapes like frustrums. Additionally, it is helpful to make the bottom of an object's collision shape flat (e.g., cans, bottles, plates), such that objects do not fall over when dropped onto a surface. For objects like sinks, it is also helpful to make their surfaces flat such that objects do not roll over to the sides when placed in them.
 
@@ -55,7 +53,7 @@ The collision mesh does not need to have the same geometry as the visual mesh. T
 
 </details>
 
-1. Add custom simulation scene backgrounds to `ManiSkill2_real2sim/data/hab2_bench_assets/stages`.
+5. Add custom simulation scene backgrounds to `ManiSkill2_real2sim/data/hab2_bench_assets/stages`.
    - In our environments, scene backgrounds are loaded in the `_load_arena_helper` function in `ManiSkill2_real2sim/mani_skill2_real2sim/envs/custom_scenes/base_env.py`. The existing scenes use the Habitat convention (y-axis up).
 
 <details>
@@ -72,7 +70,7 @@ You can export the `.glb` scenes from Blender. Pay attention to the axis convent
    - Our environments load metadata json files for the object assets (in `ManiSkill2_real2sim/data/custom/info_*.json`). Based on your environment implementation, fill in the metadata for each new object asset in existing json files or create new json files.
    - For our existing environments, we implemented the tabletop environments without ray tracing for compatibility with non-RTX GPUs. Though, for Drawer tasks, turning on ray-tracing (`env = gym.make(**kwargs, shadow_dir='rt')`) is necessary as policies heavily rely on brightness contrasts and shadows to infer depth and accomplish the task. If you run ray-tracing environments, they are quite slow on non-RTX GPUs, such as A100.
 
-8. Test your environments using our interactive script `ManiSkill2_real2sim/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py`. See the script for more details. In the script, you can manually control the robot and interact with the objects in the environment. You can also invoke the SAPIEN viewer to examine objects and robots. Additionally, for the visual-matching evaluation setup, you can test it to see if the real-world observation image is correctly overlaid onto the simulation observation (e.g., do the table edges align between sim and real). You can then iteratively tune the camera extrinsics and the robot poses to achieve better real-to-sim visual matching.
+8. Test your environments using our interactive script `ManiSkill2_real2sim/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py`. See the script for more details. In the script, you can manually control the robot and interact with the objects in the environment. You can also invoke the SAPIEN viewer to examine objects and robots. Additionally, for the visual-matching evaluation setup, you can test it to see if the real-world observation image is correctly overlaid onto the simulation observation (e.g., do the table edges roughly align between sim and real, though this does not need to be very precise). You can then iteratively tune the camera extrinsics and the robot poses to achieve better real-to-sim visual matching.
    - You can set different `env_reset_options` to test different environment configurations.
 
 9. Now we can turn our focus to the policy inference scripts in `./simpler_env/`. The main inference script is `simpler_env/main_inference.py` and `simpler_env/evaluation/`, which you can take a look as a reference. Based on your newly-created environments, update the utilities in `simpler_env/utils/env/env_builder.py` and `simpler_env/utils/env/observation_utils.py`.
