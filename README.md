@@ -188,6 +188,10 @@ We provide a step-by-step guide to add new real-to-sim evaluation environments a
 If you'd like to perform evaluations on our provided agents (e.g., RT-1, Octo), or add new robots and environments, please follow the full installation instructions below.
 
 ```
+sudo apt install ffmpeg
+```
+
+```
 pip install tensorflow==2.15.0
 pip install -r requirements_full_install.txt
 pip install tensorflow[and-cuda]==2.15.1 # tensorflow gpu support
@@ -243,6 +247,10 @@ pip install -e .
 # You don't need to run "pip install -r requirements.txt" inside the octo repo; the package dependencies are already handled in the simpler_env repo
 # Octo checkpoints are managed by huggingface, so you don't need to download them manually.
 ```
+
+If you are using CUDA 12, then to use GPU for Octo inference, you need CUDA version >= 12.2 to satisfy the requirement of Jax; in this case, you can perform a runfile install of the corresponding CUDA (e.g., version 12.3), then set the environment variables whenever you run Octo inference scripts:
+
+`PATH=/usr/local/cuda-12.3/bin:$PATH   LD_LIBRARY_PATH=/usr/local/cuda-12.3/lib64:$LD_LIBRARY_PATH   bash scripts/octo_xxx_script.sh`
 
 ## Troubleshooting
 
