@@ -16,6 +16,7 @@ import numpy as np
 import tensorflow as tf
 
 import simpler_env
+from simpler_env import ENVIRONMENTS
 from simpler_env.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
 
 parser = argparse.ArgumentParser()
@@ -29,25 +30,7 @@ parser.add_argument(
 parser.add_argument(
     "--task",
     default="google_robot_pick_horizontal_coke_can",
-    choices=[
-        "google_robot_pick_coke_can",
-        "google_robot_pick_horizontal_coke_can",
-        "google_robot_pick_vertical_coke_can",
-        "google_robot_pick_standing_coke_can",
-        "google_robot_move_near",
-        "google_robot_open_drawer",
-        "google_robot_open_top_drawer",
-        "google_robot_open_middle_drawer",
-        "google_robot_open_bottom_drawer",
-        "google_robot_close_drawer",
-        "google_robot_close_top_drawer",
-        "google_robot_close_middle_drawer",
-        "google_robot_close_bottom_drawer",
-        "widowx_spoon_on_towel",
-        "widowx_carrot_on_plate",
-        "widowx_stack_cube",
-        "widowx_put_eggplant_in_basket",
-    ],
+    choices=ENVIRONMENTS,
 )
 parser.add_argument("--logging-root", type=str, default="./results_simple_random_eval")
 parser.add_argument("--tf-memory-limit", type=int, default=3072)
@@ -100,6 +83,9 @@ success_arr = []
 for ep_id in range(args.n_trajs):
     obs, reset_info = env.reset()
     instruction = env.get_language_instruction()
+    # for long-horizon environments, we check if the current subtask is the final subtask
+    is_final_subtask = env.is_final_subtask() 
+
     model.reset(instruction)
     print(instruction)
 
@@ -109,12 +95,24 @@ for ep_id in range(args.n_trajs):
     timestep = 0
     while not (predicted_terminated or truncated):
         # step the model; "raw_action" is raw model action output; "action" is the processed action to be sent into maniskill env
-        raw_action, action = model.step(image)
+        raw_action, action = model.step(image, instruction)
         predicted_terminated = bool(action["terminate_episode"][0] > 0)
+        if predicted_terminated:
+            if not is_final_subtask:
+                # advance the environment to the next subtask
+                predicted_terminated = False
+                env.advance_to_next_subtask()
+
         obs, reward, success, truncated, info = env.step(
-            np.concatenate([action["world_vector"], action["rot_axangle"], action["gripper"]])
+            np.concatenate([action["world_vector"], action["rot_axangle"], action["gripper"]]),
         )
         print(timestep, info)
+        new_instruction = env.get_language_instruction()
+        if new_instruction != instruction:
+            # update instruction for long horizon tasks
+            instruction = new_instruction
+            print(instruction)
+        is_final_subtask = env.is_final_subtask() 
         # update image observation
         image = get_image_from_maniskill2_obs_dict(env, obs)
         images.append(image)

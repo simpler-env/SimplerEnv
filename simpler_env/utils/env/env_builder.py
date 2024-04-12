@@ -17,14 +17,6 @@ def build_maniskill2_env(env_name, **kwargs):
 
     return env
 
-
-def get_maniskill2_env_instruction(env, **kwargs):
-    # Get task description
-    task_description = env.get_language_instruction()
-    print(task_description)
-    return task_description
-
-
 def get_robot_control_mode(robot_name, policy_name):
     if "google_robot_static" in robot_name:
         control_mode = (

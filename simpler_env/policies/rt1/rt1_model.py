@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -50,8 +51,6 @@ class RT1Inference:
         else:
             raise NotImplementedError()
 
-        self.time_step = 0
-
     @staticmethod
     def _rescale_action_with_bound(
         actions: np.ndarray,
@@ -99,21 +98,22 @@ class RT1Inference:
         # Run inference using the policy
         _action = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
 
-        self.time_step = 0
-
     def _resize_image(self, image):
         image = tf.image.resize_with_pad(image, target_width=self.image_width, target_height=self.image_height)
         image = tf.cast(image, tf.uint8)
         return image
 
-    def reset(self, task_description):
-        self._initialize_model()
+    def _initialize_task_description(self, task_description):
         if task_description is not None:
             self.task_description = task_description
             self.task_description_embedding = self.lang_embed_model([task_description])[0]
         else:
             self.task_description = ""
             self.task_description_embedding = tf.zeros((512,), dtype=tf.float32)
+
+    def reset(self, task_description):
+        self._initialize_model()
+        self._initialize_task_description(task_description)
 
     @staticmethod
     def _small_action_filter_google_robot(raw_action, arm_movement=False, gripper=True):
@@ -147,10 +147,11 @@ class RT1Inference:
             )
         return raw_action
 
-    def step(self, image):
+    def step(self, image, task_description: Optional[str] = None):
         """
         Input:
             image: np.ndarray of shape (H, W, 3), uint8
+            task_description: Optional[str], task description; if different from previous task description, policy state is reset
         Output:
             raw_action: dict; raw policy action output
             action: dict; processed action to be sent to the maniskill2 environment, with the following keys:
@@ -159,6 +160,12 @@ class RT1Inference:
                 - 'gripper': np.ndarray of shape (1,), gripper action
                 - 'terminate_episode': np.ndarray of shape (1,), 1 if episode should be terminated, 0 otherwise
         """
+        if task_description is not None:
+            if task_description != self.task_description:
+                # task description has changed; update language embedding
+                # self._initialize_task_description(task_description)
+                self.reset(task_description)
+        
         assert image.dtype == np.uint8
         image = self._resize_image(image)
         self.observation["image"] = image
@@ -217,7 +224,6 @@ class RT1Inference:
 
         # update policy state
         self.policy_state = policy_step.state
-        self.time_step += 1
 
         return raw_action, action
 

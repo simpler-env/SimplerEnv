@@ -15,6 +15,7 @@ ENVIRONMENTS = [
     "google_robot_close_top_drawer",
     "google_robot_close_middle_drawer",
     "google_robot_close_bottom_drawer",
+    "google_robot_place_apple_in_closed_top_drawer",
     "widowx_spoon_on_towel",
     "widowx_carrot_on_plate",
     "widowx_stack_cube",
@@ -44,6 +45,10 @@ ENVIRONMENT_MAP = {
     "google_robot_close_top_drawer": ("CloseTopDrawerCustomInScene-v0", {}),
     "google_robot_close_middle_drawer": ("CloseMiddleDrawerCustomInScene-v0", {}),
     "google_robot_close_bottom_drawer": ("CloseBottomDrawerCustomInScene-v0", {}),
+    "google_robot_place_apple_in_closed_top_drawer": (
+        "PlaceIntoClosedTopDrawerCustomInScene-v0", 
+        {"model_ids": "baked_apple_v2"}
+    ),
     "widowx_spoon_on_towel": ("PutSpoonOnTableClothInScene-v0", {}),
     "widowx_carrot_on_plate": ("PutCarrotOnPlateInScene-v0", {}),
     "widowx_stack_cube": ("StackGreenCubeOnYellowCubeBakedTexInScene-v0", {}),

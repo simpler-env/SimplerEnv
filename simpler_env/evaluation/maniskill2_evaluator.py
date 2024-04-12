@@ -7,7 +7,7 @@ import os
 import numpy as np
 from transforms3d.euler import quat2euler
 
-from simpler_env.utils.env.env_builder import build_maniskill2_env, get_maniskill2_env_instruction, get_robot_control_mode
+from simpler_env.utils.env.env_builder import build_maniskill2_env, get_robot_control_mode
 from simpler_env.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
 from simpler_env.utils.visualization import write_video
 
@@ -83,13 +83,16 @@ def run_maniskill2_eval_single_episode(
             "episode_id": obj_episode_id,
         }
     obs, _ = env.reset(options=env_reset_options)
+    # for long-horizon environments, we check if the current subtask is the final subtask
+    is_final_subtask = env.is_final_subtask() 
 
     # Obtain language instruction
     if instruction is not None:
         task_description = instruction
     else:
         # get default language instruction
-        task_description = get_maniskill2_env_instruction(env)
+        task_description = env.get_language_instruction()
+    print(task_description)
 
     # Initialize logging
     image = get_image_from_maniskill2_obs_dict(env, obs, camera_name=obs_camera_name)
@@ -106,15 +109,26 @@ def run_maniskill2_eval_single_episode(
     # Step the environment
     while not (predicted_terminated or truncated):
         # step the model; "raw_action" is raw model action output; "action" is the processed action to be sent into maniskill env
-        raw_action, action = model.step(image)
+        raw_action, action = model.step(image, task_description)
         predicted_actions.append(raw_action)
         predicted_terminated = bool(action["terminate_episode"][0] > 0)
+        if predicted_terminated:
+            if not is_final_subtask:
+                # advance the environment to the next subtask
+                predicted_terminated = False
+                env.advance_to_next_subtask()
 
         # step the environment
         obs, reward, done, truncated, info = env.step(
-            np.concatenate([action["world_vector"], action["rot_axangle"], action["gripper"]])
+            np.concatenate([action["world_vector"], action["rot_axangle"], action["gripper"]]),
         )
+        
         success = "success" if done else "failure"
+        new_task_description = env.get_language_instruction()
+        if new_task_description != task_description:
+            task_description = new_task_description
+            print(task_description)
+        is_final_subtask = env.is_final_subtask()
 
         print(timestep, info)
 

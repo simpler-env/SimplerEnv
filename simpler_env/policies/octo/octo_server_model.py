@@ -1,4 +1,5 @@
 from base64 import b64decode, b64encode
+from typing import Optional
 import json
 import time
 import urllib
@@ -95,7 +96,6 @@ class OctoServerInference:
         self.image_size = image_size
         self.action_scale = action_scale
         self.task = None
-        self.time_step = 0
 
     def _resize_image(self, image):
         image = tf.image.resize(
@@ -109,7 +109,6 @@ class OctoServerInference:
 
     def reset(self, task_description):
         self.task = task_description
-        self.time_step = 0
         self.sticky_action_is_on = False
         self.gripper_action_repeat = 0
         self.sticky_gripper_action = 0.0
@@ -146,10 +145,11 @@ class OctoServerInference:
         # print(reply)
         return loads(reply)
 
-    def step(self, image, *args, **kwargs):
+    def step(self, image, task_description: Optional[str] = None, *args, **kwargs):
         """
         Input:
             image: np.ndarray of shape (H, W, 3), uint8
+            task_description: Optional[str], task description; if different from previous task description, policy state is reset
         Output:
             raw_action: dict; raw policy action output
             action: dict; processed action to be sent to the maniskill2 environment, with the following keys:
@@ -158,6 +158,11 @@ class OctoServerInference:
                 - 'gripper': np.ndarray of shape (1,), gripper action
                 - 'terminate_episode': np.ndarray of shape (1,), 1 if episode should be terminated, 0 otherwise
         """
+        if task_description is not None:
+            if task_description != self.task:
+                # task description has changed; reset the policy state
+                self.reset(task_description)
+        
         assert image.dtype == np.uint8
         image = self._resize_image(image)
 
@@ -231,8 +236,6 @@ class OctoServerInference:
             # self.gripper_is_closed = (action['gripper'] < 0.0)
 
         action["terminate_episode"] = np.array([0.0])
-
-        self.time_step += 1
 
         return raw_action, action
 
