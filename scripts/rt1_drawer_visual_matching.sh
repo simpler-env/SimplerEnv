@@ -19,7 +19,7 @@ CloseBottomDrawerCustomInScene-v0
 )
 
 # URDF variations
-declare -a urdf_version_arr=(None "recolor_tabletop_visual_matching_1" "recolor_tabletop_visual_matching_2" "recolor_cabinet_visual_matching_1")
+declare -a urdf_version_arr=("recolor_cabinet_visual_matching_1" "recolor_tabletop_visual_matching_1" "recolor_tabletop_visual_matching_2" None)
 
 for urdf_version in "${urdf_version_arr[@]}"; do
 
