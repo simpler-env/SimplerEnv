@@ -1,6 +1,6 @@
 # tensorflow[and-cuda]
 tensorflow_datasets==4.9.4
-tensorflow_hub==0.16.1
+tensorflow_hub==0.16.0
 rlds==0.1.8
 tf_agents==0.19.0
 dm-reverb[tensorflow]==0.14.0
