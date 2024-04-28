@@ -17,15 +17,23 @@ def pearson_correlation(x, y):
     return pearson
 
 
-def normalized_rank_loss(x, y):
+def mean_maximum_rank_violation(x, y):
     # assuming x is sim result and y is real result
     x, y = np.array(x), np.array(y)
     assert x.shape == y.shape
-    rank_violation = 0.0
-    for i in range(len(x) - 1):
-        for j in range(i + 1, len(x)):
+    rank_violations = []
+    for i in range(len(x)):
+        rank_violation = 0.0
+        for j in range(len(x)):
             if (x[i] > x[j]) != (y[i] > y[j]):
                 rank_violation = max(rank_violation, np.abs(y[i] - y[j]))
+        rank_violations.append(rank_violation)
+    rank_violation = np.mean(rank_violations)
+    # rank_violation = 0.0
+    # for i in range(len(x) - 1):
+    #     for j in range(i + 1, len(x)):
+    #         if (x[i] > x[j]) != (y[i] > y[j]):
+    #             rank_violation = max(rank_violation, np.abs(y[i] - y[j]))
     return rank_violation
 
 

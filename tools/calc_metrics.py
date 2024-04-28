@@ -8,7 +8,7 @@ from scipy.stats import kruskal
 from simpler_env.utils.metrics import (
     construct_unordered_trial_results,
     get_dir_stats,
-    normalized_rank_loss,
+    mean_maximum_rank_violation,
     pearson_correlation,
     print_all_kruskal_results,
 )
@@ -21,6 +21,7 @@ def calc_pick_coke_can_stats(root_result_dir):
     # If you use a new checkpoint, please update the real evaluation results here
     coke_can_real_success = {
         "horizontal": {
+            "rt-2-x": 0.92,
             "rt-1-converged": 0.96,
             "rt-1-15pct": 1.0,
             "rt-1-x": 0.88,
@@ -28,6 +29,7 @@ def calc_pick_coke_can_stats(root_result_dir):
             "octo-base": 0.44,
         },
         "vertical": {
+            "rt-2-x": 0.80,
             "rt-1-converged": 0.88,
             "rt-1-15pct": 0.96,
             "rt-1-x": 0.56,
@@ -35,6 +37,7 @@ def calc_pick_coke_can_stats(root_result_dir):
             "octo-base": 0.20,
         },
         "standing": {
+            "rt-2-x": 1.00,
             "rt-1-converged": 0.72,
             "rt-1-15pct": 0.80,
             "rt-1-x": 0.84,
@@ -115,6 +118,7 @@ def calc_pick_coke_can_stats(root_result_dir):
                 if np.isnan(avg_sim_success):
                     print(f"WARNING: avg_sim_success is nan for {variant}")
                 coke_can_sim_variant_success[coke_can_orientation][ckpt_alias].append(avg_sim_success)
+            
             coke_can_sim_variant_success[coke_can_orientation][ckpt_alias] = np.mean(
                 coke_can_sim_variant_success[coke_can_orientation][ckpt_alias]
             )
@@ -130,8 +134,8 @@ def calc_pick_coke_can_stats(root_result_dir):
             coke_can_real_success[coke_can_orientation],
         )
         print(
-            f"{coke_can_orientation} normalized rank loss",
-            normalized_rank_loss(
+            f"{coke_can_orientation} MMRV",
+            mean_maximum_rank_violation(
                 list(coke_can_sim_variant_success[coke_can_orientation].values()),
                 list(coke_can_real_success[coke_can_orientation].values()),
             ),
@@ -159,8 +163,8 @@ def calc_pick_coke_can_stats(root_result_dir):
     print("avg_orientation_sim_variant_results", avg_orientation_sim_variant_results)
     print("avg_orientation_real_results", avg_orientation_real_results)
     print(
-        "normalized_rank_loss(avg_orientation_sim_variant_results, avg_orientation_real_results)",
-        normalized_rank_loss(avg_orientation_sim_variant_results, avg_orientation_real_results),
+        "mean_maximum_rank_violation(avg_orientation_sim_variant_results, avg_orientation_real_results)",
+        mean_maximum_rank_violation(avg_orientation_sim_variant_results, avg_orientation_real_results),
     )
     print(
         "pearson_correlation(avg_orientation_sim_variant_results, avg_orientation_real_results)",
@@ -201,8 +205,8 @@ def calc_pick_coke_can_stats(root_result_dir):
             coke_can_real_success[coke_can_orientation],
         )
         print(
-            f"{coke_can_orientation} normalized rank loss",
-            normalized_rank_loss(
+            f"{coke_can_orientation} MMRV",
+            mean_maximum_rank_violation(
                 list(coke_can_sim_visual_matching_success[coke_can_orientation].values()),
                 list(coke_can_real_success[coke_can_orientation].values()),
             ),
@@ -244,8 +248,8 @@ def calc_pick_coke_can_stats(root_result_dir):
     )
     print("avg_orientation_real_results", avg_orientation_real_results)
     print(
-        "normalized_rank_loss(avg_orientation_sim_visual_matching_results, avg_orientation_real_results)",
-        normalized_rank_loss(avg_orientation_sim_visual_matching_results, avg_orientation_real_results),
+        "mean_maximum_rank_violation(avg_orientation_sim_visual_matching_results, avg_orientation_real_results)",
+        mean_maximum_rank_violation(avg_orientation_sim_visual_matching_results, avg_orientation_real_results),
     )
     print(
         "pearson_correlation(avg_orientation_sim_visual_matching_results, avg_orientation_real_results)",
@@ -272,6 +276,7 @@ def calc_move_near_stats(root_result_dir):
     print("***Move Near results***")
     # If you use a new checkpoint, please update the real evaluation results here
     move_near_real_success = {
+        "rt-2-x": 0.733,
         "rt-1-converged": 0.633,
         "rt-1-15pct": 0.583,
         "rt-1-x": 0.45,
@@ -339,8 +344,8 @@ def calc_move_near_stats(root_result_dir):
     print("sim variant avg success", move_near_sim_variant_success)
     print("real success", move_near_real_success)
     print(
-        "normalized rank loss",
-        normalized_rank_loss(
+        "MMRV",
+        mean_maximum_rank_violation(
             list(move_near_sim_variant_success.values()),
             list(move_near_real_success.values()),
         ),
@@ -373,8 +378,8 @@ def calc_move_near_stats(root_result_dir):
     print("sim visual matching success", move_near_sim_visual_matching_success)
     print("real success", move_near_real_success)
     print(
-        "visual matching normalized rank loss",
-        normalized_rank_loss(
+        "visual matching MMRV",
+        mean_maximum_rank_violation(
             list(move_near_sim_visual_matching_success.values()),
             list(move_near_real_success.values()),
         ),
@@ -402,6 +407,7 @@ def calc_drawer_stats(root_result_dir):
     # If you use a new checkpoint, please update the real evaluation results here
     drawer_real_success = {
         "open": {
+            "rt-2-x": 0.333,
             "rt-1-converged": 0.815,
             "rt-1-15pct": 0.704,
             "rt-1-x": 0.519,
@@ -409,11 +415,12 @@ def calc_drawer_stats(root_result_dir):
             "octo-base": 0.148,
         },
         "close": {
+            "rt-2-x": 0.630,
             "rt-1-converged": 0.926,
             "rt-1-15pct": 0.889,
             "rt-1-x": 0.741,
             "rt-1-begin": 0.000,
-            "octo-base": 0.333,
+            "octo-base": 0.519,
         },
     }
 
@@ -447,6 +454,7 @@ def calc_drawer_stats(root_result_dir):
     ]
     base_visual_matching_variants = []
     for visual_matching_urdf_version in [
+        "None",
         "recolor_tabletop_visual_matching_1",
         "recolor_tabletop_visual_matching_2",
         "recolor_cabinet_visual_matching_1",
@@ -497,8 +505,8 @@ def calc_drawer_stats(root_result_dir):
         )
         print(f"{drawer_task} real success", drawer_real_success[drawer_task])
         print(
-            f"{drawer_task} normalized rank loss",
-            normalized_rank_loss(
+            f"{drawer_task} MMRV",
+            mean_maximum_rank_violation(
                 list(drawer_sim_variant_success[drawer_task].values()),
                 list(drawer_real_success[drawer_task].values()),
             ),
@@ -524,8 +532,8 @@ def calc_drawer_stats(root_result_dir):
     print("avg_sim_variant_results", avg_sim_variant_results)
     print("avg_real_results", avg_real_results)
     print(
-        "normalized_rank_loss(avg_sim_variant_results, avg_real_results)",
-        normalized_rank_loss(avg_sim_variant_results, avg_real_results),
+        "mean_maximum_rank_violation(avg_sim_variant_results, avg_real_results)",
+        mean_maximum_rank_violation(avg_sim_variant_results, avg_real_results),
     )
     print(
         "pearson_correlation(avg_sim_variant_results, avg_real_results)",
@@ -567,8 +575,8 @@ def calc_drawer_stats(root_result_dir):
         )
         print(f"{drawer_task} real success", drawer_real_success[drawer_task])
         print(
-            f"{drawer_task} normalized rank loss",
-            normalized_rank_loss(
+            f"{drawer_task} MMRV",
+            mean_maximum_rank_violation(
                 list(drawer_sim_visual_matching_success[drawer_task].values()),
                 list(drawer_real_success[drawer_task].values()),
             ),
@@ -605,8 +613,224 @@ def calc_drawer_stats(root_result_dir):
     print("avg_sim_visual_matching_results", avg_sim_visual_matching_results)
     print("avg_real_results", avg_real_results)
     print(
-        "normalized_rank_loss(avg_sim_visual_matching_results, avg_real_results)",
-        normalized_rank_loss(avg_sim_visual_matching_results, avg_real_results),
+        "mean_maximum_rank_violation(avg_sim_visual_matching_results, avg_real_results)",
+        mean_maximum_rank_violation(avg_sim_visual_matching_results, avg_real_results),
+    )
+    print(
+        "pearson_correlation(avg_sim_visual_matching_results, avg_real_results)",
+        pearson_correlation(avg_sim_visual_matching_results, avg_real_results),
+    )
+    print_all_kruskal_results(
+        construct_unordered_trial_results(n_trials_per_ckpt_per_task * n_tasks, avg_sim_visual_matching_results),
+        construct_unordered_trial_results(n_trials_per_ckpt_per_task * n_tasks, avg_real_results),
+        "avg kruskal:",
+    )
+
+    print("*" * 20)
+    for _ in range(3):
+        print()
+        
+        
+def calc_long_horizon_apple_in_drawer_stats(root_result_dir):
+    print("***Drawer results***")
+    # If you use a new checkpoint, please update the real evaluation results here
+    drawer_real_success = {
+        "put_apple_into_top_drawer": {
+            "rt-2-x": 0.074,
+            "rt-1-converged": 0.185,
+            "rt-1-15pct": 0.185,
+            "rt-1-x": 0.407,
+            "rt-1-begin": 0.000,
+            "octo-base": 0.000,
+        },
+    }
+
+    ckpt_alias_keys = list(drawer_real_success["put_apple_into_top_drawer"].keys())
+    drawer_task_map_dict = {
+        "put_apple_into_top_drawer": [
+            "PlaceIntoClosedTopDrawerCustomInScene-v0",
+        ],
+    }
+    n_tasks = len(drawer_task_map_dict)
+    n_trials_per_ckpt_per_task = (
+        27  # number of trials per checkpoint for each key in drawer_task_map_dict; update if it is different
+    )
+    # extra patterns required in file name; if you are using different visual matching overlay image, please update here
+    extra_pattern_require_sim_variants = ["rgb_overlay_None", "apple"]
+    extra_pattern_require_visual_matching = ["rgb_overlay_open_drawer", "apple"]
+    extra_log_str_variant_agg = "model_ids_apple"
+    extra_log_str_visual_matching = "model_ids_baked_apple_v2"
+
+    # get simulation variant success
+    drawer_sim_variant_success = {k1: {k2: [] for k2 in ckpt_alias_keys} for k1 in drawer_task_map_dict.keys()}
+
+    # hardcoded variant aggregation result dirs; if you have new variants, please update here
+    base_variants = [
+        "frl_apartment_stage_simple/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt",
+    ]
+    base_visual_matching_variants = []
+    for visual_matching_urdf_version in [
+        "None",
+        "recolor_tabletop_visual_matching_1",
+        "recolor_tabletop_visual_matching_2",
+        "recolor_cabinet_visual_matching_1",
+    ]:
+        urdf_version_str = f"urdf_version_{visual_matching_urdf_version}"
+        base_visual_matching_variants.append(
+            "dummy_drawer/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt_station_name_mk_station_recolor_light_mode_simple_disable_bad_material_True_"
+            + urdf_version_str
+        )
+
+    background_variants = [
+        "modern_bedroom_no_roof/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt",
+        "modern_office_no_roof/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt",
+    ]
+    lighting_variants = [
+        "frl_apartment_stage_simple/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt_light_mode_brighter",
+        "frl_apartment_stage_simple/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt_light_mode_darker",
+    ]
+    table_texture_variants = [
+        "frl_apartment_stage_simple/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt_station_name_mk_station2",
+        "frl_apartment_stage_simple/arm_pd_ee_delta_pose_align_interpolate_by_planner_gripper_pd_joint_target_delta_pos_interpolate_by_planner/{}_shader_dir_rt_station_name_mk_station3",
+    ]
+
+    for drawer_task in drawer_task_map_dict.keys():
+        for ckpt_alias in ckpt_alias_keys:
+            for specific_task in drawer_task_map_dict[drawer_task]:
+                for variant in base_variants + background_variants + lighting_variants + table_texture_variants:
+                    variant = variant.format(specific_task) + f"_{extra_log_str_variant_agg}"
+                    variant = f"{root_result_dir}/{CKPT_MAPPING[ckpt_alias]}/{variant}"
+                    avg_sim_success = np.mean(
+                        get_dir_stats(
+                            variant,
+                            extra_pattern_require=extra_pattern_require_sim_variants,
+                        )
+                    )
+                    if np.isnan(avg_sim_success):
+                        print(f"WARNING: avg_sim_success is nan for {variant}")
+                    drawer_sim_variant_success[drawer_task][ckpt_alias].append(avg_sim_success)
+            drawer_sim_variant_success[drawer_task][ckpt_alias] = np.mean(
+                drawer_sim_variant_success[drawer_task][ckpt_alias]
+            )
+
+    print("-" * 20)
+    for drawer_task in drawer_task_map_dict.keys():
+        print(
+            f"{drawer_task} sim variant avg success",
+            drawer_sim_variant_success[drawer_task],
+        )
+        print(f"{drawer_task} real success", drawer_real_success[drawer_task])
+        print(
+            f"{drawer_task} MMRV",
+            mean_maximum_rank_violation(
+                list(drawer_sim_variant_success[drawer_task].values()),
+                list(drawer_real_success[drawer_task].values()),
+            ),
+        )
+        print(
+            f"{drawer_task} pearson correlation",
+            pearson_correlation(
+                list(drawer_sim_variant_success[drawer_task].values()),
+                list(drawer_real_success[drawer_task].values()),
+            ),
+        )
+
+    avg_sim_variant_results = []
+    avg_real_results = []
+    for ckpt_alias in ckpt_alias_keys:
+        avg_sim_variant_results.append([])
+        avg_real_results.append([])
+        for drawer_task in drawer_task_map_dict.keys():
+            avg_sim_variant_results[-1].append(drawer_sim_variant_success[drawer_task][ckpt_alias])
+            avg_real_results[-1].append(drawer_real_success[drawer_task][ckpt_alias])
+        avg_sim_variant_results[-1] = np.mean(avg_sim_variant_results[-1])
+        avg_real_results[-1] = np.mean(avg_real_results[-1])
+    print("avg_sim_variant_results", avg_sim_variant_results)
+    print("avg_real_results", avg_real_results)
+    print(
+        "mean_maximum_rank_violation(avg_sim_variant_results, avg_real_results)",
+        mean_maximum_rank_violation(avg_sim_variant_results, avg_real_results),
+    )
+    print(
+        "pearson_correlation(avg_sim_variant_results, avg_real_results)",
+        pearson_correlation(avg_sim_variant_results, avg_real_results),
+    )
+    print("-" * 20)
+
+    # get visual matching success
+    drawer_sim_visual_matching_success = {k1: {k2: [] for k2 in ckpt_alias_keys} for k1 in drawer_task_map_dict.keys()}
+    for drawer_task in drawer_task_map_dict.keys():
+        for ckpt_alias in ckpt_alias_keys:
+            for specific_task in drawer_task_map_dict[drawer_task]:
+                for variant in base_visual_matching_variants:
+                    variant = variant.format(specific_task) + f"_{extra_log_str_visual_matching}"
+                    variant = f"{root_result_dir}/{CKPT_MAPPING[ckpt_alias]}/{variant}"
+                    avg_sim_success = np.mean(
+                        get_dir_stats(
+                            variant,
+                            extra_pattern_require=extra_pattern_require_visual_matching,
+                        )
+                    )
+                    if np.isnan(avg_sim_success):
+                        print(f"WARNING: avg_sim_success is nan for {variant}")
+                    drawer_sim_visual_matching_success[drawer_task][ckpt_alias].append(avg_sim_success)
+            tmp_variant_avg_each_robot_arm = []
+            for i in range(len(base_visual_matching_variants)):
+                tmp_variant_avg_each_robot_arm.append(
+                    np.mean(drawer_sim_visual_matching_success[drawer_task][ckpt_alias][i::len(drawer_task_map_dict[drawer_task])])
+                )
+            print(f"Drawer task {drawer_task}, ckpt {ckpt_alias} all robot arm visual matching success: {tmp_variant_avg_each_robot_arm}")
+            drawer_sim_visual_matching_success[drawer_task][ckpt_alias] = np.mean(
+                drawer_sim_visual_matching_success[drawer_task][ckpt_alias]
+            )
+
+    for drawer_task in drawer_task_map_dict.keys():
+        print(
+            f"{drawer_task} visual matching sim success",
+            drawer_sim_visual_matching_success[drawer_task],
+        )
+        print(f"{drawer_task} real success", drawer_real_success[drawer_task])
+        print(
+            f"{drawer_task} MMRV",
+            mean_maximum_rank_violation(
+                list(drawer_sim_visual_matching_success[drawer_task].values()),
+                list(drawer_real_success[drawer_task].values()),
+            ),
+        )
+        print(
+            f"{drawer_task} pearson correlation",
+            pearson_correlation(
+                list(drawer_sim_visual_matching_success[drawer_task].values()),
+                list(drawer_real_success[drawer_task].values()),
+            ),
+        )
+        print_all_kruskal_results(
+            construct_unordered_trial_results(
+                n_trials_per_ckpt_per_task,
+                list(drawer_sim_visual_matching_success[drawer_task].values()),
+            ),
+            construct_unordered_trial_results(
+                n_trials_per_ckpt_per_task,
+                list(drawer_real_success[drawer_task].values()),
+            ),
+            f"{drawer_task} kruskal:",
+        )
+
+    avg_sim_visual_matching_results = []
+    avg_real_results = []
+    for ckpt_alias in ckpt_alias_keys:
+        avg_sim_visual_matching_results.append([])
+        avg_real_results.append([])
+        for drawer_task in drawer_task_map_dict.keys():
+            avg_sim_visual_matching_results[-1].append(drawer_sim_visual_matching_success[drawer_task][ckpt_alias])
+            avg_real_results[-1].append(drawer_real_success[drawer_task][ckpt_alias])
+        avg_sim_visual_matching_results[-1] = np.mean(avg_sim_visual_matching_results[-1])
+        avg_real_results[-1] = np.mean(avg_real_results[-1])
+    print("avg_sim_visual_matching_results", avg_sim_visual_matching_results)
+    print("avg_real_results", avg_real_results)
+    print(
+        "mean_maximum_rank_violation(avg_sim_visual_matching_results, avg_real_results)",
+        mean_maximum_rank_violation(avg_sim_visual_matching_results, avg_real_results),
     )
     print(
         "pearson_correlation(avg_sim_visual_matching_results, avg_real_results)",
@@ -748,8 +972,8 @@ def calc_bridge_put_on_env_stats(root_result_dir):
         print("sim visual matching partial success", sim_visual_matching_partial_success)
         print("real partial success", real_partial_success)
         print(
-            "visual matching normalized rank loss (partial success)",
-            normalized_rank_loss(
+            "visual matching MMRV (partial success)",
+            mean_maximum_rank_violation(
                 list(sim_visual_matching_partial_success.values()),
                 list(real_partial_success.values()),
             ),
@@ -770,8 +994,8 @@ def calc_bridge_put_on_env_stats(root_result_dir):
         print("sim visual matching success", sim_visual_matching_success)
         print("real success", real_success)
         print(
-            "visual matching normalized rank loss",
-            normalized_rank_loss(list(sim_visual_matching_success.values()), list(real_success.values())),
+            "visual matching MMRV",
+            mean_maximum_rank_violation(list(sim_visual_matching_success.values()), list(real_success.values())),
         )
         print(
             "visual matching pearson correlation",
@@ -791,6 +1015,7 @@ def calc_bridge_put_on_env_stats(root_result_dir):
 # Define checkpoint alias-to-directory mapping; If you use a new checkpoint, please update the dict
 
 CKPT_MAPPING = {
+    "rt-2-x": "rt_2_x",
     "rt-1-converged": "rt_1_tf_trained_for_000400120",
     "rt-1-15pct": "rt_1_tf_trained_for_000058240",
     "rt-1-x": "rt_1_x_tf_trained_for_002272480_step",
@@ -812,6 +1037,8 @@ elif args.task == "move_near":
     calc_move_near_stats(args.log_dir_root)
 elif args.task == "drawer":
     calc_drawer_stats(args.log_dir_root)
+elif args.task == "long_horizon_apple_in_drawer":
+    calc_long_horizon_apple_in_drawer_stats(args.log_dir_root)
 elif args.task == "bridge_put_on":
     calc_bridge_put_on_env_stats(args.log_dir_root)
 else:
