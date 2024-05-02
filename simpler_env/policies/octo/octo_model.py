@@ -1,5 +1,5 @@
 from collections import deque
-from typing import Optional
+from typing import Optional, Sequence
 import os
 
 import jax
@@ -16,15 +16,15 @@ from simpler_env.utils.action.action_ensemble import ActionEnsembler
 class OctoInference:
     def __init__(
         self,
-        model_type="octo-base",
-        policy_setup="widowx_bridge",
-        horizon=2,
-        pred_action_horizon=4,
-        exec_horizon=1,
-        image_size=256,
-        action_scale=1.0,
-        init_rng=0,
-    ):
+        model_type: str = "octo-base",
+        policy_setup: str = "widowx_bridge",
+        horizon: int = 2,
+        pred_action_horizon: int = 4,
+        exec_horizon: int = 1,
+        image_size: int = 256,
+        action_scale: float = 1.0,
+        init_rng: int = 0,
+    ) -> None:
         os.environ["TOKENIZERS_PARALLELISM"] = "false"
         if policy_setup == "widowx_bridge":
             dataset_id = "bridge_dataset"
@@ -118,7 +118,7 @@ class OctoInference:
         self.action_ensemble_temp = action_ensemble_temp
         self.rng = jax.random.PRNGKey(init_rng)
         for _ in range(5):
-            # to match octo server's inference seeds
+            # the purpose of this for loop is just to match octo server's inference seeds
             self.rng, _key = jax.random.split(self.rng)  # each shape [2,]
 
         self.sticky_action_is_on = False
@@ -136,7 +136,7 @@ class OctoInference:
             self.action_ensembler = None
         self.num_image_history = 0
 
-    def _resize_image(self, image):
+    def _resize_image(self, image: np.ndarray) -> np.ndarray:
         image = tf.image.resize(
             image,
             size=(self.image_size, self.image_size),
@@ -146,24 +146,25 @@ class OctoInference:
         image = tf.cast(tf.clip_by_value(tf.round(image), 0, 255), tf.uint8).numpy()
         return image
 
-    def _add_image_to_history(self, image):
+    def _add_image_to_history(self, image: np.ndarray) -> None:
         self.image_history.append(image)
+        # Alternative implementation below; but looks like for real eval, filling the entire buffer at the first step is not necessary
         # if self.num_image_history == 0:
         #     self.image_history.extend([image] * self.horizon)
         # else:
         #     self.image_history.append(image)
         self.num_image_history = min(self.num_image_history + 1, self.horizon)
 
-    def _obtain_image_history_and_mask(self):
+    def _obtain_image_history_and_mask(self) -> tuple[np.ndarray, np.ndarray]:
         images = np.stack(self.image_history, axis=0)
         horizon = len(self.image_history)
-        pad_mask = np.ones(horizon, dtype=np.float64)  # note: this is not np.bool
+        pad_mask = np.ones(horizon, dtype=np.float64)  # note: this should be of float type, not a bool type
         pad_mask[: horizon - min(horizon, self.num_image_history)] = 0
-        # pad_mask = np.ones(self.horizon, dtype=np.float64) # note: this is not np.bool
+        # pad_mask = np.ones(self.horizon, dtype=np.float64) # note: this should be of float type, not a bool type
         # pad_mask[:self.horizon - self.num_image_history] = 0
         return images, pad_mask
 
-    def reset(self, task_description):
+    def reset(self, task_description: str) -> None:
         if self.automatic_task_creation:
             self.task = self.model.create_tasks(texts=[task_description])
         else:
@@ -180,7 +181,7 @@ class OctoInference:
         # self.gripper_is_closed = False
         self.previous_gripper_action = None
 
-    def step(self, image, task_description: Optional[str] = None, *args, **kwargs):
+    def step(self, image: np.ndarray, task_description: Optional[str] = None, *args, **kwargs) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
         """
         Input:
             image: np.ndarray of shape (H, W, 3), uint8
@@ -299,7 +300,7 @@ class OctoInference:
 
         return raw_action, action
 
-    def visualize_epoch(self, predicted_raw_actions, images, save_path):
+    def visualize_epoch(self, predicted_raw_actions: Sequence[np.ndarray], images: Sequence[np.ndarray], save_path: str) -> None:
         images = [self._resize_image(image) for image in images]
         ACTION_DIM_LABELS = ["x", "y", "z", "roll", "pitch", "yaw", "grasp"]
 

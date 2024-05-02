@@ -1,5 +1,5 @@
 from base64 import b64decode, b64encode
-from typing import Optional
+from typing import Optional, Sequence, Any
 import json
 import time
 import urllib
@@ -71,11 +71,11 @@ patch()
 class OctoServerInference:
     def __init__(
         self,
-        model_type="octo-base",
-        policy_setup="widowx_bridge",
-        image_size=256,
-        action_scale=1.0,
-    ):
+        model_type: str = "octo-base",
+        policy_setup: str = "widowx_bridge",
+        image_size: str = 256,
+        action_scale: float = 1.0,
+    ) -> None:
         if policy_setup == "widowx_bridge":
             self.sticky_gripper_num_repeat = 1
             self.dataset_name = "bridge_dataset"
@@ -97,7 +97,7 @@ class OctoServerInference:
         self.action_scale = action_scale
         self.task = None
 
-    def _resize_image(self, image):
+    def _resize_image(self, image: np.ndarray) -> np.ndarray:
         image = tf.image.resize(
             image,
             size=(self.image_size, self.image_size),
@@ -107,7 +107,7 @@ class OctoServerInference:
         image = tf.cast(tf.clip_by_value(tf.round(image), 0, 255), tf.uint8).numpy()
         return image
 
-    def reset(self, task_description):
+    def reset(self, task_description: str) -> None:
         self.task = task_description
         self.sticky_action_is_on = False
         self.gripper_action_repeat = 0
@@ -120,7 +120,7 @@ class OctoServerInference:
         )
         time.sleep(1.0)
 
-    def _get_fake_pay_load(self, image_primary, text, modality="l"):
+    def _get_fake_pay_load(self, image_primary: np.ndarray, text: str, modality: str = "l") -> dict:
         payload = {
             "dataset_name": self.dataset_name,
             "observation": {
@@ -133,7 +133,7 @@ class OctoServerInference:
         fake_pay_load = {"use_this": dumps(payload)}
         return fake_pay_load
 
-    def _query_for_action(self, image_primary, text, goal, modality="l"):
+    def _query_for_action(self, image_primary: np.ndarray, text: str, goal: Optional[Any], modality="l") -> list:
         del goal
         # _ = requests.post(urllib.parse.urljoin("http://ari.bair.berkeley.edu:8000", "reset"),)
         fake_pay_load = self._get_fake_pay_load(image_primary, text, modality)
@@ -145,7 +145,7 @@ class OctoServerInference:
         # print(reply)
         return loads(reply)
 
-    def step(self, image, task_description: Optional[str] = None, *args, **kwargs):
+    def step(self, image: np.ndarray, task_description: Optional[str] = None, *args, **kwargs) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
         """
         Input:
             image: np.ndarray of shape (H, W, 3), uint8
@@ -239,7 +239,7 @@ class OctoServerInference:
 
         return raw_action, action
 
-    def visualize_epoch(self, predicted_raw_actions, images, save_path):
+    def visualize_epoch(self, predicted_raw_actions: Sequence[np.ndarray], images: Sequence[np.ndarray], save_path: str):
         images = [self._resize_image(image) for image in images]
         ACTION_DIM_LABELS = ["x", "y", "z", "yaw", "pitch", "roll", "grasp"]
 

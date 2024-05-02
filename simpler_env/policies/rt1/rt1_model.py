@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Optional
+from typing import Optional, Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,13 +14,13 @@ from transforms3d.euler import euler2axangle
 class RT1Inference:
     def __init__(
         self,
-        saved_model_path="rt_1_x_tf_trained_for_002272480_step",
-        lang_embed_model_path="https://tfhub.dev/google/universal-sentence-encoder-large/5",
-        image_width=320,
-        image_height=256,
-        action_scale=1.0,
-        policy_setup="google_robot",
-    ):
+        saved_model_path: str = "rt_1_x_tf_trained_for_002272480_step",
+        lang_embed_model_path: str = "https://tfhub.dev/google/universal-sentence-encoder-large/5",
+        image_width: int = 320,
+        image_height: int = 256,
+        action_scale: float = 1.0,
+        policy_setup: str = "google_robot",
+    ) -> None:
         self.lang_embed_model = hub.load(lang_embed_model_path)
         self.tfa_policy = py_tf_eager_policy.SavedModelPyTFEagerPolicy(
             model_path=saved_model_path,
@@ -53,10 +53,10 @@ class RT1Inference:
 
     @staticmethod
     def _rescale_action_with_bound(
-        actions: np.ndarray,
+        actions: np.ndarray | tf.Tensor,
         low: float,
         high: float,
-        safety_margin: float = 0,
+        safety_margin: float = 0.0,
         post_scaling_max: float = 1.0,
         post_scaling_min: float = -1.0,
     ) -> np.ndarray:
@@ -68,7 +68,7 @@ class RT1Inference:
             post_scaling_max - safety_margin,
         )
 
-    def _unnormalize_action_widowx_bridge(self, action):
+    def _unnormalize_action_widowx_bridge(self, action: dict[str, np.ndarray | tf.Tensor]) -> dict[str, np.ndarray]:
         action["world_vector"] = self._rescale_action_with_bound(
             action["world_vector"],
             low=-1.75,
@@ -85,7 +85,7 @@ class RT1Inference:
         )
         return action
 
-    def _initialize_model(self):
+    def _initialize_model(self) -> None:
         # Perform one step of inference using dummy input to trace the tensoflow graph
         # Obtain a dummy observation, where the features are all 0
         self.observation = tf_agents.specs.zero_spec_nest(
@@ -98,12 +98,12 @@ class RT1Inference:
         # Run inference using the policy
         _action = self.tfa_policy.action(self.tfa_time_step, self.policy_state)
 
-    def _resize_image(self, image):
+    def _resize_image(self, image: np.ndarray | tf.Tensor) -> tf.Tensor:
         image = tf.image.resize_with_pad(image, target_width=self.image_width, target_height=self.image_height)
         image = tf.cast(image, tf.uint8)
         return image
 
-    def _initialize_task_description(self, task_description):
+    def _initialize_task_description(self, task_description: Optional[str] = None) -> None:
         if task_description is not None:
             self.task_description = task_description
             self.task_description_embedding = self.lang_embed_model([task_description])[0]
@@ -111,12 +111,12 @@ class RT1Inference:
             self.task_description = ""
             self.task_description_embedding = tf.zeros((512,), dtype=tf.float32)
 
-    def reset(self, task_description):
+    def reset(self, task_description: str) -> None:
         self._initialize_model()
         self._initialize_task_description(task_description)
 
     @staticmethod
-    def _small_action_filter_google_robot(raw_action, arm_movement=False, gripper=True):
+    def _small_action_filter_google_robot(raw_action: dict[str, np.ndarray | tf.Tensor], arm_movement: bool = False, gripper: bool = True) -> dict[str, np.ndarray | tf.Tensor]:
         # small action filtering for google robot
         if arm_movement:
             raw_action["world_vector"] = tf.where(
@@ -147,7 +147,7 @@ class RT1Inference:
             )
         return raw_action
 
-    def step(self, image, task_description: Optional[str] = None):
+    def step(self, image: np.ndarray, task_description: Optional[str] = None) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
         """
         Input:
             image: np.ndarray of shape (H, W, 3), uint8
@@ -179,6 +179,8 @@ class RT1Inference:
             raw_action = self._small_action_filter_google_robot(raw_action, arm_movement=False, gripper=True)
         if self.unnormalize_action:
             raw_action = self.unnormalize_action_fxn(raw_action)
+        for k in raw_action.keys():
+            raw_action[k] = np.asarray(raw_action[k])
 
         # process raw_action to obtain the action to be sent to the maniskill2 environment
         action = {}
@@ -227,7 +229,7 @@ class RT1Inference:
 
         return raw_action, action
 
-    def visualize_epoch(self, predicted_raw_actions, images, save_path):
+    def visualize_epoch(self, predicted_raw_actions: Sequence[np.ndarray], images: Sequence[np.ndarray], save_path: str) -> None:
         images = [self._resize_image(image) for image in images]
         predicted_action_name_to_values_over_time = defaultdict(list)
         figure_layout = [
