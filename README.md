@@ -19,7 +19,7 @@ We hope that our work guides and inspires future real-to-sim evaluation efforts.
   - [Installation](#installation)
   - [Examples](#examples)
   - [Current Environments](#current-environments)
-  - [Metrics for Assessing the Effectiveness of Simulated Evaluation Pipelines](#metrics-for-assessing-the-effectiveness-of-simulated-evaluation-pipelines)
+  - [Compare Your Approach to SIMPLER](#compare-your-approach-to-simpler)
   - [Code Structure](#code-structure)
   - [Adding New Policies](#adding-new-policies)
   - [Adding New Real-to-Sim Evaluation Environments and Robots](#adding-new-real-to-sim-evaluation-environments-and-robots)
@@ -127,9 +127,34 @@ We also support creating sub-tasks variations such as `google_robot_pick_{horizo
 
 By default, Google Robot environments use a control frequency of 3hz, and Bridge environments use a control frequency of 5hz. Simulation frequency is ~500hz.
 
-## Metrics for Assessing the Effectiveness of Simulated Evaluation Pipelines
 
-In our paper, we use the Mean Maximum Rank Violation (MMRV) metric and the Pearson Correlation Coefficient metric to assess the correlation between real and simulated evaluation results. You can reproduce the metrics in `tools/calc_metrics.py` and assess your own real-to-sim evaluation pipeline.
+## Compare Your Approach to SIMPLER
+
+We make it easy to compare your approach for offline robot policy evaluation to SIMPLER. In [our paper](https://simpler-env.github.io/) we use two metrics to measure the quality of simulated evaluation pipelines: Mean Maximum Rank Violation (MMRV) and the Pearson Correlation Coefficient. 
+Both capture, how well the offline evaluations reflect the policy's real-world performance during robot rollouts.
+
+To make comparisons easy, we provide all our raw policy evaluation data: performance values for all policies on all real-world tasks. We also provide the corresponding estimates for policy performance of SIMPLER and functions for computing the aforementioned metrics we report in the paper.
+
+To compute the corresponding metrics for *your* offline policy evaluation approach `your_sim_eval(task, policy)`, you can use the following snippet:
+```
+from simpler_env.utils.metrics import mean_maximum_rank_violation, pearson_correlation
+from tools.calc_metrics import REAL_PERF
+
+sim_eval_perf = [
+    your_sim_eval(task="google_robot_move_near", policy=p) 
+    for p in ["rt-1-x", "octo", ...]
+]
+real_eval_perf = [
+    REAL_PERF["google_robot_move_near"][p] for p in ["rt-1-x", "octo", ...]
+]
+mmrv = mean_maximum_rank_violation(real_eval_perf, sim_eval_perf)
+pearson = pearson_correlation(real_eval_perf, sim_eval_perf)
+```
+
+To reproduce the key numbers from our paper for SIMPLER, you can run the [`tools/calc_metrics.py`](tools/calc_metrics.py) script:
+```
+python3 tools/calc_metrics.py
+```
 
 ## Code Structure
 
