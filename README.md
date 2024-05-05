@@ -19,7 +19,6 @@ We hope that our work guides and inspires future real-to-sim evaluation efforts.
   - [Installation](#installation)
   - [Examples](#examples)
   - [Current Environments](#current-environments)
-  - [Customizing Evaluation Configs](#customizing-evaluation-configs)
   - [Metrics for Assessing the Effectiveness of Simulated Evaluation Pipelines](#metrics-for-assessing-the-effectiveness-of-simulated-evaluation-pipelines)
   - [Code Structure](#code-structure)
   - [Adding New Policies](#adding-new-policies)
@@ -101,7 +100,7 @@ pip install -e .
 - Environment interactive visualization and manual control: see [`ManiSkill2_real2sim/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py`](https://github.com/simpler-env/ManiSkill2_real2sim/blob/main/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py)
 - Simple RT-1 and Octo evaluation script on prepackaged environments with visual matching evaluation setup: see [`simpler_env/simple_inference_visual_matching_prepackaged_envs.py`](https://github.com/simpler-env/SimplerEnv/blob/main/simpler_env/simple_inference_visual_matching_prepackaged_envs.py).
 - Colab notebook for RT-1 and Octo inference: see [this link](https://colab.research.google.com/github/simpler-env/SimplerEnv/blob/main/example.ipynb).
-- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, and Octo policies. See [`scripts/`](https://github.com/simpler-env/SimplerEnv/tree/main/scripts).
+- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with sweeps over object / robot poses and advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, and Octo policies. See [`scripts/`](https://github.com/simpler-env/SimplerEnv/tree/main/scripts).
 - Real-to-sim evaluation videos from running `scripts/*.sh`: see [this link](https://huggingface.co/datasets/xuanlinli17/simpler-env-eval-example-videos/tree/main).
 
 ## Current Environments
@@ -127,10 +126,6 @@ print(simpler_env.ENVIRONMENTS)
 We also support creating sub-tasks variations such as `google_robot_pick_{horizontal/vertical/standing}_coke_can`, `google_robot_open_{top/middle/bottom}_drawer`, and `google_robot_close_{top/middle/bottom}_drawer`. For the `google_robot_place_in_closed_drawer` task, we use the `google_robot_place_apple_in_closed_top_drawer` subtask for paper evaluations.
 
 By default, Google Robot environments use a control frequency of 3hz, and Bridge environments use a control frequency of 5hz. Simulation frequency is ~500hz.
-
-## Customizing Evaluation Configs
-
-Please see `scripts/` for examples of how to customize evaluation configs. The inference script `simpler_env/main_inference.py` supports advanced environment building and logging. For example, you can perform a sweep over object and robot poses for evaluation. (Note, however, varying robot poses is not meaningful under the visual matching evaluation setup.)
 
 ## Metrics for Assessing the Effectiveness of Simulated Evaluation Pipelines
 
