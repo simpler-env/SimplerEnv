@@ -1,49 +1,52 @@
 import glob
 from pathlib import Path
+from typing import Sequence, Optional
 
 import numpy as np
-from scipy.stats import kruskal
 
 
-def pearson_correlation(x, y):
-    x, y = np.array(x), np.array(y)
-    assert x.shape == y.shape
-    x = x - np.mean(x)
-    y = y - np.mean(y)
-    if np.all(x == y):
+def pearson_correlation(perf_sim: Sequence[float], perf_real: Sequence[float]) -> float:
+    perf_sim, perf_real = np.array(perf_sim), np.array(perf_real)
+    assert perf_sim.shape == perf_real.shape
+    perf_sim = perf_sim - np.mean(perf_sim)
+    perf_real = perf_real - np.mean(perf_real)
+    if np.all(perf_sim == perf_real):
         pearson = 1
     else:
-        pearson = np.sum(x * y) / (np.sqrt(np.sum(x**2) * np.sum(y**2)) + 1e-8)
+        pearson = np.sum(perf_sim * perf_real) / (
+            np.sqrt(np.sum(perf_sim**2) * np.sum(perf_real**2)) + 1e-8
+        )
     return pearson
 
 
-def mean_maximum_rank_violation(x, y):
-    # assuming x is sim result and y is real result
-    x, y = np.array(x), np.array(y)
-    assert x.shape == y.shape
+def mean_maximum_rank_violation(
+    perf_sim: Sequence[float], perf_real: Sequence[float]
+) -> float:
+    perf_sim, perf_real = np.array(perf_sim), np.array(perf_real)
+    assert perf_sim.shape == perf_real.shape
     rank_violations = []
-    for i in range(len(x)):
+    for i in range(len(perf_sim)):
         rank_violation = 0.0
-        for j in range(len(x)):
-            if (x[i] > x[j]) != (y[i] > y[j]):
-                rank_violation = max(rank_violation, np.abs(y[i] - y[j]))
+        for j in range(len(perf_sim)):
+            if (perf_sim[i] > perf_sim[j]) != (perf_real[i] > perf_real[j]):
+                rank_violation = max(
+                    rank_violation, np.abs(perf_real[i] - perf_real[j])
+                )
         rank_violations.append(rank_violation)
     rank_violation = np.mean(rank_violations)
-    # rank_violation = 0.0
-    # for i in range(len(x) - 1):
-    #     for j in range(i + 1, len(x)):
-    #         if (x[i] > x[j]) != (y[i] > y[j]):
-    #             rank_violation = max(rank_violation, np.abs(y[i] - y[j]))
     return rank_violation
 
 
-def print_all_kruskal_results(sim, real, title):
+def print_all_kruskal_results(
+    sim: Sequence[Sequence[float]], real: Sequence[Sequence[float]], title: str
+) -> None:
     """
     sim, real: shape [n_ckpt, n_trials]
         The trial-by-trial success indicator of each checkpoint
         (within each checkpoint, the ordering doesn't matter)
     Prints out the Kruskal-Wallis test for each checkpoint
     """
+    from scipy.stats import kruskal
     sim, real = np.array(sim), np.array(real)
     assert sim.shape == real.shape
     print(title)
@@ -57,7 +60,9 @@ def print_all_kruskal_results(sim, real, title):
             print(" " * 12, kruskal(sim[i], real[i]))
 
 
-def construct_unordered_trial_results(n_trials_per_ckpt, success):
+def construct_unordered_trial_results(
+    n_trials_per_ckpt: int, success: Sequence[float]
+) -> np.ndarray:
     success = np.array(success)
     success = np.where(np.isnan(success), 0, success)
     n_success_trials = np.round(n_trials_per_ckpt * success).astype(np.int32)
@@ -68,7 +73,11 @@ def construct_unordered_trial_results(n_trials_per_ckpt, success):
 
 
 # util to get success / failure results from a directory
-def get_dir_stats(dir_name, extra_pattern_require=[], succ_fail_pattern=["success", "failure"]):
+def get_dir_stats(
+    dir_name: str,
+    extra_pattern_require: Optional[Sequence[str]] = [],
+    succ_fail_pattern: Sequence[str] = ["success", "failure"],
+) -> Sequence[int]:
     if dir_name[-1] == "/":
         dir_name = dir_name[:-1]
 

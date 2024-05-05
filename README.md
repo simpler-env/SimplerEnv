@@ -20,6 +20,7 @@ We hope that our work guides and inspires future real-to-sim evaluation efforts.
   - [Examples](#examples)
   - [Current Environments](#current-environments)
   - [Customizing Evaluation Configs](#customizing-evaluation-configs)
+  - [Metrics for Assessing the Effectiveness of Simulated Evaluation Pipelines](#metrics-for-assessing-the-effectiveness-of-simulated-evaluation-pipelines)
   - [Code Structure](#code-structure)
   - [Adding New Policies](#adding-new-policies)
   - [Adding New Real-to-Sim Evaluation Environments and Robots](#adding-new-real-to-sim-evaluation-environments-and-robots)
@@ -131,7 +132,9 @@ By default, Google Robot environments use a control frequency of 3hz, and Bridge
 
 Please see `scripts/` for examples of how to customize evaluation configs. The inference script `simpler_env/main_inference.py` supports advanced environment building and logging. For example, you can perform a sweep over object and robot poses for evaluation. (Note, however, varying robot poses is not meaningful under the visual matching evaluation setup.)
 
+## Metrics for Assessing the Effectiveness of Simulated Evaluation Pipelines
 
+In our paper, we use the Mean Maximum Rank Violation (MMRV) metric and the Pearson Correlation Coefficient metric to assess the correlation between real and simulated evaluation results. You can reproduce the metrics in `tools/calc_metrics.py` and assess your own real-to-sim evaluation pipeline.
 
 ## Code Structure
 
@@ -165,7 +168,7 @@ simpler_env/
 tools/
    robot_object_visualization/: tools for visualizing robots and objects when creating new environments
    sysid/: tools for system identification when adding new robots
-   calc_metrics.py: tools for summarizing eval results and calculating metrics, such as Normalized Rank Loss, Pearson Correlation, and Kruskal-Wallis test, to reproduce our paper results
+   calc_metrics.py: tools for summarizing eval results and calculating metrics, such as Mean Maximum Rank Violation (MMRV) and Pearson Correlation
    coacd_process_mesh.py: tools for generating convex collision meshes through CoACD when adding new assets
    merge_videos.py: tools for merging videos into one
    ...
