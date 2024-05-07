@@ -114,6 +114,7 @@ print(simpler_env.ENVIRONMENTS)
 | Task Name | ManiSkill2 Env Name | Image (Visual Matching) |
 | ----------- | ----- | ----- |
 | google_robot_pick_coke_can | GraspSingleOpenedCokeCanInScene-v0 | <img src="./images/example_visualization/google_robot_coke_can_visual_matching.png" width="128" height="128" > |
+| google_robot_pick_object | GraspSingleRandomObjectInScene-v0 | <img src="./images/example_visualization/google_robot_pick_random_object.png" width="128" height="128" > |
 | google_robot_move_near | MoveNearGoogleBakedTexInScene-v1 | <img src="./images/example_visualization/google_robot_move_near_visual_matching.png" width="128" height="128" > |
 | google_robot_open_drawer | OpenDrawerCustomInScene-v0 | <img src="./images/example_visualization/google_robot_open_drawer_visual_matching.png" width="128" height="128" > |
 | google_robot_close_drawer | CloseDrawerCustomInScene-v0 | <img src="./images/example_visualization/google_robot_close_drawer_visual_matching.png" width="128" height="128" > |
