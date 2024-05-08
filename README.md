@@ -191,7 +191,8 @@ tools/
    coacd_process_mesh.py: tools for generating convex collision meshes through CoACD when adding new assets
    merge_videos.py: tools for merging videos into one
    ...
-scripts/: example bash scripts for policy inference with custom environment building and advanced logging; also useful for reproducing our evaluation results
+scripts/: example bash scripts for policy inference under our variant aggregation / visual matching evaluation setup,
+          with custom environment building and advanced logging; also useful for reproducing our evaluation results
 ...
 ```
 
