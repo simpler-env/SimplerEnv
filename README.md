@@ -304,4 +304,12 @@ TypeError: 'NoneType' object is not subscriptable
 
 ## Citation
 
-TBD
+If you find our ideas / environments helpful, please cite our work at
+```
+@article{li24simpler,
+         title={Evaluating Real-World Robot Manipulation Policies in Simulation},
+         author={Xuanlin Li and Kyle Hsu and Jiayuan Gu and Karl Pertsch and Oier Mees and Homer Rich Walke and Chuyuan Fu and Ishikaa Lunawat and Isabel Sieh and Sean Kirmani and Sergey Levine and Jiajun Wu and Chelsea Finn and Hao Su and Quan Vuong and Ted Xiao},
+         journal = {arXiv preprint arXiv:2405.05941},
+         year={2024}
+}
+```
