@@ -293,7 +293,7 @@ Some required Vulkan extension is not present. You may not use the renderer to r
 Segmentation fault (core dumped)
 ```
 
-Follow [this link](https://haosulab.github.io/ManiSkill2/getting_started/installation.html#troubleshooting) to troubleshoot the issue.
+Follow [this link](https://maniskill.readthedocs.io/en/latest/user_guide/getting_started/installation.html#vulkan) to troubleshoot the issue. (Even though the doc points to SAPIEN 3 and ManiSkill3, the troubleshooting section still applies to the current environments that use SAPIEN 2.2 and ManiSkill2).
 
 2. You can ignore the following error if it is caused by tensorflow's internal code. Sometimes this error will occur when running the inference or debugging scripts.
 
