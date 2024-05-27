@@ -128,7 +128,7 @@ def run_maniskill2_eval_single_episode(
     # Step the environment
     while not (predicted_terminated or truncated):
         # step the model; "raw_action" is raw model action output; "action" is the processed action to be sent into maniskill env
-        prop_info = get_env_proprio_info(obs, prev_gripper)
+        prop_info = get_env_proprio_info(obs)
         raw_action, action = model.step(image, task_description, prop_info)
         predicted_actions.append(raw_action)
         predicted_terminated = bool(action["terminate_episode"][0] > 0)
