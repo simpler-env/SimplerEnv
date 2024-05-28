@@ -274,6 +274,7 @@ pip install --upgrade "jax[cuda11_pip]==0.4.20" -f https://storage.googleapis.co
 cd {this_repo}
 git clone https://github.com/octo-models/octo/
 cd octo
+git checkout 653c54acde686fde619855f2eac0dd6edad7116b  # we use octo-1.0
 pip install -e .
 # You don't need to run "pip install -r requirements.txt" inside the octo repo; the package dependencies are already handled in the simpler_env repo
 # Octo checkpoints are managed by huggingface, so you don't need to download them manually.
