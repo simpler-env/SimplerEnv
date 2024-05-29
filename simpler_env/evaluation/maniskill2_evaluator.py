@@ -13,7 +13,7 @@ from simpler_env.utils.visualization import write_video
 from transforms3d.euler import quat2euler
 from sapien.core import Pose
 
-def get_env_proprio_info(obs, prev_gripper_action):
+def get_env_proprio_info(obs):
     # to match the proprioceptive information during training
     # the gripper state is currently ignored
     if 'arm' in obs['agent']['controller']:
@@ -24,7 +24,7 @@ def get_env_proprio_info(obs, prev_gripper_action):
         base_pose = Pose(p=base_pose[:3], q=base_pose[3:])
         ee_pose = Pose(p=ee_pose[:3], q=ee_pose[3:])
         ee_pose_wrt_base = base_pose.inv() * ee_pose
-        euler  = quat2euler([ee_pose_wrt_base.q[3], ee_pose_wrt_base.q[0], ee_pose_wrt_base.q[1], ee_pose_wrt_base.q[2]])
+        euler  = quat2euler([ee_pose_wrt_base.q[0], ee_pose_wrt_base.q[1], ee_pose_wrt_base.q[2], ee_pose_wrt_base.q[3]])
         prop = np.concatenate((ee_pose_wrt_base.p, [euler[0], euler[1], euler[2]]))
     else:
         # google
