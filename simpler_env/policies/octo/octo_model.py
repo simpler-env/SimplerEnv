@@ -155,13 +155,13 @@ class OctoInference:
         self.rng, key = jax.random.split(self.rng)  # each shape [2,]
         # print("octo local rng", self.rng, key)
 
-        input_observation = {"image_primary": images, "timestep_pad_mask": pad_mask}
-        raw_actions = self.model.sample_actions(
+        input_observation = {"image_primary": images, "pad_mask": pad_mask}
+        norm_raw_actions = self.model.sample_actions(
             input_observation,
             self.task,
             rng=key,
-            unnormalization_statistics=self.model.dataset_statistics[self.dataset_id]["action"]
         )
+        raw_actions = norm_raw_actions * self.action_std[None] + self.action_mean[None]
         raw_actions = raw_actions[0]  # remove batch, becoming (action_pred_horizon, action_dim)
 
         assert raw_actions.shape == (self.pred_action_horizon, 7)
