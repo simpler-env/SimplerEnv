@@ -16,6 +16,8 @@ from simpler_env.utils.action.action_ensemble import ActionEnsembler
 class OctoInference:
     def __init__(
         self,
+        model: Optional[OctoModel] = None,
+        dataset_id: Optional[str] = None,
         model_type: str = "octo-base",
         policy_setup: str = "widowx_bridge",
         horizon: int = 2,
@@ -27,20 +29,27 @@ class OctoInference:
     ) -> None:
         os.environ["TOKENIZERS_PARALLELISM"] = "false"
         if policy_setup == "widowx_bridge":
-            dataset_id = "bridge_dataset"
+            dataset_id = "bridge_dataset" if dataset_id is None else dataset_id
             action_ensemble = True
             action_ensemble_temp = 0.0
             self.sticky_gripper_num_repeat = 1
         elif policy_setup == "google_robot":
-            dataset_id = "fractal20220817_data"
+            dataset_id = "fractal20220817_data" if dataset_id is None else dataset_id
             action_ensemble = True
             action_ensemble_temp = 0.0
             self.sticky_gripper_num_repeat = 15
         else:
             raise NotImplementedError(f"Policy setup {policy_setup} not supported for octo models.")
         self.policy_setup = policy_setup
+        self.dataset_id = dataset_id
 
-        if model_type in ["octo-base", "octo-small"]:
+        if model is not None:
+            self.tokenizer, self.tokenizer_kwargs = None, None
+            self.model = model
+            self.action_mean = self.model.dataset_statistics[dataset_id]["action"]["mean"]
+            self.action_std = self.model.dataset_statistics[dataset_id]["action"]["std"]
+            self.automatic_task_creation = True
+        elif model_type in ["octo-base", "octo-small"]:
             # released huggingface octo models
             self.model_type = f"hf://rail-berkeley/{model_type}"
             self.tokenizer, self.tokenizer_kwargs = None, None
