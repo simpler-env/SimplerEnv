@@ -210,7 +210,7 @@ class OctoInference:
         # print("octo local rng", self.rng, key)
 
         if self.automatic_task_creation:
-            input_observation = {"image_primary": images, "pad_mask": pad_mask}
+            input_observation = {"image_primary": images, "timestep_pad_mask": pad_mask}
             norm_raw_actions = self.model.sample_actions(input_observation, self.task, rng=key)
         else:
             input_observation = {"image_primary": images, "timestep_pad_mask": pad_mask}
