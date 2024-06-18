@@ -16,6 +16,8 @@ from simpler_env.utils.action.action_ensemble import ActionEnsembler
 class OctoInference:
     def __init__(
         self,
+        model: Optional[OctoModel] = None,
+        dataset_id: Optional[str] = None,
         model_type: str = "octo-base",
         policy_setup: str = "widowx_bridge",
         horizon: int = 2,
@@ -27,87 +29,34 @@ class OctoInference:
     ) -> None:
         os.environ["TOKENIZERS_PARALLELISM"] = "false"
         if policy_setup == "widowx_bridge":
-            dataset_id = "bridge_dataset"
+            dataset_id = "bridge_dataset" if dataset_id is None else dataset_id
             action_ensemble = True
             action_ensemble_temp = 0.0
             self.sticky_gripper_num_repeat = 1
         elif policy_setup == "google_robot":
-            dataset_id = "fractal20220817_data"
+            dataset_id = "fractal20220817_data" if dataset_id is None else dataset_id
             action_ensemble = True
             action_ensemble_temp = 0.0
             self.sticky_gripper_num_repeat = 15
         else:
             raise NotImplementedError(f"Policy setup {policy_setup} not supported for octo models.")
         self.policy_setup = policy_setup
+        self.dataset_id = dataset_id
 
-        if model_type in ["octo-base", "octo-small"]:
+        if model is not None:
+            self.tokenizer, self.tokenizer_kwargs = None, None
+            self.model = model
+            self.action_mean = self.model.dataset_statistics[dataset_id]["action"]["mean"]
+            self.action_std = self.model.dataset_statistics[dataset_id]["action"]["std"]
+        elif model_type in ["octo-base", "octo-small"]:
             # released huggingface octo models
             self.model_type = f"hf://rail-berkeley/{model_type}"
             self.tokenizer, self.tokenizer_kwargs = None, None
             self.model = OctoModel.load_pretrained(self.model_type)
             self.action_mean = self.model.dataset_statistics[dataset_id]["action"]["mean"]
             self.action_std = self.model.dataset_statistics[dataset_id]["action"]["std"]
-            self.automatic_task_creation = True
         else:
-            # custom model path
-            self.model_type = model_type
-            self.tokenizer = AutoTokenizer.from_pretrained("t5-base")
-            self.tokenizer_kwargs = {
-                "max_length": 16,
-                "padding": "max_length",
-                "truncation": True,
-                "return_tensors": "np",
-            }
-            self.model = tf.saved_model.load(self.model_type)
-            if dataset_id == "bridge_dataset":
-                self.action_mean = np.array(
-                    [
-                        0.00021161,
-                        0.00012614,
-                        -0.00017022,
-                        -0.00015062,
-                        -0.00023831,
-                        0.00025646,
-                        0.0,
-                    ]
-                )
-                self.action_std = np.array(
-                    [
-                        0.00963721,
-                        0.0135066,
-                        0.01251861,
-                        0.02806791,
-                        0.03016905,
-                        0.07632624,
-                        1.0,
-                    ]
-                )
-            elif dataset_id == "fractal20220817_data":
-                self.action_mean = np.array(
-                    [
-                        0.00696389,
-                        0.00627008,
-                        -0.01263256,
-                        0.04330839,
-                        -0.00570499,
-                        0.00089247,
-                        0.0,
-                    ]
-                )
-                self.action_std = np.array(
-                    [
-                        0.06925472,
-                        0.06019009,
-                        0.07354742,
-                        0.15605888,
-                        0.1316399,
-                        0.14593437,
-                        1.0,
-                    ]
-                )
-            else:
-                raise NotImplementedError(f"{dataset_id} not supported yet for custom octo model checkpoints.")
-            self.automatic_task_creation = False
+            raise NotImplementedError()
 
         self.image_size = image_size
         self.action_scale = action_scale
@@ -165,10 +114,7 @@ class OctoInference:
         return images, pad_mask
 
     def reset(self, task_description: str) -> None:
-        if self.automatic_task_creation:
-            self.task = self.model.create_tasks(texts=[task_description])
-        else:
-            self.task = self.tokenizer(task_description, **self.tokenizer_kwargs)
+        self.task = self.model.create_tasks(texts=[task_description])
         self.task_description = task_description
         self.image_history.clear()
         if self.action_ensemble:
@@ -209,25 +155,20 @@ class OctoInference:
         self.rng, key = jax.random.split(self.rng)  # each shape [2,]
         # print("octo local rng", self.rng, key)
 
-        if self.automatic_task_creation:
-            input_observation = {"image_primary": images, "pad_mask": pad_mask}
-            norm_raw_actions = self.model.sample_actions(input_observation, self.task, rng=key)
-        else:
-            input_observation = {"image_primary": images, "timestep_pad_mask": pad_mask}
-            input_observation = {
-                "observations": input_observation,
-                "tasks": {"language_instruction": self.task},
-                "rng": np.concatenate([self.rng, key]),
-            }
-            norm_raw_actions = self.model.lc_ws2(input_observation)[:, :, :7]
-        norm_raw_actions = norm_raw_actions[0]  # remove batch, becoming (action_pred_horizon, action_dim)
-        assert norm_raw_actions.shape == (self.pred_action_horizon, 7)
+        input_observation = {"image_primary": images, "timestep_pad_mask": pad_mask}
+        raw_actions = self.model.sample_actions(
+            input_observation,
+            self.task,
+            rng=key,
+            unnormalization_statistics=self.model.dataset_statistics[self.dataset_id]["action"]
+        )
+        raw_actions = raw_actions[0]  # remove batch, becoming (action_pred_horizon, action_dim)
 
+        assert raw_actions.shape == (self.pred_action_horizon, 7)
         if self.action_ensemble:
-            norm_raw_actions = self.action_ensembler.ensemble_action(norm_raw_actions)
-            norm_raw_actions = norm_raw_actions[None]  # [1, 7]
+            raw_actions = self.action_ensembler.ensemble_action(raw_actions)
+            raw_actions = raw_actions[None]  # [1, 7]
 
-        raw_actions = norm_raw_actions * self.action_std[None] + self.action_mean[None]
         raw_action = {
             "world_vector": np.array(raw_actions[0, :3]),
             "rotation_delta": np.array(raw_actions[0, 3:6]),
