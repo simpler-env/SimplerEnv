@@ -7,6 +7,7 @@ from simpler_env.evaluation.argparse import get_args
 from simpler_env.evaluation.maniskill2_evaluator import maniskill2_evaluator
 from simpler_env.policies.octo.octo_server_model import OctoServerInference
 from simpler_env.policies.rt1.rt1_model import RT1Inference
+from simpler_env.policies.openvla.openvla_model import OpenVALInference
 
 try:
     from simpler_env.policies.octo.octo_model import OctoInference
@@ -28,7 +29,7 @@ if __name__ == "__main__":
             gpus[0],
             [tf.config.LogicalDeviceConfiguration(memory_limit=args.tf_memory_limit)],
         )
-
+    print(f"**** {args.policy_model} ****")
     # policy model creation; update this if you are using a new policy model
     if args.policy_model == "rt1":
         assert args.ckpt_path is not None
@@ -53,6 +54,13 @@ if __name__ == "__main__":
                 init_rng=args.octo_init_rng,
                 action_scale=args.action_scale,
             )
+    elif args.policy_model == "openvla":
+        assert args.ckpt_path is not None
+        model = OpenVALInference(
+            saved_model_path=args.ckpt_path,
+            policy_setup=args.policy_setup,
+            action_scale=args.action_scale,
+        )
     else:
         raise NotImplementedError()
 
