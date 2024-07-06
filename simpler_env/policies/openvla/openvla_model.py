@@ -11,7 +11,7 @@ import torch
 import cv2 as cv
 
 
-class OpenVALInference:
+class OpenVLAInference:
     def __init__(
         self,
         saved_model_path: str = "openvla/openvla-7b",
@@ -144,7 +144,7 @@ class OpenVALInference:
                 relative_gripper_action = self.previous_gripper_action - current_gripper_action
             self.previous_gripper_action = current_gripper_action
 
-            if np.abs(relative_gripper_action) > 0.5 and self.sticky_action_is_on is False:
+            if np.abs(relative_gripper_action) > 0.5 and (not self.sticky_action_is_on):
                 self.sticky_action_is_on = True
                 self.sticky_gripper_action = relative_gripper_action
 
