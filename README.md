@@ -80,6 +80,11 @@ Clone this repo:
 git clone https://github.com/simpler-env/SimplerEnv --recurse-submodules
 ```
 
+Install numpy<2.0 (otherwise errors in IK might occur in pinocchio):
+```
+pip install numpy==1.24.4
+```
+
 Install ManiSkill2 real-to-sim environments and their dependencies:
 ```
 cd {this_repo}/ManiSkill2_real2sim
