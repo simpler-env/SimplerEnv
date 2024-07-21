@@ -22,7 +22,7 @@ EXTRA_ARGS="--enable-raytracing --additional-env-build-kwargs station_name=mk_st
 
 EvalOverlay() {
 # A0
-python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 200 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -33,7 +33,7 @@ python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_
   ${EXTRA_ARGS}
 
 # B0
-python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 200 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -44,7 +44,7 @@ python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_
   ${EXTRA_ARGS}
 
 # C0
-python simpler_env/main_inference.py --policy-model rt1 --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 200 \
   --env-name ${env_name} --scene-name dummy_drawer \
