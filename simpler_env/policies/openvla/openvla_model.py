@@ -1,10 +1,8 @@
-from collections import deque
 from typing import Optional, Sequence
 import os
 import matplotlib.pyplot as plt
 import numpy as np
 from transforms3d.euler import euler2axangle
-from simpler_env.utils.action.action_ensemble import ActionEnsembler
 from transformers import AutoModelForVision2Seq, AutoProcessor
 from PIL import Image
 import torch
@@ -17,7 +15,7 @@ class OpenVLAInference:
         saved_model_path: str = "openvla/openvla-7b",
         unnorm_key: Optional[str] = None,
         policy_setup: str = "widowx_bridge",
-        horizon: int = 2,
+        horizon: int = 1,
         pred_action_horizon: int = 1,
         exec_horizon: int = 1,
         image_size: list[int] = [224, 224],
@@ -26,13 +24,9 @@ class OpenVLAInference:
         os.environ["TOKENIZERS_PARALLELISM"] = "false"
         if policy_setup == "widowx_bridge":
             unnorm_key = "bridge_orig" if unnorm_key is None else unnorm_key
-            action_ensemble = True
-            action_ensemble_temp = 0.0
             self.sticky_gripper_num_repeat = 1
         elif policy_setup == "google_robot":
             unnorm_key = "fractal20220817_data" if unnorm_key is None else unnorm_key
-            action_ensemble = True
-            action_ensemble_temp = 0.0
             self.sticky_gripper_num_repeat = 15
         else:
             raise NotImplementedError(
@@ -56,8 +50,6 @@ class OpenVLAInference:
         self.horizon = horizon
         self.pred_action_horizon = pred_action_horizon
         self.exec_horizon = exec_horizon
-        self.action_ensemble = action_ensemble
-        self.action_ensemble_temp = action_ensemble_temp
 
         self.sticky_action_is_on = False
         self.gripper_action_repeat = 0
@@ -66,22 +58,10 @@ class OpenVLAInference:
 
         self.task = None
         self.task_description = None
-        self.image_history = deque(maxlen=self.horizon)
-        if self.action_ensemble:
-            self.action_ensembler = ActionEnsembler(self.pred_action_horizon, self.action_ensemble_temp)
-        else:
-            self.action_ensembler = None
         self.num_image_history = 0
-
-    def _add_image_to_history(self, image: np.ndarray) -> None:
-        self.image_history.append(image)
-        self.num_image_history = min(self.num_image_history + 1, self.horizon)
 
     def reset(self, task_description: str) -> None:
         self.task_description = task_description
-        self.image_history.clear()
-        if self.action_ensemble:
-            self.action_ensembler.reset()
         self.num_image_history = 0
 
         self.sticky_action_is_on = False
@@ -109,7 +89,7 @@ class OpenVLAInference:
                 self.reset(task_description)
 
         assert image.dtype == np.uint8
-        self._add_image_to_history(self._resize_image(image))
+        image = self._resize_image(image)
 
         image: Image.Image = Image.fromarray(image)
         prompt = task_description
@@ -119,8 +99,6 @@ class OpenVLAInference:
         raw_actions = self.vla.predict_action(**inputs, unnorm_key=self.unnorm_key, do_sample=False)[None]
         # print(f"*** raw actions {raw_actions} ***")
 
-        if self.action_ensemble:
-            raw_actions = self.action_ensembler.ensemble_action(raw_actions)[None]
         raw_action = {
             "world_vector": np.array(raw_actions[0, :3]),
             "rotation_delta": np.array(raw_actions[0, 3:6]),

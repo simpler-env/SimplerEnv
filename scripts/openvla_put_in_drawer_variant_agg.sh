@@ -2,7 +2,7 @@
 
 
 
-declare -a arr=("openvla/openvla-7b")
+declare -a ckpt_paths=("openvla/openvla-7b")
 
 declare -a env_names=(
 PlaceIntoClosedTopDrawerCustomInScene-v0
