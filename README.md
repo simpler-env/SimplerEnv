@@ -289,6 +289,13 @@ If you are using CUDA 12, then to use GPU for Octo inference, you need CUDA vers
 
 `PATH=/usr/local/cuda-12.3/bin:$PATH   LD_LIBRARY_PATH=/usr/local/cuda-12.3/lib64:$LD_LIBRARY_PATH   bash scripts/octo_xxx_script.sh`
 
+### OpenVLA Inference Setup
+
+```
+pip install torch==2.3.1 torchvision==0.18.1 timm==0.9.10 tokenizers==0.15.2 accelerate==0.32.1
+pip install flash-attn==2.6.1 --no-build-isolation
+```
+
 ## Troubleshooting
 
 1. If you encounter issues such as
