@@ -10,7 +10,26 @@ from transforms3d.euler import quat2euler
 from simpler_env.utils.env.env_builder import build_maniskill2_env, get_robot_control_mode
 from simpler_env.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
 from simpler_env.utils.visualization import write_video
+from transforms3d.euler import quat2euler
+from sapien.core import Pose
 
+def get_env_proprio_info(obs):
+    # to match the proprioceptive information during training
+    # the gripper state is currently ignored
+    if 'arm' in obs['agent']['controller']:
+        # bridge
+        pose = obs['agent']['controller']['arm']['target_pose']
+        base_pose = obs['agent']['base_pose']
+        ee_pose = obs['extra']['tcp_pose']
+        base_pose = Pose(p=base_pose[:3], q=base_pose[3:])
+        ee_pose = Pose(p=ee_pose[:3], q=ee_pose[3:])
+        ee_pose_wrt_base = base_pose.inv() * ee_pose
+        euler  = quat2euler([ee_pose_wrt_base.q[0], ee_pose_wrt_base.q[1], ee_pose_wrt_base.q[2], ee_pose_wrt_base.q[3]])
+        prop = np.concatenate((ee_pose_wrt_base.p, [euler[0], euler[1], euler[2]]))
+    else:
+        # google
+        prop = obs['agent']['base_pose']
+    return prop
 
 def run_maniskill2_eval_single_episode(
     model,
@@ -109,7 +128,8 @@ def run_maniskill2_eval_single_episode(
     # Step the environment
     while not (predicted_terminated or truncated):
         # step the model; "raw_action" is raw model action output; "action" is the processed action to be sent into maniskill env
-        raw_action, action = model.step(image, task_description)
+        prop_info = get_env_proprio_info(obs)
+        raw_action, action = model.step(image, task_description, prop_info)
         predicted_actions.append(raw_action)
         predicted_terminated = bool(action["terminate_episode"][0] > 0)
         if predicted_terminated:
