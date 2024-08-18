@@ -184,6 +184,7 @@ simpler_env/
    policies/: policy implementations
       rt1/: RT-1 policy implementation
       octo/: Octo policy implementation
+      openvla/: OpenVLA policy implementation
    utils/:
       env/: environment building and observation utilities
       debug/: debugging tools for policies and robots
@@ -206,7 +207,7 @@ scripts/: example bash scripts for policy inference under our variant aggregatio
 
 If you want to use existing environments for evaluating new policies, you can keep `./ManiSkill2_real2sim` as is.
 
-1. Implement new policy inference scripts in `simpler_env/policies/{your_new_policy}`, following the examples for RT-1 (`simpler_env/policies/rt1`) and Octo (`simpler_env/policies/octo`) policies.
+1. Implement new policy inference scripts in `simpler_env/policies/{your_new_policy}`, following the examples for RT-1 (`simpler_env/policies/rt1`), Octo (`simpler_env/policies/octo`), and OpenVLA (`simpler_env/policies/openvla`) policies.
 2. You can now use `simpler_env/simple_inference_visual_matching_prepackaged_envs.py` to perform policy evaluations in simulation.
    - If the policy behaviors deviate a lot from those in the real-world, you can write similar scripts as in `simpler_env/utils/debug/{policy_name}_inference_real_video.py` to debug the policy behaviors. The debugging script performs policy inference by feeding real eval video frames into the policy. If the policy behavior still deviates significantly from real, this may suggest that policy actions are processed incorrectly into the simulation environments. Please double check action orderings and action spaces.
 3. If you'd like to perform customized evaluations,
