@@ -23,9 +23,10 @@ We hope that our work guides and inspires future real-to-sim evaluation efforts.
   - [Code Structure](#code-structure)
   - [Adding New Policies](#adding-new-policies)
   - [Adding New Real-to-Sim Evaluation Environments and Robots](#adding-new-real-to-sim-evaluation-environments-and-robots)
-  - [Full Installation (RT-1 and Octo Inference, Env Building)](#full-installation-rt-1-and-octo-inference-env-building)
+  - [Full Installation (RT-1, Octo, OpenVLA Inference, Env Building)](#full-installation-rt-1-octo-openvla-inference-env-building)
     - [RT-1 Inference Setup](#rt-1-inference-setup)
     - [Octo Inference Setup](#octo-inference-setup)
+    - [OpenVLA Inference Setup](#openvla-inference-setup)
   - [Troubleshooting](#troubleshooting)
   - [Citation](#citation)
 
@@ -97,7 +98,7 @@ cd {this_repo}
 pip install -e .
 ```
 
-**If you'd like to perform evaluations on our provided agents (e.g., RT-1, Octo), or add new robots and environments, please additionally follow the full installation instructions [here](#full-installation-rt-1-and-octo-inference-env-building).**
+**If you'd like to perform evaluations on our provided agents (e.g., RT-1, Octo, OpenVLA), or add new robots and environments, please additionally follow the full installation instructions [here](#full-installation-rt-1-octo-openvla-inference-env-building).**
 
 
 ## Examples
@@ -105,7 +106,7 @@ pip install -e .
 - Simple RT-1 and Octo evaluation script on prepackaged environments with visual matching evaluation setup: see [`simpler_env/simple_inference_visual_matching_prepackaged_envs.py`](https://github.com/simpler-env/SimplerEnv/blob/main/simpler_env/simple_inference_visual_matching_prepackaged_envs.py).
 - Colab notebook for RT-1 and Octo inference: see [this link](https://colab.research.google.com/github/simpler-env/SimplerEnv/blob/main/example.ipynb).
 - Environment interactive visualization and manual control: see [`ManiSkill2_real2sim/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py`](https://github.com/simpler-env/ManiSkill2_real2sim/blob/main/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py)
-- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with sweeps over object / robot poses and advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, and Octo policies. See [`scripts/`](https://github.com/simpler-env/SimplerEnv/tree/main/scripts).
+- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with sweeps over object / robot poses and advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, Octo, and OpenVLA policies. See [`scripts/`](https://github.com/simpler-env/SimplerEnv/tree/main/scripts).
 - Real-to-sim evaluation videos from running `scripts/*.sh`: see [this link](https://huggingface.co/datasets/xuanlinli17/simpler-env-eval-example-videos/tree/main).
 
 ## Current Environments
@@ -219,7 +220,7 @@ If you want to use existing environments for evaluating new policies, you can ke
 We provide a step-by-step guide to add new real-to-sim evaluation environments and robots in [this README](ADDING_NEW_ENVS_ROBOTS.md)
 
 
-## Full Installation (RT-1 and Octo Inference, Env Building)
+## Full Installation (RT-1, Octo, OpenVLA Inference, Env Building)
 
 If you'd like to perform evaluations on our provided agents (e.g., RT-1, Octo), or add new robots and environments, please follow the full installation instructions below.
 
