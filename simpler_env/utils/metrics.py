@@ -5,6 +5,33 @@ from typing import Sequence, Optional
 import numpy as np
 
 REAL_PERF = {    # Real robot eval performance --> extract via: REAL_PERF[task][policy]
+    "google_robot_pick_coke_can_horizontal": {
+        "rt-2-x": 0.920,
+        "rt-1-converged": 0.960,
+        "rt-1-15pct": 1.000,
+        "rt-1-x": 0.880,
+        "rt-1-begin": 0.200,
+        "octo-base": 0.440,
+        "openvla-7b": 0.640,
+    },
+    "google_robot_pick_coke_can_vertical": {
+        "rt-2-x": 0.800,
+        "rt-1-converged": 0.880,
+        "rt-1-15pct": 0.960,
+        "rt-1-x": 0.560,
+        "rt-1-begin": 0.000,
+        "octo-base": 0.200,
+        "openvla-7b": 0.280,
+    },
+    "google_robot_pick_coke_can_standing": {
+        "rt-2-x": 1.000,
+        "rt-1-converged": 0.720,
+        "rt-1-15pct": 0.800,
+        "rt-1-x": 0.840,
+        "rt-1-begin": 0.200,
+        "octo-base": 0.240,
+        "openvla-7b": 0.360,
+    },
     "google_robot_pick_coke_can": {
         "rt-2-x": 0.907,
         "rt-1-converged": 0.853,
@@ -12,6 +39,7 @@ REAL_PERF = {    # Real robot eval performance --> extract via: REAL_PERF[task][
         "rt-1-x": 0.760,
         "rt-1-begin": 0.133,
         "octo-base": 0.293,
+        "openvla-7b": 0.427,
     },
     "google_robot_move_near": {
         "rt-2-x": 0.733,
@@ -20,6 +48,7 @@ REAL_PERF = {    # Real robot eval performance --> extract via: REAL_PERF[task][
         "rt-1-x": 0.450,
         "rt-1-begin": 0.017,
         "octo-base": 0.350,
+        "openvla-7b": 0.667,
     },
     "google_robot_open_drawer": {
         "rt-2-x": 0.333,
@@ -28,6 +57,7 @@ REAL_PERF = {    # Real robot eval performance --> extract via: REAL_PERF[task][
         "rt-1-x": 0.519,
         "rt-1-begin": 0.000,
         "octo-base": 0.148,
+        "openvla-7b": 0.111,
     },
     "google_robot_close_drawer": {
         "rt-2-x": 0.630,
@@ -36,6 +66,16 @@ REAL_PERF = {    # Real robot eval performance --> extract via: REAL_PERF[task][
         "rt-1-x": 0.741,
         "rt-1-begin": 0.000,
         "octo-base": 0.519,
+        "openvla-7b": 0.148,
+    },
+    "google_robot_drawer": {
+        "rt-2-x": 0.481,
+        "rt-1-converged": 0.870,
+        "rt-1-15pct": 0.796,
+        "rt-1-x": 0.630,
+        "rt-1-begin": 0.000,
+        "octo-base": 0.333,
+        "openvla-7b": 0.130,
     },
     "google_robot_place_apple_in_closed_top_drawer": {
         "rt-2-x": 0.074,
@@ -44,6 +84,7 @@ REAL_PERF = {    # Real robot eval performance --> extract via: REAL_PERF[task][
         "rt-1-x": 0.407,
         "rt-1-begin": 0.000,
         "octo-base": 0.000,
+        "openvla-7b": 0.000,
     },
     "widowx_spoon_on_towel": {
         "rt-1-x": 0.000,
@@ -69,6 +110,33 @@ REAL_PERF = {    # Real robot eval performance --> extract via: REAL_PERF[task][
 
 
 SIMPLER_PERF = {    # SIMPLER simulated eval performance --> extract via: SIMPLER_PERF[task][policy]
+    "google_robot_pick_coke_can_horizontal": {
+        "rt-2-x": 0.740,
+        "rt-1-converged": 0.960,
+        "rt-1-15pct": 0.860,
+        "rt-1-x": 0.820,
+        "rt-1-begin": 0.050,
+        "octo-base": 0.210,
+        "openvla-7b": 0.310,
+    },
+    "google_robot_pick_coke_can_vertical": {
+        "rt-2-x": 0.740,
+        "rt-1-converged": 0.900,
+        "rt-1-15pct": 0.790,
+        "rt-1-x": 0.330,
+        "rt-1-begin": 0.000,
+        "octo-base": 0.210,
+        "openvla-7b": 0.030,
+    },
+    "google_robot_pick_coke_can_standing": {
+        "rt-2-x": 0.880,
+        "rt-1-converged": 0.710,
+        "rt-1-15pct": 0.480,
+        "rt-1-x": 0.550,
+        "rt-1-begin": 0.030,
+        "octo-base": 0.090,
+        "openvla-7b": 0.190,
+    },
     "google_robot_pick_coke_can": {
         "rt-2-x": 0.787,
         "rt-1-converged": 0.857,
@@ -76,6 +144,7 @@ SIMPLER_PERF = {    # SIMPLER simulated eval performance --> extract via: SIMPLE
         "rt-1-x": 0.567,
         "rt-1-begin": 0.027,
         "octo-base": 0.170,
+        "openvla-7b": 0.177,
     },
     "google_robot_move_near": {
         "rt-2-x": 0.779,
@@ -84,6 +153,7 @@ SIMPLER_PERF = {    # SIMPLER simulated eval performance --> extract via: SIMPLE
         "rt-1-x": 0.317,
         "rt-1-begin": 0.050,
         "octo-base": 0.042,
+        "openvla-7b": 0.492,
     },
     "google_robot_open_drawer": {
         "rt-2-x": 0.157,
@@ -92,6 +162,7 @@ SIMPLER_PERF = {    # SIMPLER simulated eval performance --> extract via: SIMPLE
         "rt-1-x": 0.296,
         "rt-1-begin": 0.000,
         "octo-base": 0.009,
+        "openvla-7b": 0.250,
     },
     "google_robot_close_drawer": {
         "rt-2-x": 0.343,
@@ -100,6 +171,16 @@ SIMPLER_PERF = {    # SIMPLER simulated eval performance --> extract via: SIMPLE
         "rt-1-x": 0.891,
         "rt-1-begin": 0.278,
         "octo-base": 0.444,
+        "openvla-7b": 0.574,
+    },
+    "google_robot_drawer": {
+        "rt-2-x": 0.250,
+        "rt-1-converged": 0.730,
+        "rt-1-15pct": 0.565,
+        "rt-1-x": 0.597,
+        "rt-1-begin": 0.139,
+        "octo-base": 0.227,
+        "openvla-7b": 0.412,
     },
     "google_robot_place_apple_in_closed_top_drawer": {
         "rt-2-x": 0.037,
@@ -108,6 +189,7 @@ SIMPLER_PERF = {    # SIMPLER simulated eval performance --> extract via: SIMPLE
         "rt-1-x": 0.213,
         "rt-1-begin": 0.000,
         "octo-base": 0.000,
+        "openvla-7b": 0.000,
     },
     "widowx_spoon_on_towel": {
         "rt-1-x": 0.000,
