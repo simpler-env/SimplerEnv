@@ -29,3 +29,5 @@ dist/
 imgui.ini
 
 octo/
+checkpoints/
+ManiSkill2_real2sim/
