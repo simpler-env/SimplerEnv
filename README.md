@@ -31,36 +31,34 @@ We hope that our work guides and inspires future real-to-sim evaluation efforts.
 
 ## Getting Started
 
-Follow the [Installation](#installation) section to install the minimal requirements for our environments. Then you can run the following minimal inference script with interactive python. The scripts creates prepackaged environments for our `visual matching` evaluation setup.
+Follow the [Installation](#installation) section to install the minimal requirements to create our environments. Then you can run the following minimal inference script with interactive python.
 
 ```python
-import simpler_env
+# import simpler_env
 from simpler_env.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
+from mani_skill.envs.tasks.digital_twins.bridge_dataset_eval import *
+env: BaseEnv = gym.make(
+  "PutSpoonOnTableClothInScene-v1",
+  obs_mode="rgb+segmentation",
+  num_envs=16, # if num_envs > 1, GPU simulation backend is used.
+)
+obs, _ = env.reset()
+# returns language instruction for each parallel env
+instruction = env.unwrapped.get_language_instruction()
+print("instruction:", instruction[0])
 
-env = simpler_env.make('google_robot_pick_coke_can')
-obs, reset_info = env.reset()
-instruction = env.get_language_instruction()
-print("Reset info", reset_info)
-print("Instruction", instruction)
-
-done, truncated = False, False
-while not (done or truncated):
-   # action[:3]: delta xyz; action[3:6]: delta rotation in axis-angle representation;
-   # action[6:7]: gripper (the meaning of open / close depends on robot URDF)
-   image = get_image_from_maniskill2_obs_dict(env, obs)
-   action = env.action_space.sample() # replace this with your policy inference
-   obs, reward, done, truncated, info = env.step(action) # for long horizon tasks, you can call env.advance_to_next_subtask() to advance to the next subtask; the environment might also autoadvance if env._elapsed_steps is larger than a threshold
-   new_instruction = env.get_language_instruction()
-   if new_instruction != instruction:
-      # for long horizon tasks, we get a new instruction when robot proceeds to the next subtask
-      instruction = new_instruction
-      print("New Instruction", instruction)
-
-episode_stats = info.get('episode_stats', {})
-print("Episode stats", episode_stats)
+while True:
+  # action[:3]: delta xyz; action[3:6]: delta rotation in axis-angle representation;
+  # action[6:7]: gripper (the meaning of open / close depends on robot URDF)
+  image = get_image_from_maniskill2_obs_dict(env, obs) # this is the image observation for policy inference
+  action = env.action_space.sample() # replace this with your policy inference
+  obs, reward, terminated, truncated, info = env.step(action)
+  if truncated.any():
+      break
+print("Episode Info", info)
 ```
-
-Additionally, you can play with our environments in an interactive manner through [`ManiSkill2_real2sim/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py`](https://github.com/simpler-env/ManiSkill2_real2sim/blob/main/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py). See the script for more details and commands.
+<!-- 
+Additionally, you can play with our environments in an interactive manner through [`ManiSkill2_real2sim/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py`](https://github.com/simpler-env/ManiSkill2_real2sim/blob/main/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py). See the script for more details and commands. -->
 
 ## Installation
 
@@ -70,12 +68,19 @@ Prerequisites:
 - CUDA version >=11.8 (this is required if you want to perform a full installation of this repo and perform RT-1 or Octo inference)
 - An NVIDIA GPU (ideally RTX; for non-RTX GPUs, such as 1080Ti and A100, environments that involve ray tracing will be slow). Currently TPU is not supported as SAPIEN requires a GPU to run.
 
-Create an anaconda environment and install dependencies
+First git clone this repo:
+```bash
+git clone https://github.com/simpler-env/SimplerEnv
 ```
+
+Create a conda/mamba environment and install dependencies:
+```bash
+cd path/to/SimplerEnv
 conda create -n simpler_env python=3.10.12
 conda activate ms3-octo
 pip install mani_skill
 pip install torch==2.3.1 tyro==0.8.5
+pip install -e .
 ```
 
 
