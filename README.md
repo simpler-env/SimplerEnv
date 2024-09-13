@@ -185,8 +185,7 @@ If you are using CUDA 12, then to use GPU for Octo inference, you need CUDA vers
 
 ### Evaluating Octo and RT-1
 
-The new ManiSkill3 evaluation script is in `simpler_env/real2sim_eval_maniskill3.py`. Run
-
+The new ManiSkill3 evaluation script is in `simpler_env/real2sim_eval_maniskill3.py`. See the script for more details. An example usage is shown below:
 ```
 XLA_PYTHON_CLIENT_PREALLOCATE=false python simpler_env/real2sim_eval_maniskill3.py \
   --model="octo-small" -e "PutEggplantInBasketScene-v1" -s 0 --num-episodes 192 --num-envs 64
