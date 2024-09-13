@@ -35,7 +35,7 @@ Follow the [Installation](#installation) section to install the minimal requirem
 
 ```python
 # import simpler_env
-from simpler_env.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
+from simpler_env.utils.env.observation_utils import get_image_from_maniskill3_obs_dict
 from mani_skill.envs.tasks.digital_twins.bridge_dataset_eval import *
 env: BaseEnv = gym.make(
   "PutSpoonOnTableClothInScene-v1",

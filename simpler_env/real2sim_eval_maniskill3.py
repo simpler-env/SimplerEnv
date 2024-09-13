@@ -11,22 +11,30 @@ import tree
 from mani_skill.utils import common
 from mani_skill.utils import visualization
 from mani_skill.utils.visualization.misc import images_to_video
-from mani_skill.utils.wrappers.gymnasium import CPUGymWrapper
 signal.signal(signal.SIGINT, signal.SIG_DFL) # allow ctrl+c
+from simpler_env.utils.env.observation_utils import get_image_from_maniskill3_obs_dict
 
 import gymnasium as gym
 import numpy as np
 from mani_skill.envs.tasks.digital_twins.bridge_dataset_eval import *
 from mani_skill.envs.sapien_env import BaseEnv
-from mani_skill.sensors.camera import Camera
 import tyro
 from dataclasses import dataclass
+from pathlib import Path
 
 @dataclass
 class Args:
+    """
+    This is a script to evaluate policies on real2sim environments. Example command to run: 
+
+    XLA_PYTHON_CLIENT_PREALLOCATE=false python real2sim_eval_maniskill3.py \
+        --model="octo-small" -e "PutEggplantInBasketScene-v1" -s 0 --num-episodes 192 --num-envs 64
+    """
+
+
     env_id: Annotated[str, tyro.conf.arg(aliases=["-e"])] = "PutCarrotOnPlateInScene-v1"
     """The environment ID of the task you want to simulate. Can be one of
-    PutCarrotOnPlateInScene-v1, PutSpoonOnTableClothInScene-v1, StackGreenCubeOnYellowCubeBakedTexInScene-v1, PutEggplantInBasketInScene-v1"""
+    PutCarrotOnPlateInScene-v1, PutSpoonOnTableClothInScene-v1, StackGreenCubeOnYellowCubeBakedTexInScene-v1, PutEggplantInBasketScene-v1"""
 
     shader: str = "default"
 
@@ -60,11 +68,7 @@ class Args:
     """Whether to save videos"""
 
     debug: bool = False
-def parse_observation(obs):
-    img = obs["sensor_data"]["3rd_view_camera"]["rgb"]
-    if img.dtype == torch.int32:
-        img = img.to(torch.uint8)
-    return img
+
 def main():
     args = tyro.cli(Args)
     if args.seed is not None:
@@ -80,22 +84,6 @@ def main():
         sensor_configs=sensor_configs
     )
     sim_backend = 'gpu' if env.device.type == 'cuda' else 'cpu'
-
-    renderer = visualization.ImageRenderer(wait_for_button_press=True)
-    if args.debug:
-
-        obs, _ = env.reset(seed=args.seed, options={"episode_id": torch.tensor([args.seed + i for i in range(args.num_envs)])})
-        env.render_human().paused=True
-        img = parse_observation(obs)
-        if len(img) > 1:
-            # tile images
-            img = np.concatenate(img, axis=1)
-        else:
-            img = img[0]
-        renderer(img)
-        while True:
-            env.render_human()
-            env.step(None)
 
     # Setup up the policy inference model
     model = None
@@ -126,6 +114,7 @@ def main():
     if model_name == "random":
         print("Using random actions.")
     exp_dir = os.path.join(args.record_dir, f"real2sim_eval/{model_name}_{args.env_id}")
+    Path(exp_dir).mkdir(parents=True, exist_ok=True)
 
     eval_metrics = defaultdict(list)
     eps_count = 0
@@ -145,7 +134,7 @@ def main():
             model.reset(instruction)
         images = []
         predicted_terminated, truncated = False, False
-        images.append(parse_observation(obs))
+        images.append(get_image_from_maniskill3_obs_dict(env, obs))
         elapsed_steps = 0
         while not (predicted_terminated or truncated):
             if model is not None:
@@ -168,13 +157,13 @@ def main():
             info = common.to_numpy(info)
             
             truncated = bool(truncated.any()) # note that all envs truncate and terminate at the same time.
-            images.append(parse_observation(obs))
+            images.append(get_image_from_maniskill3_obs_dict(env, obs))
 
         for k, v in info.items():
             eval_metrics[k].append(v.flatten())
         if args.save_video:
             for i in range(len(images[-1])):
-                images_to_video([img[i] for img in images], exp_dir, f"{sim_backend}_eval_{seed + i}_success={info['success'][i].item()}", fps=10, verbose=True)
+                images_to_video([img[i].cpu().numpy() for img in images], exp_dir, f"{sim_backend}_eval_{seed + i}_success={info['success'][i].item()}", fps=10, verbose=True)
         eps_count += args.num_envs
         if args.num_envs == 1:
             print(f"Evaluated episode {eps_count}. Seed {seed}. Results after {eps_count} episodes:")
