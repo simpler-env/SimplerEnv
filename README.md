@@ -6,7 +6,7 @@
 
 Significant progress has been made in building generalist robot manipulation policies, yet their scalable and reproducible evaluation remains challenging, as real-world evaluation is operationally expensive and inefficient. We propose employing physical simulators as efficient, scalable, and informative complements to real-world evaluations. These simulation evaluations offer valuable quantitative metrics for checkpoint selection, insights into potential real-world policy behaviors or failure modes, and standardized setups to enhance reproducibility.
 
-This repository is based in the [SAPIEN](https://sapien.ucsd.edu/) simulator and the [ManiSkill 3](https://github.com/haosulab/ManiSkill) robotics framework. Note that to reproduce the original results, you need to use TODO branch which uses a older version of ManiSkill and SAPIEN. The version used here leverages the CPU/GPU simulation and rendering capabilities of the latest ManiSkill and SAPIEN.
+This repository is based in the [SAPIEN](https://sapien.ucsd.edu/) simulator and the [ManiSkill 3](https://github.com/haosulab/ManiSkill) robotics framework. Note that to reproduce the original results, you need to use `main` branch which uses a older version of ManiSkill and SAPIEN. The version used here leverages the CPU/GPU simulation and rendering capabilities of the latest ManiSkill and SAPIEN.
 
 The ManiSkill 3 version of SimplerEnv currently is simply used for installing the inference setup for policies like RT-1 and Octo. The real2sim environments are 
 
