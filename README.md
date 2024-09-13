@@ -78,7 +78,7 @@ Create a conda/mamba environment and install dependencies:
 cd path/to/SimplerEnv
 conda create -n simpler_env python=3.10.12
 conda activate ms3-octo
-pip install mani_skill
+pip install --upgrade git+https://github.com/haosulab/ManiSkill.git
 pip install torch==2.3.1 tyro==0.8.5
 pip install -e .
 ```
@@ -182,6 +182,16 @@ Earlier instructions already setup Octo for inference.
 If you are using CUDA 12, then to use GPU for Octo inference, you need CUDA version >= 12.2 to satisfy the requirement of Jax; in this case, you can perform a runfile install of the corresponding CUDA (e.g., version 12.3), then set the environment variables whenever you run Octo inference scripts:
 
 `PATH=/usr/local/cuda-12.3/bin:$PATH   LD_LIBRARY_PATH=/usr/local/cuda-12.3/lib64:$LD_LIBRARY_PATH   bash scripts/octo_xxx_script.sh`
+
+### Evaluating Octo and RT-1
+
+The new ManiSkill3 evaluation script is in `simpler_env/real2sim_eval_maniskill3.py`. Run
+
+```
+XLA_PYTHON_CLIENT_PREALLOCATE=false python simpler_env/real2sim_eval_maniskill3.py \
+  --model="octo-small" -e "PutEggplantInBasketScene-v1" -s 0 --num-episodes 192 --num-envs 64
+```
+to evaluate 192 episodes of octo-small model on PutEggplantInBasketScene-v1 environment with 64 parallel environments. You can use more environments if you have enough memory. Note that this is not deterministic and results may vary between runs.
 
 ## Troubleshooting
 
