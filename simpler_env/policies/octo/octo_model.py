@@ -9,9 +9,24 @@ from octo.model.octo_model import OctoModel
 import tensorflow as tf
 from transformers import AutoTokenizer
 from transforms3d.euler import euler2axangle
-
+from functools import partial
 from simpler_env.utils.action.action_ensemble import ActionEnsembler
+from mani_skill.utils.geometry import rotation_conversions
+from mani_skill.utils import common
+import torch
+from torch.utils import dlpack as torch_dlpack
 
+from jax import dlpack as jax_dlpack
+import jax.numpy as jnp
+
+def torch2jax(x_torch):
+    x_torch = x_torch.contiguous() # https://github.com/google/jax/issues/8082
+    x_jax = jax_dlpack.from_dlpack(torch_dlpack.to_dlpack(x_torch))
+    return x_jax
+
+def jax2torch(x_jax):
+    x_torch = torch_dlpack.from_dlpack(jax_dlpack.to_dlpack(x_jax))
+    return x_torch
 
 class OctoInference:
     def __init__(
@@ -55,6 +70,8 @@ class OctoInference:
             self.model = OctoModel.load_pretrained(self.model_type)
             self.action_mean = self.model.dataset_statistics[dataset_id]["action"]["mean"]
             self.action_std = self.model.dataset_statistics[dataset_id]["action"]["std"]
+            self.action_mean = jnp.array(self.action_mean)
+            self.action_std = jnp.array(self.action_std)
         else:
             raise NotImplementedError()
 
@@ -86,13 +103,9 @@ class OctoInference:
         self.num_image_history = 0
 
     def _resize_image(self, image: np.ndarray) -> np.ndarray:
-        image = tf.image.resize(
-            image,
-            size=(self.image_size, self.image_size),
-            method="lanczos3",
-            antialias=True,
-        )
-        image = tf.cast(tf.clip_by_value(tf.round(image), 0, 255), tf.uint8).numpy()
+        """resize image to a square image of size self.image_size. image should be shape (B, H, W, 3)"""
+        image = jax.vmap(partial(jax.image.resize, shape=(self.image_size, self.image_size, 3), method="lanczos3", antialias=True))(image)
+        image = jnp.clip(jnp.round(image), 0, 255).astype(jnp.uint8)
         return image
 
     def _add_image_to_history(self, image: np.ndarray) -> None:
@@ -105,17 +118,20 @@ class OctoInference:
         self.num_image_history = min(self.num_image_history + 1, self.horizon)
 
     def _obtain_image_history_and_mask(self) -> tuple[np.ndarray, np.ndarray]:
-        images = np.stack(self.image_history, axis=0)
+        images = jnp.stack(self.image_history, axis=1)
+        batch_size = images.shape[0]
         horizon = len(self.image_history)
-        pad_mask = np.ones(horizon, dtype=np.float64)  # note: this should be of float type, not a bool type
-        pad_mask[: horizon - min(horizon, self.num_image_history)] = 0
+        pad_mask = jnp.ones((batch_size, horizon), dtype=jnp.float32)  # note: this should be of float type, not a bool type
+        pad_mask = pad_mask.at[:, : horizon - min(horizon, self.num_image_history)].set(0)
         # pad_mask = np.ones(self.horizon, dtype=np.float64) # note: this should be of float type, not a bool type
         # pad_mask[:self.horizon - self.num_image_history] = 0
         return images, pad_mask
 
-    def reset(self, task_description: str) -> None:
-        self.task = self.model.create_tasks(texts=[task_description])
-        self.task_description = task_description
+    def reset(self, task_descriptions: str) -> None:
+        if isinstance(task_descriptions, str):
+            task_descriptions = [task_descriptions]
+        self.task = self.model.create_tasks(texts=task_descriptions)
+        self.task_description = task_descriptions
         self.image_history.clear()
         if self.action_ensemble:
             self.action_ensembler.reset()
@@ -130,7 +146,7 @@ class OctoInference:
     def step(self, image: np.ndarray, task_description: Optional[str] = None, *args, **kwargs) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
         """
         Input:
-            image: np.ndarray of shape (H, W, 3), uint8
+            image: np.ndarray/torch tensor of shape (B, H, W, 3), uint8
             task_description: Optional[str], task description; if different from previous task description, policy state is reset
         Output:
             raw_action: dict; raw policy action output
@@ -145,45 +161,48 @@ class OctoInference:
                 # task description has changed; reset the policy state
                 self.reset(task_description)
 
-        assert image.dtype == np.uint8
+        # assert image.dtype == np.uint8
+        assert len(image.shape) == 4, "image shape should be (batch_size, height, width, 3)"
+        batch_size = image.shape[0]
+        image = torch2jax(image)
         image = self._resize_image(image)
         self._add_image_to_history(image)
         images, pad_mask = self._obtain_image_history_and_mask()
-        images, pad_mask = images[None], pad_mask[None]
-
         # we need use a different rng key for each model forward step; this has a large impact on model performance
         self.rng, key = jax.random.split(self.rng)  # each shape [2,]
         # print("octo local rng", self.rng, key)
 
         input_observation = {"image_primary": images, "pad_mask": pad_mask}
+        # images.shape (b, h, w, c, 3),  pad_mask.shape (b, h)
         norm_raw_actions = self.model.sample_actions(
             input_observation,
             self.task,
             rng=key,
         )
         raw_actions = norm_raw_actions * self.action_std[None] + self.action_mean[None]
-        raw_actions = raw_actions[0]  # remove batch, becoming (action_pred_horizon, action_dim)
 
-        assert raw_actions.shape == (self.pred_action_horizon, 7)
+        assert raw_actions.shape == (batch_size, self.pred_action_horizon, 7)
         if self.action_ensemble:
             raw_actions = self.action_ensembler.ensemble_action(raw_actions)
-            raw_actions = raw_actions[None]  # [1, 7]
-
+        raw_actions = jax2torch(raw_actions)
         raw_action = {
-            "world_vector": np.array(raw_actions[0, :3]),
-            "rotation_delta": np.array(raw_actions[0, 3:6]),
-            "open_gripper": np.array(raw_actions[0, 6:7]),  # range [0, 1]; 1 = open; 0 = close
+            "world_vector": raw_actions[:, :3],
+            "rotation_delta": raw_actions[:, 3:6],
+            "open_gripper": raw_actions[:, 6:7],  # range [0, 1]; 1 = open; 0 = close
         }
-
-        # process raw_action to obtain the action to be sent to the maniskill2 environment
+        raw_action = common.to_tensor(raw_action)
+        
+        # TODO (stao): check if we need torch float 64s.
+        # process raw_action to obtain the action to be sent to the maniskill environment
         action = {}
         action["world_vector"] = raw_action["world_vector"] * self.action_scale
-        action_rotation_delta = np.asarray(raw_action["rotation_delta"], dtype=np.float64)
-        roll, pitch, yaw = action_rotation_delta
-        action_rotation_ax, action_rotation_angle = euler2axangle(roll, pitch, yaw)
-        action_rotation_axangle = action_rotation_ax * action_rotation_angle
-        action["rot_axangle"] = action_rotation_axangle * self.action_scale
-
+        # action_rotation_delta = np.asarray(raw_action["rotation_delta"], dtype=np.float64)
+        # roll, pitch, yaw = action_rotation_delta
+        # action_rotation_ax, action_rotation_angle = euler2axangle(roll, pitch, yaw)
+        # action_rotation_axangle = action_rotation_ax * action_rotation_angle
+        # action["rot_axangle"] = action_rotation_axangle * self.action_scale
+        # TODO: is there a better conversion from euler angles to axis angle?
+        action["rot_axangle"] = rotation_conversions.matrix_to_axis_angle(rotation_conversions.euler_angles_to_matrix(raw_action["rotation_delta"], "XYZ"))
         if self.policy_setup == "google_robot":
             current_gripper_action = raw_action["open_gripper"]
 
