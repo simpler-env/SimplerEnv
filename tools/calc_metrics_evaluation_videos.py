@@ -27,6 +27,7 @@ def calc_pick_coke_can_stats(root_result_dir):
             "rt-1-x": 0.88,
             "rt-1-begin": 0.20,
             "octo-base": 0.44,
+            "openvla-7b": 0.64,
         },
         "vertical": {
             "rt-2-x": 0.80,
@@ -35,6 +36,7 @@ def calc_pick_coke_can_stats(root_result_dir):
             "rt-1-x": 0.56,
             "rt-1-begin": 0.00,
             "octo-base": 0.20,
+            "openvla-7b": 0.28,
         },
         "standing": {
             "rt-2-x": 1.00,
@@ -43,6 +45,7 @@ def calc_pick_coke_can_stats(root_result_dir):
             "rt-1-x": 0.84,
             "rt-1-begin": 0.20,
             "octo-base": 0.24,
+            "openvla-7b": 0.36,
         },
     }
 
@@ -282,6 +285,7 @@ def calc_move_near_stats(root_result_dir):
         "rt-1-x": 0.45,
         "rt-1-begin": 0.017,
         "octo-base": 0.35,
+        "openvla-7b": 0.667,
     }
 
     ckpt_alias_keys = list(move_near_real_success.keys())
@@ -413,6 +417,7 @@ def calc_drawer_stats(root_result_dir):
             "rt-1-x": 0.519,
             "rt-1-begin": 0.000,
             "octo-base": 0.148,
+            "openvla-7b": 0.111,
         },
         "close": {
             "rt-2-x": 0.630,
@@ -421,6 +426,7 @@ def calc_drawer_stats(root_result_dir):
             "rt-1-x": 0.741,
             "rt-1-begin": 0.000,
             "octo-base": 0.519,
+            "openvla-7b": 0.148,
         },
     }
 
@@ -642,6 +648,7 @@ def calc_long_horizon_apple_in_drawer_stats(root_result_dir):
             "rt-1-x": 0.407,
             "rt-1-begin": 0.000,
             "octo-base": 0.000,
+            "openvla-7b": 0.000,
         },
     }
 
@@ -855,21 +862,25 @@ def calc_bridge_put_on_env_stats(root_result_dir):
             "rt-1-x": 0.042,
             "octo-base": 0.500,
             "octo-small": 0.542,
+            "openvla-7b": 0.10,
         },
         "put_carrot_on_plate": {
             "rt-1-x": 0.167,
             "octo-base": 0.500,
             "octo-small": 0.208,
+            "openvla-7b": 0.10,
         },
         "stack_green_block_on_yellow_block": {
             "rt-1-x": 0.000,
             "octo-base": 0.292,
             "octo-small": 0.583,
+            "openvla-7b": 0.10,
         },
         "put_eggplant_in_basket": {
             "rt-1-x": 0.000,
             "octo-base": 0.400,
             "octo-small": 0.600,
+            "openvla-7b": 0.10,
         },
     }
     real_success_dict = {
@@ -877,17 +888,20 @@ def calc_bridge_put_on_env_stats(root_result_dir):
             "rt-1-x": 0.000,
             "octo-base": 0.333,
             "octo-small": 0.417,
+            "openvla-7b": 0.10,
         },
         "put_carrot_on_plate": {"rt-1-x": 0.00, "octo-base": 0.25, "octo-small": 0.083},
         "stack_green_block_on_yellow_block": {
             "rt-1-x": 0.000,
             "octo-base": 0.000,
             "octo-small": 0.125,
+            "openvla-7b": 0.10,
         },
         "put_eggplant_in_basket": {
             "rt-1-x": 0.000,
             "octo-base": 0.250,
             "octo-small": 0.400,
+            "openvla-7b": 0.10,
         },
     }
 
@@ -1023,6 +1037,7 @@ CKPT_MAPPING = {
     "octo-base": "octo-base",
     "octo-small": "octo-small",
     "octo-server": "octo-server",
+    "openvla-7b": "openvla-7b",
 }
 
 parser = argparse.ArgumentParser()

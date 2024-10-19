@@ -1,10 +1,6 @@
 # shader_dir=rt means that we turn on ray-tracing rendering; this is quite crucial for the open / close drawer task as policies often rely on shadows to infer depth
-
-
-
-declare -a policy_models=(
-"octo-base"
-# "octo-server"
+declare -a ckpt_paths=(
+"openvla/openvla-7b"
 )
 
 declare -a env_names=(
@@ -25,7 +21,7 @@ EXTRA_ARGS="--enable-raytracing --additional-env-build-kwargs station_name=mk_st
 
 EvalOverlay() {
 # A0
-python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model openvla --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -36,7 +32,7 @@ python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path 
   ${EXTRA_ARGS}
 
 # A1
-python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model openvla --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -47,7 +43,7 @@ python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path 
   ${EXTRA_ARGS}
 
 # A2
-python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model openvla --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -58,7 +54,7 @@ python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path 
   ${EXTRA_ARGS}
 
 # B0
-python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model openvla --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -69,7 +65,7 @@ python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path 
   ${EXTRA_ARGS}
 
 # B1
-python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model openvla --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -80,7 +76,7 @@ python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path 
   ${EXTRA_ARGS}
 
 # B2
-python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model openvla --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -91,7 +87,7 @@ python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path 
   ${EXTRA_ARGS}
 
 # C0
-python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model openvla --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -102,7 +98,7 @@ python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path 
   ${EXTRA_ARGS}
 
 # C1
-python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model openvla --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -113,7 +109,7 @@ python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path 
   ${EXTRA_ARGS}
 
 # C2
-python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+python simpler_env/main_inference.py --policy-model openvla --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -125,11 +121,12 @@ python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path 
 }
 
 
-for policy_model in "${policy_models[@]}"; do
+for ckpt_path in "${ckpt_paths[@]}"; do
   for env_name in "${env_names[@]}"; do
     EvalOverlay
   done
 done
+
 
 
 done
