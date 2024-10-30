@@ -34,10 +34,10 @@ We hope that our work guides and inspires future real-to-sim evaluation efforts.
 Follow the [Installation](#installation) section to install the minimal requirements to create our environments. Then you can run the following minimal inference script with interactive python.
 
 ```python
-# import simpler_env
+import gymnasium as gym
 from simpler_env.utils.env.observation_utils import get_image_from_maniskill3_obs_dict
 from mani_skill.envs.tasks.digital_twins.bridge_dataset_eval import *
-env: BaseEnv = gym.make(
+env = gym.make(
   "PutSpoonOnTableClothInScene-v1",
   obs_mode="rgb+segmentation",
   num_envs=16, # if num_envs > 1, GPU simulation backend is used.
@@ -50,7 +50,7 @@ print("instruction:", instruction[0])
 while True:
   # action[:3]: delta xyz; action[3:6]: delta rotation in axis-angle representation;
   # action[6:7]: gripper (the meaning of open / close depends on robot URDF)
-  image = get_image_from_maniskill2_obs_dict(env, obs) # this is the image observation for policy inference
+  image = get_image_from_maniskill3_obs_dict(env, obs) # this is the image observation for policy inference
   action = env.action_space.sample() # replace this with your policy inference
   obs, reward, terminated, truncated, info = env.step(action)
   if truncated.any():
