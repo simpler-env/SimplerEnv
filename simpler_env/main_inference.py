@@ -5,9 +5,6 @@ import tensorflow as tf
 
 from simpler_env.evaluation.argparse import get_args
 from simpler_env.evaluation.maniskill2_evaluator import maniskill2_evaluator
-from simpler_env.policies.octo.octo_server_model import OctoServerInference
-from simpler_env.policies.rt1.rt1_model import RT1Inference
-from simpler_env.policies.openvla.openvla_model import OpenVLAInference
 
 try:
     from simpler_env.policies.octo.octo_model import OctoInference
@@ -32,6 +29,7 @@ if __name__ == "__main__":
     print(f"**** {args.policy_model} ****")
     # policy model creation; update this if you are using a new policy model
     if args.policy_model == "rt1":
+        from simpler_env.policies.rt1.rt1_model import RT1Inference
         assert args.ckpt_path is not None
         model = RT1Inference(
             saved_model_path=args.ckpt_path,
@@ -39,6 +37,7 @@ if __name__ == "__main__":
             action_scale=args.action_scale,
         )
     elif "octo" in args.policy_model:
+        from simpler_env.policies.octo.octo_server_model import OctoServerInference
         if args.ckpt_path is None or args.ckpt_path == "None":
             args.ckpt_path = args.policy_model
         if "server" in args.policy_model:
@@ -56,10 +55,21 @@ if __name__ == "__main__":
             )
     elif args.policy_model == "openvla":
         assert args.ckpt_path is not None
+        from simpler_env.policies.openvla.openvla_model import OpenVLAInference
         model = OpenVLAInference(
             saved_model_path=args.ckpt_path,
             policy_setup=args.policy_setup,
             action_scale=args.action_scale,
+        )
+    elif args.policy_model == "cogact":
+        from simpler_env.policies.sim_cogact import CogACTInference
+        assert args.ckpt_path is not None
+        model = CogACTInference(
+            saved_model_path=args.ckpt_path,  # e.g., CogACT/CogACT-Base
+            policy_setup=args.policy_setup,
+            action_scale=args.action_scale,
+            action_model_type='DiT-L',
+            cfg_scale=1.5                     # cfg from 1.5 to 7 also performs well
         )
     else:
         raise NotImplementedError()

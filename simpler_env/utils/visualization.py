@@ -27,6 +27,20 @@ def write_video(path, images, fps=5):
         images_npy = images
     media.write_video(path, images_npy, fps=fps)
 
+def write_interval_video(path, images, fps=5, interval=20):
+    # images: list of numpy arrays
+    root_dir = Path(path).parent
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+    print(f"skip writting video D:")
+    os.system(f"touch {path}")
+    return
+
+    if not isinstance(images[0], np.ndarray):
+        images_npy = [image.numpy() for image in images]
+    else:
+        images_npy = images
+    media.write_video(path, images_npy[::interval], fps=fps)
 
 def plot_pred_and_gt_action_trajectory(predicted_actions, gt_actions, stacked_images):
     """

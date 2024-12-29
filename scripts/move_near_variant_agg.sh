@@ -1,9 +1,12 @@
+ckpt_path=$1
+policy_model=$2
+action_ensemble_temp=$3
+logging_dir=$4
+gpu_id=$5
 
-gpu_id=0
+declare -a arr=("${ckpt_path}")
 
-declare -a arr=("octo-base")
-
-for policy_model in "${arr[@]}"; do echo "$policy_model"; done
+for ckpt_path in "${arr[@]}"; do echo "$ckpt_path"; done
 
 
 # base setup
@@ -11,9 +14,9 @@ for policy_model in "${arr[@]}"; do echo "$policy_model"; done
 env_name=MoveNearGoogleInScene-v0
 scene_name=google_pick_coke_can_1_v4
 
-for policy_model in "${arr[@]}";
+for ckpt_path in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} --action-ensemble-temp ${action_ensemble_temp} --logging-dir ${logging_dir} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -26,9 +29,9 @@ done
 
 # distractor
 
-for policy_model in "${arr[@]}";
+for ckpt_path in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} --action-ensemble-temp ${action_ensemble_temp} --logging-dir ${logging_dir} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -47,9 +50,9 @@ declare -a scene_arr=("google_pick_coke_can_1_v4_alt_background" \
 
 for scene_name in "${scene_arr[@]}";
 
-do for policy_model in "${arr[@]}";
+do for ckpt_path in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} --action-ensemble-temp ${action_ensemble_temp} --logging-dir ${logging_dir} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -69,9 +72,9 @@ done
 env_name=MoveNearGoogleInScene-v0
 scene_name=google_pick_coke_can_1_v4
 
-for policy_model in "${arr[@]}";
+for ckpt_path in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} --action-ensemble-temp ${action_ensemble_temp} --logging-dir ${logging_dir} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -79,7 +82,7 @@ do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-
   --robot-init-rot-quat-center 0 0 0 1 --robot-init-rot-rpy-range 0 0 1 0 0 1 -0.09 -0.09 1 \
   --additional-env-build-kwargs slightly_darker_lighting=True;
 
-CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} --action-ensemble-temp ${action_ensemble_temp} --logging-dir ${logging_dir} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -101,9 +104,9 @@ declare -a scene_arr=("Baked_sc1_staging_objaverse_cabinet1_h870" \
 
 for scene_name in "${scene_arr[@]}";
 
-do for policy_model in "${arr[@]}";
+do for ckpt_path in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} --action-ensemble-temp ${action_ensemble_temp} --logging-dir ${logging_dir} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
@@ -125,9 +128,9 @@ scene_name=google_pick_coke_can_1_v4
 
 for env_name in "${env_arr[@]}";
 
-do for policy_model in "${arr[@]}";
+do for ckpt_path in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} --action-ensemble-temp ${action_ensemble_temp} --logging-dir ${logging_dir} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
