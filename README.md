@@ -1,4 +1,4 @@
-# SimplerEnv: Simulated Manipulation Policy Evaluation Environments for Real Robot Setups
+# SimplerEnv: Simulated Manipulation Policy Evaluation Environments for Real Robot Setups (Multi-model Support 🔥)
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/simpler-env/SimplerEnv/blob/main/example.ipynb)
 
