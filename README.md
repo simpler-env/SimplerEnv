@@ -30,6 +30,14 @@ We hope that our work guides and inspires future real-to-sim evaluation efforts.
   - [Troubleshooting](#troubleshooting)
   - [Citation](#citation)
 
+## Models
+| Model Name   | support | Note  |
+| -----------  | -----  | -----  |
+| Octo         | ✅     |        |
+| RT1          | ✅     |        |
+| OpenVLA      | ✅     |        |
+| CogACT       | ✅     | OpenVLA-based         |
+| SpatialVLA   | ✅     | transformers >= 4.47.0|
 
 ## Getting Started
 
