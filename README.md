@@ -71,7 +71,7 @@ Prerequisites:
 
 Create an anaconda environment:
 ```
-conda create -n simpler_env python=3.10 (any version above 3.10 should be fine)
+conda create -n simpler_env python=3.10 (3.10 or 3.11)
 conda activate simpler_env
 ```
 
