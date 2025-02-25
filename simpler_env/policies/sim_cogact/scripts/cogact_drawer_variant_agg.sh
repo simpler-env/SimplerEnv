@@ -1,11 +1,10 @@
 # shader_dir=rt means that we turn on ray-tracing rendering; this is quite crucial for the open / close drawer task as policies often rely on shadows to infer depth
+gpu_id=0
 
-
-
-declare -a policy_models=(
-"octo-base"
+declare -a ckpt_paths=(
+"CogACT/CogACT-Base"
 )
-
+# CogACT/CogACT-Large CogACT/CogACT-Small
 declare -a env_names=(
 OpenTopDrawerCustomInScene-v0
 OpenMiddleDrawerCustomInScene-v0
@@ -15,18 +14,16 @@ CloseMiddleDrawerCustomInScene-v0
 CloseBottomDrawerCustomInScene-v0
 )
 
-urdf_version=recolor_sim
-
-EXTRA_ARGS="--enable-raytracing --additional-env-build-kwargs urdf_version=${urdf_version}"
+EXTRA_ARGS="--enable-raytracing"
 
 
 # base setup
 scene_name=frl_apartment_stage_simple
 
 EvalSim() {
-  echo ${policy_model} ${env_name}
+  echo ${ckpt_path} ${env_name}
 
-  python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+  CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model cogact --ckpt-path None \
     --robot google_robot_static \
     --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
     --env-name ${env_name} --scene-name ${scene_name} \
@@ -37,7 +34,7 @@ EvalSim() {
 }
 
 
-for policy_model in "${policy_models[@]}"; do
+for ckpt_path in "${ckpt_paths[@]}"; do
   for env_name in "${env_names[@]}"; do
     EvalSim
   done
@@ -52,9 +49,9 @@ declare -a scene_names=(
 )
 
 for scene_name in "${scene_names[@]}"; do
-  for policy_model in "${policy_models[@]}"; do
+  for ckpt_path in "${ckpt_paths[@]}"; do
     for env_name in "${env_names[@]}"; do
-      EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt urdf_version=${urdf_version}"
+      EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt"
       EvalSim
     done
   done
@@ -64,11 +61,11 @@ done
 # lightings
 scene_name=frl_apartment_stage_simple
 
-for policy_model in "${policy_models[@]}"; do
+for ckpt_path in "${ckpt_paths[@]}"; do
   for env_name in "${env_names[@]}"; do
-    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt urdf_version=${urdf_version} light_mode=brighter"
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt light_mode=brighter"
     EvalSim
-    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt urdf_version=${urdf_version} light_mode=darker"
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt light_mode=darker"
     EvalSim
   done
 done
@@ -77,11 +74,11 @@ done
 # new cabinets
 scene_name=frl_apartment_stage_simple
 
-for policy_model in "${policy_models[@]}"; do
+for ckpt_path in "${ckpt_paths[@]}"; do
   for env_name in "${env_names[@]}"; do
-    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt urdf_version=${urdf_version} station_name=mk_station2"
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station2"
     EvalSim
-    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt urdf_version=${urdf_version} station_name=mk_station3"
+    EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station3"
     EvalSim
   done
 done

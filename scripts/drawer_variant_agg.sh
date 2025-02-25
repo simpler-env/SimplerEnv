@@ -1,13 +1,11 @@
 # shader_dir=rt means that we turn on ray-tracing rendering; this is quite crucial for the open / close drawer task as policies often rely on shadows to infer depth
+ckpt_path=$1
+policy_model=$2
+action_ensemble_temp=$3
+logging_dir=$4
+gpu_id=$5
 
-
-
-declare -a ckpt_paths=(
-"./checkpoints/rt_1_tf_trained_for_000400120/"
-"./checkpoints/rt_1_tf_trained_for_000058240/"
-"./checkpoints/rt_1_x_tf_trained_for_002272480_step/"
-"./checkpoints/rt_1_tf_trained_for_000001120/"
-)
+declare -a ckpt_paths=(${ckpt_path})
 
 declare -a env_names=(
 OpenTopDrawerCustomInScene-v0
@@ -27,7 +25,7 @@ scene_name=frl_apartment_stage_simple
 EvalSim() {
   echo ${ckpt_path} ${env_name}
 
-  python simpler_env/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path} \
+  CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} --action-ensemble-temp ${action_ensemble_temp} --logging-dir ${logging_dir} \
     --robot google_robot_static \
     --control-freq 3 --sim-freq 513 --max-episode-steps 113 \
     --env-name ${env_name} --scene-name ${scene_name} \

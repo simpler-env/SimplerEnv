@@ -1,10 +1,11 @@
 # shader_dir=rt means that we turn on ray-tracing rendering; this is quite crucial for the open / close drawer task as policies often rely on shadows to infer depth
+ckpt_paths=($1)
+policy_model=$2
+action_ensemble_temp=$3
+logging_dir=$4
+gpu_id=$5
 
-
-
-declare -a policy_models=(
-"octo-base"
-)
+declare -a arr=($ckpt_path)
 
 declare -a env_names=(
 PlaceIntoClosedTopDrawerCustomInScene-v0
@@ -17,9 +18,9 @@ EXTRA_ARGS="--enable-raytracing  --additional-env-build-kwargs model_ids=apple"
 scene_name=frl_apartment_stage_simple
 
 EvalSim() {
-  echo ${policy_model} ${env_name}
+  echo ${ckpt_path} ${env_name}
 
-  python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+  CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} --action-ensemble-temp ${action_ensemble_temp} --logging-dir ${logging_dir} \
     --robot google_robot_static \
     --control-freq 3 --sim-freq 513 --max-episode-steps 200 \
     --env-name ${env_name} --scene-name ${scene_name} \
@@ -30,7 +31,7 @@ EvalSim() {
 }
 
 
-for policy_model in "${policy_models[@]}"; do
+for ckpt_path in "${ckpt_paths[@]}"; do
   for env_name in "${env_names[@]}"; do
     EvalSim
   done
@@ -45,7 +46,7 @@ declare -a scene_names=(
 )
 
 for scene_name in "${scene_names[@]}"; do
-  for policy_model in "${policy_models[@]}"; do
+  for ckpt_path in "${ckpt_paths[@]}"; do
     for env_name in "${env_names[@]}"; do
       EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt model_ids=apple"
       EvalSim
@@ -57,7 +58,7 @@ done
 # lightings
 scene_name=frl_apartment_stage_simple
 
-for policy_model in "${policy_models[@]}"; do
+for ckpt_path in "${ckpt_paths[@]}"; do
   for env_name in "${env_names[@]}"; do
     EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt light_mode=brighter model_ids=apple"
     EvalSim
@@ -70,7 +71,7 @@ done
 # new cabinets
 scene_name=frl_apartment_stage_simple
 
-for policy_model in "${policy_models[@]}"; do
+for ckpt_path in "${ckpt_paths[@]}"; do
   for env_name in "${env_names[@]}"; do
     EXTRA_ARGS="--additional-env-build-kwargs shader_dir=rt station_name=mk_station2 model_ids=apple"
     EvalSim

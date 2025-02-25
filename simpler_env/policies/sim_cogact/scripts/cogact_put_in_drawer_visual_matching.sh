@@ -1,17 +1,16 @@
 # shader_dir=rt means that we turn on ray-tracing rendering; this is quite crucial for the open / close drawer task as policies often rely on shadows to infer depth
-
-
-
-declare -a policy_models=(
-"octo-base"
-# "octo-server"
+gpu_id=0
+declare -a ckpt_paths=(
+"CogACT/CogACT-Base"
 )
+
 
 declare -a env_names=(
 PlaceIntoClosedTopDrawerCustomInScene-v0
 # PlaceIntoClosedMiddleDrawerCustomInScene-v0
 # PlaceIntoClosedBottomDrawerCustomInScene-v0
 )
+
 
 # URDF variations
 declare -a urdf_version_arr=("recolor_cabinet_visual_matching_1" "recolor_tabletop_visual_matching_1" "recolor_tabletop_visual_matching_2" None)
@@ -20,9 +19,10 @@ for urdf_version in "${urdf_version_arr[@]}"; do
 
 EXTRA_ARGS="--enable-raytracing --additional-env-build-kwargs station_name=mk_station_recolor light_mode=simple disable_bad_material=True urdf_version=${urdf_version} model_ids=baked_apple_v2"
 
+
 EvalOverlay() {
 # A0
-python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model cogact --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 200 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -33,7 +33,7 @@ python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path 
   ${EXTRA_ARGS}
 
 # B0
-python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model cogact --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 200 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -44,7 +44,7 @@ python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path 
   ${EXTRA_ARGS}
 
 # C0
-python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
+CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model cogact --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 200 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -56,11 +56,12 @@ python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path 
 }
 
 
-for policy_model in "${policy_models[@]}"; do
+for ckpt_path in "${ckpt_paths[@]}"; do
   for env_name in "${env_names[@]}"; do
     EvalOverlay
   done
 done
+
 
 
 done

@@ -1,12 +1,11 @@
 # shader_dir=rt means that we turn on ray-tracing rendering; this is quite crucial for the open / close drawer task as policies often rely on shadows to infer depth
+ckpt_paths=($1)
+policy_model=$2
+action_ensemble_temp=$3
+logging_dir=$4
+gpu_id=$5
 
-declare -a ckpt_paths=(
-"./checkpoints/rt_1_tf_trained_for_000400120/"
-"./checkpoints/rt_1_tf_trained_for_000058240/"
-"./checkpoints/rt_1_x_tf_trained_for_002272480_step/"
-"./checkpoints/rt_1_tf_trained_for_000001120/"
-)
-
+declare -a arr=($ckpt_path)
 
 declare -a env_names=(
 PlaceIntoClosedTopDrawerCustomInScene-v0
@@ -25,7 +24,7 @@ EXTRA_ARGS="--enable-raytracing --additional-env-build-kwargs station_name=mk_st
 
 EvalOverlay() {
 # A0
-python simpler_env/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path} \
+CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} --action-ensemble-temp ${action_ensemble_temp} --logging-dir ${logging_dir} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 200 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -34,9 +33,9 @@ python simpler_env/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path}
   --obj-init-x-range -0.08 -0.02 3 --obj-init-y-range -0.02 0.08 3 \
   --rgb-overlay-path ./ManiSkill2_real2sim/data/real_inpainting/open_drawer_a0.png \
   ${EXTRA_ARGS}
-
+echo "Done A0"
 # B0
-python simpler_env/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path} \
+CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} --action-ensemble-temp ${action_ensemble_temp} --logging-dir ${logging_dir} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 200 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -45,9 +44,9 @@ python simpler_env/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path}
   --obj-init-x-range -0.08 -0.02 3 --obj-init-y-range -0.02 0.08 3 \
   --rgb-overlay-path ./ManiSkill2_real2sim/data/real_inpainting/open_drawer_b0.png \
   ${EXTRA_ARGS}
-
+echo "Done B0"
 # C0
-python simpler_env/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path} \
+CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} --action-ensemble-temp ${action_ensemble_temp} --logging-dir ${logging_dir} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 200 \
   --env-name ${env_name} --scene-name dummy_drawer \
@@ -56,6 +55,7 @@ python simpler_env/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path}
   --obj-init-x-range -0.08 -0.02 3 --obj-init-y-range -0.02 0.08 3 \
   --rgb-overlay-path ./ManiSkill2_real2sim/data/real_inpainting/open_drawer_c0.png \
   ${EXTRA_ARGS}
+echo "Done C0"
 }
 
 

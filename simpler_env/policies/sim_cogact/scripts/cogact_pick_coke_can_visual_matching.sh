@@ -1,11 +1,6 @@
-
-
 gpu_id=0
 
-declare -a arr=("./checkpoints/rt_1_tf_trained_for_000400120/" \
-                "./checkpoints/rt_1_tf_trained_for_000058240/" \
-                "./checkpoints/rt_1_x_tf_trained_for_002272480_step/" \
-                "./checkpoints/rt_1_tf_trained_for_000001120/" )
+declare -a arr=("CogACT/CogACT-Base")
 
 # lr_switch=laying horizontally but flipped left-right to match real eval; upright=standing; laid_vertically=laying vertically
 declare -a coke_can_options_arr=("lr_switch=True" "upright=True" "laid_vertically=True")
@@ -27,7 +22,7 @@ do for coke_can_option in "${coke_can_options_arr[@]}";
 
 do for ckpt_path in "${arr[@]}";
 
-do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model rt1 --ckpt-path ${ckpt_path} \
+do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model cogact --ckpt-path ${ckpt_path} \
   --robot google_robot_static \
   --control-freq 3 --sim-freq 513 --max-episode-steps 80 \
   --env-name ${env_name} --scene-name ${scene_name} \
