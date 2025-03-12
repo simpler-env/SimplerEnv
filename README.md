@@ -324,6 +324,10 @@ Follow [this link](https://maniskill.readthedocs.io/en/latest/user_guide/getting
 TypeError: 'NoneType' object is not subscriptable
 ```
 
+3. Please also refer to the original repo or [vulkan_setup](https://github.com/SpatialVLA/SpatialVLA/issues/3#issuecomment-2641739404) if you encounter any problems.
+
+4. `tensorflow-2.15.0` conflicts with `tensorflow-2.15.1`?
+The dlimp library has not been maintained for a long time, so the TensorFlow version might be out of date. A reliable solution is to comment out tensorflow==2.15.0 in the requirements file, install all other dependencies, and then install tensorflow==2.15.0 finally. Currently, using tensorflow==2.15.0 has not caused any problems.
 
 ## Citation
 
