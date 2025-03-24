@@ -38,6 +38,8 @@ We hope that our work guides and inspires future real-to-sim evaluation efforts.
 | OpenVLA      | ✅     |        |
 | CogACT       | ✅     | OpenVLA-based         |
 | SpatialVLA   | ✅     | transformers >= 4.47.0|
+| Pi0          | testing| lerobot|
+| Pi0-Fast     | testing| uv|
 
 ## Getting Started
 
