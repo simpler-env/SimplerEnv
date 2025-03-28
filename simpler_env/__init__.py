@@ -1,5 +1,6 @@
 import gymnasium as gym
 import mani_skill2_real2sim.envs
+import warnings
 
 ENVIRONMENTS = [
     "google_robot_pick_coke_can",
@@ -70,10 +71,18 @@ ENVIRONMENT_MAP = {
 }
 
 
-def make(task_name):
+def make(task_name, **kwargs):
     """Creates simulated eval environment from task name."""
     assert task_name in ENVIRONMENTS, f"Task {task_name} is not supported. Environments: \n {ENVIRONMENTS}"
-    env_name, kwargs = ENVIRONMENT_MAP[task_name]
-    kwargs["prepackaged_config"] = True
-    env = gym.make(env_name, obs_mode="rgbd", **kwargs)
+    env_name, env_kwargs = ENVIRONMENT_MAP[task_name]
+    
+    env_kwargs["obs_mode"] = "rgbd",
+    env_kwargs["prepackaged_config"] = True
+
+    for key, value in kwargs.items():
+        if key in env_kwargs:
+            warnings.warn(f"default value [{env_kwargs[key]}] for Key {key} changes to value [{value}]")
+        env_kwargs[key] = value
+
+    env = gym.make(env_name, **env_kwargs)
     return env
