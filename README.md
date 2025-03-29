@@ -1,4 +1,4 @@
-# SimplerEnv: Simulated Manipulation Policy Evaluation Environments for Real Robot Setups
+# SimplerEnv: Simulated Manipulation Policy Evaluation Environments for Real Robot Setups (Multi-model Support 🔥)
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/simpler-env/SimplerEnv/blob/main/example.ipynb)
 
@@ -23,12 +23,23 @@ We hope that our work guides and inspires future real-to-sim evaluation efforts.
   - [Code Structure](#code-structure)
   - [Adding New Policies](#adding-new-policies)
   - [Adding New Real-to-Sim Evaluation Environments and Robots](#adding-new-real-to-sim-evaluation-environments-and-robots)
-  - [Full Installation (RT-1 and Octo Inference, Env Building)](#full-installation-rt-1-and-octo-inference-env-building)
+  - [Full Installation (RT-1, Octo, OpenVLA Inference, Env Building)](#full-installation-rt-1-octo-openvla-inference-env-building)
     - [RT-1 Inference Setup](#rt-1-inference-setup)
     - [Octo Inference Setup](#octo-inference-setup)
+    - [OpenVLA Inference Setup](#openvla-inference-setup)
   - [Troubleshooting](#troubleshooting)
   - [Citation](#citation)
 
+## Models
+| Model Name   | support | Note  |
+| -----------  | -----  | -----  |
+| Octo         | ✅     |        |
+| RT1          | ✅     |        |
+| OpenVLA      | ✅     |        |
+| CogACT       | ✅     | OpenVLA-based         |
+| SpatialVLA   | ✅     | transformers >= 4.47.0|
+| Pi0          | testing| lerobot|
+| Pi0-Fast     | testing| uv|
 
 ## Getting Started
 
@@ -97,15 +108,15 @@ cd {this_repo}
 pip install -e .
 ```
 
-**If you'd like to perform evaluations on our provided agents (e.g., RT-1, Octo), or add new robots and environments, please additionally follow the full installation instructions [here](#full-installation-rt-1-and-octo-inference-env-building).**
+**If you'd like to perform evaluations on our provided agents (e.g., RT-1, Octo, OpenVLA), or add new robots and environments, please additionally follow the full installation instructions [here](#full-installation-rt-1-octo-openvla-inference-env-building).**
 
 
 ## Examples
 
-- Simple RT-1 and Octo evaluation script on prepackaged environments with visual matching evaluation setup: see [`simpler_env/simple_inference_visual_matching_prepackaged_envs.py`](https://github.com/simpler-env/SimplerEnv/blob/main/simpler_env/simple_inference_visual_matching_prepackaged_envs.py).
+- Simple RT-1, Octo, and OpenVLA evaluation script on prepackaged environments with visual matching evaluation setup: see [`simpler_env/simple_inference_visual_matching_prepackaged_envs.py`](https://github.com/simpler-env/SimplerEnv/blob/main/simpler_env/simple_inference_visual_matching_prepackaged_envs.py).
 - Colab notebook for RT-1 and Octo inference: see [this link](https://colab.research.google.com/github/simpler-env/SimplerEnv/blob/main/example.ipynb).
 - Environment interactive visualization and manual control: see [`ManiSkill2_real2sim/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py`](https://github.com/simpler-env/ManiSkill2_real2sim/blob/main/mani_skill2_real2sim/examples/demo_manual_control_custom_envs.py)
-- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with sweeps over object / robot poses and advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, and Octo policies. See [`scripts/`](https://github.com/simpler-env/SimplerEnv/tree/main/scripts).
+- Policy inference scripts to reproduce our Google Robot and WidowX real-to-sim evaluation results with sweeps over object / robot poses and advanced loggings. These contain both visual matching and variant aggregation evaluation setups along with RT-1, RT-1-X, Octo, and OpenVLA policies. See [`scripts/`](https://github.com/simpler-env/SimplerEnv/tree/main/scripts).
 - Real-to-sim evaluation videos from running `scripts/*.sh`: see [this link](https://huggingface.co/datasets/xuanlinli17/simpler-env-eval-example-videos/tree/main).
 
 ## Current Environments
@@ -183,6 +194,7 @@ simpler_env/
    policies/: policy implementations
       rt1/: RT-1 policy implementation
       octo/: Octo policy implementation
+      openvla/: OpenVLA policy implementation
    utils/:
       env/: environment building and observation utilities
       debug/: debugging tools for policies and robots
@@ -205,7 +217,7 @@ scripts/: example bash scripts for policy inference under our variant aggregatio
 
 If you want to use existing environments for evaluating new policies, you can keep `./ManiSkill2_real2sim` as is.
 
-1. Implement new policy inference scripts in `simpler_env/policies/{your_new_policy}`, following the examples for RT-1 (`simpler_env/policies/rt1`) and Octo (`simpler_env/policies/octo`) policies.
+1. Implement new policy inference scripts in `simpler_env/policies/{your_new_policy}`, following the examples for RT-1 (`simpler_env/policies/rt1`), Octo (`simpler_env/policies/octo`), and OpenVLA (`simpler_env/policies/openvla`) policies.
 2. You can now use `simpler_env/simple_inference_visual_matching_prepackaged_envs.py` to perform policy evaluations in simulation.
    - If the policy behaviors deviate a lot from those in the real-world, you can write similar scripts as in `simpler_env/utils/debug/{policy_name}_inference_real_video.py` to debug the policy behaviors. The debugging script performs policy inference by feeding real eval video frames into the policy. If the policy behavior still deviates significantly from real, this may suggest that policy actions are processed incorrectly into the simulation environments. Please double check action orderings and action spaces.
 3. If you'd like to perform customized evaluations,
@@ -219,7 +231,7 @@ If you want to use existing environments for evaluating new policies, you can ke
 We provide a step-by-step guide to add new real-to-sim evaluation environments and robots in [this README](ADDING_NEW_ENVS_ROBOTS.md)
 
 
-## Full Installation (RT-1 and Octo Inference, Env Building)
+## Full Installation (RT-1, Octo, OpenVLA Inference, Env Building)
 
 If you'd like to perform evaluations on our provided agents (e.g., RT-1, Octo), or add new robots and environments, please follow the full installation instructions below.
 
@@ -289,6 +301,13 @@ If you are using CUDA 12, then to use GPU for Octo inference, you need CUDA vers
 
 `PATH=/usr/local/cuda-12.3/bin:$PATH   LD_LIBRARY_PATH=/usr/local/cuda-12.3/lib64:$LD_LIBRARY_PATH   bash scripts/octo_xxx_script.sh`
 
+### OpenVLA Inference Setup
+
+```
+pip install torch==2.3.1 torchvision==0.18.1 timm==0.9.10 tokenizers==0.15.2 accelerate==0.32.1
+pip install flash-attn==2.6.1 --no-build-isolation
+```
+
 ## Troubleshooting
 
 1. If you encounter issues such as
@@ -307,6 +326,10 @@ Follow [this link](https://maniskill.readthedocs.io/en/latest/user_guide/getting
 TypeError: 'NoneType' object is not subscriptable
 ```
 
+3. Please also refer to the original repo or [vulkan_setup](https://github.com/SpatialVLA/SpatialVLA/issues/3#issuecomment-2641739404) if you encounter any problems.
+
+4. `tensorflow-2.15.0` conflicts with `tensorflow-2.15.1`?
+The dlimp library has not been maintained for a long time, so the TensorFlow version might be out of date. A reliable solution is to comment out tensorflow==2.15.0 in the requirements file, install all other dependencies, and then install tensorflow==2.15.0 finally. Currently, using tensorflow==2.15.0 has not caused any problems.
 
 ## Citation
 

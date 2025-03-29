@@ -3,8 +3,9 @@ from pathlib import Path
 from typing import Sequence, Optional
 
 import numpy as np
+from pandas.core.frame import frame_sub_kwargs
 
-REAL_PERF = {    # Real robot eval performance --> extract via: REAL_PERF[task][policy]
+REAL_PERF = {  # Real robot eval performance --> extract via: REAL_PERF[task][policy]
     "google_robot_pick_coke_can": {
         "rt-2-x": 0.907,
         "rt-1-converged": 0.853,
@@ -68,7 +69,7 @@ REAL_PERF = {    # Real robot eval performance --> extract via: REAL_PERF[task][
 }
 
 
-SIMPLER_PERF = {    # SIMPLER simulated eval performance --> extract via: SIMPLER_PERF[task][policy]
+SIMPLER_PERF = {  # SIMPLER simulated eval performance --> extract via: SIMPLER_PERF[task][policy]
     "google_robot_pick_coke_can": {
         "rt-2-x": 0.787,
         "rt-1-converged": 0.857,
@@ -131,6 +132,187 @@ SIMPLER_PERF = {    # SIMPLER simulated eval performance --> extract via: SIMPLE
     },
 }
 
+REF = {
+    "ckpt_name": [
+        "RT-1(Converged)",
+        "RT-1(15%)",
+        "RT-1-X",
+        "RT-2-X",
+        "Octo-Base",
+        "Octo-Small",
+        "RT-1(begin)",
+        "OpenVLA",
+        "RoboVLM",
+    ],
+    "coke_can/matching_avg": [0.857, 0.710, 0.567, 0.787, 0.170, "nan", 0.027, 0.163, 0.727],
+    "coke_can/variant_avg": [0.898, 0.813, 0.490, 0.823, 0.006, "nan", 0.022, 0.545, "nan"],
+    "coke_can/matching/horizontal": [
+        0.960,
+        0.860,
+        0.820,
+        0.740,
+        0.210,
+        "nan",
+        0.050,
+        0.270,
+        0.850,
+    ],
+    "coke_can/matching/vertical": [
+        0.900,
+        0.790,
+        0.330,
+        0.740,
+        0.210,
+        "nan",
+        0.000,
+        0.030,
+        0.430,
+    ],
+    "coke_can/matching/standing": [
+        0.710,
+        0.480,
+        0.550,
+        0.880,
+        0.090,
+        "nan",
+        0.030,
+        0.190,
+        0.900,
+    ],
+    "coke_can/variant/horizontal": [
+        0.969,
+        0.920,
+        0.569,
+        0.822,
+        0.005,
+        "nan",
+        0.022,
+        0.711,
+        "nan",
+    ],
+    "coke_can/variant/vertical": [
+        0.760,
+        0.704,
+        0.204,
+        0.754,
+        0.000,
+        "nan",
+        0.013,
+        0.271,
+        "nan",
+    ],
+    "coke_can/variant/standing": [
+        0.964,
+        0.813,
+        0.698,
+        0.893,
+        0.013,
+        "nan",
+        0.031,
+        0.653,
+        "nan",
+    ],
+    "move_near/variant": [0.500, 0.446, 0.323, 0.792, 0.031, "nan", 0.040, 0.477, "nan"],
+    "move_near/matching": [0.442, 0.354, 0.317, 0.779, 0.042, "nan", 0.050, 0.462, 0.663],
+    "drawer/matching_avg": [0.730, 0.565, 0.597, 0.250, 0.227, "nan", 0.139, 0.356, 0.268],
+    "drawer/variant_avg": [0.323, 0.267, 0.294, 0.353, 0.011, "nan", 0.069, 0.177, "nan"],
+    "drawer/matching/open": [0.601, 0.463, 0.296, 0.157, 0.009, "nan", 0.000, 0.194, 0.287],
+    "drawer/matching/close": [0.861, 0.667, 0.891, 0.343, 0.444, "nan", 0.278, 0.518, 0.25],
+    "drawer/variant/open": [0.270, 0.212, 0.069, 0.333, 0.000, "nan", 0.005, 0.158, "nan"],
+    "drawer/variant/close": [0.376, 0.323, 0.519, 0.372, 0.021, "nan", 0.132, 0.195, "nan"],
+    "apple_in_drawer/matching_avg": [0.065, 0.130, 0.213, 0.037, 0.000, 0.000, 0.000, "nan", 0.361],
+    "apple_in_drawer/variant_avg": [0.026, 0.021, 0.101, 0.206, 0.000, 0.000, 0.000, "nan", "nan"],
+    "put_spoon_on_tablecloth/matching_partial": [
+        "nan",
+        "nan",
+        0.167,
+        "nan",
+        0.347,
+        0.778,
+        "nan",
+        0.041,
+        0.375
+    ],
+    "put_spoon_on_tablecloth/matching_entire": [
+        "nan",
+        "nan",
+        0.000,
+        "nan",
+        0.125,
+        0.472,
+        "nan",
+        0.000,
+        0.208
+    ],
+    "put_carrot_on_plate/matching_partial": [
+        "nan",
+        "nan",
+        0.208,
+        "nan",
+        0.528,
+        0.278,
+        "nan",
+        0.333,
+        0.333
+    ],
+    "put_carrot_on_plate/matching_entire": [
+        "nan",
+        "nan",
+        0.042,
+        "nan",
+        0.083,
+        0.097,
+        "nan",
+        0.000,
+        0.25
+    ],
+    "stack_green_block_on_yellow_block/matching_partial": [
+        "nan",
+        "nan",
+        0.083,
+        "nan",
+        0.319,
+        0.403,
+        "nan",
+        0.125,
+        0.083
+    ],
+    "stack_green_block_on_yellow_block/matching_entire": [
+        "nan",
+        "nan",
+        0.000,
+        "nan",
+        0.000,
+        0.042,
+        "nan",
+        0.000,
+        0.083
+    ],
+    "put_eggplant_in_basket/matching_partial": [
+        "nan",
+        "nan",
+        0.000,
+        "nan",
+        0.667,
+        0.875,
+        "nan",
+        0.083,
+        0.000
+    ],
+    "put_eggplant_in_basket/matching_entire": [
+        "nan",
+        "nan",
+        0.000,
+        "nan",
+        0.431,
+        0.569,
+        "nan",
+        0.041,
+        0.000
+    ],
+}
+
+
 def pearson_correlation(perf_sim: Sequence[float], perf_real: Sequence[float]) -> float:
     perf_sim, perf_real = np.array(perf_sim), np.array(perf_real)
     assert perf_sim.shape == perf_real.shape
@@ -173,6 +355,7 @@ def print_all_kruskal_results(
     Prints out the Kruskal-Wallis test for each checkpoint
     """
     from scipy.stats import kruskal
+
     sim, real = np.array(sim), np.array(real)
     assert sim.shape == real.shape
     print(title)
@@ -225,5 +408,4 @@ def get_dir_stats(
             results.append(1)
         elif succ_fail_pattern[1] in fname:
             results.append(0)
-
     return results
