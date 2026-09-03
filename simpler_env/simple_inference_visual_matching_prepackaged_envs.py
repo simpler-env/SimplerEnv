@@ -17,6 +17,7 @@ import tensorflow as tf
 
 import simpler_env
 from simpler_env import ENVIRONMENTS
+from simpler_env.evaluation.success import PlacementSuccessTracker
 from simpler_env.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
 
 parser = argparse.ArgumentParser()
@@ -84,7 +85,7 @@ for ep_id in range(args.n_trajs):
     obs, reset_info = env.reset()
     instruction = env.get_language_instruction()
     # for long-horizon environments, we check if the current subtask is the final subtask
-    is_final_subtask = env.is_final_subtask() 
+    is_final_subtask = env.is_final_subtask()
 
     model.reset(instruction)
     print(instruction)
@@ -92,6 +93,7 @@ for ep_id in range(args.n_trajs):
     image = get_image_from_maniskill2_obs_dict(env, obs)  # np.ndarray of shape (H, W, 3), uint8
     images = [image]
     predicted_terminated, success, truncated = False, False, False
+    success_tracker = PlacementSuccessTracker()
     timestep = 0
     while not (predicted_terminated or truncated):
         # step the model; "raw_action" is raw model action output; "action" is the processed action to be sent into maniskill env
@@ -106,13 +108,14 @@ for ep_id in range(args.n_trajs):
         obs, reward, success, truncated, info = env.step(
             np.concatenate([action["world_vector"], action["rot_axangle"], action["gripper"]]),
         )
+        success = success_tracker.update(success, info)
         print(timestep, info)
         new_instruction = env.get_language_instruction()
         if new_instruction != instruction:
             # update instruction for long horizon tasks
             instruction = new_instruction
             print(instruction)
-        is_final_subtask = env.is_final_subtask() 
+        is_final_subtask = env.is_final_subtask()
         # update image observation
         image = get_image_from_maniskill2_obs_dict(env, obs)
         images.append(image)
