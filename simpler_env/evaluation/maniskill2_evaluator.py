@@ -7,6 +7,7 @@ import os
 import numpy as np
 from transforms3d.euler import quat2euler
 
+from simpler_env.evaluation.success import PlacementSuccessTracker
 from simpler_env.utils.env.env_builder import build_maniskill2_env, get_robot_control_mode
 from simpler_env.utils.env.observation_utils import get_image_from_maniskill2_obs_dict
 from simpler_env.utils.visualization import write_video
@@ -36,7 +37,6 @@ def run_maniskill2_eval_single_episode(
     additional_env_save_tags=None,
     logging_dir="./results",
 ):
-
     if additional_env_build_kwargs is None:
         additional_env_build_kwargs = {}
 
@@ -84,7 +84,7 @@ def run_maniskill2_eval_single_episode(
         }
     obs, _ = env.reset(options=env_reset_options)
     # for long-horizon environments, we check if the current subtask is the final subtask
-    is_final_subtask = env.is_final_subtask() 
+    is_final_subtask = env.is_final_subtask()
 
     # Obtain language instruction
     if instruction is not None:
@@ -105,6 +105,7 @@ def run_maniskill2_eval_single_episode(
 
     timestep = 0
     success = "failure"
+    success_tracker = PlacementSuccessTracker()
 
     # Step the environment
     while not (predicted_terminated or truncated):
@@ -122,8 +123,8 @@ def run_maniskill2_eval_single_episode(
         obs, reward, done, truncated, info = env.step(
             np.concatenate([action["world_vector"], action["rot_axangle"], action["gripper"]]),
         )
-        
-        success = "success" if done else "failure"
+
+        success = "success" if success_tracker.update(done, info) else "failure"
         new_task_description = env.get_language_instruction()
         if new_task_description != task_description:
             task_description = new_task_description
