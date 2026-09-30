@@ -1,0 +1,182 @@
+[
+    {
+        "episode": 1,
+        "seed": 100,
+        "success": false,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "upright",
+        "object_pose": "Pose([0.575366, 0.0978118, 0.877423], [0.00174287, -0.00185489, -0.708573, -0.705633])",
+        "video": "evaluation_videos/rollout_seed_100.mp4"
+    },
+    {
+        "episode": 2,
+        "seed": 101,
+        "success": false,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "laid_vertically",
+        "object_pose": "Pose([0.58107, -0.0302003, 0.840576], [0.707049, -0.00810065, -0.0116191, -0.707022])",
+        "video": "evaluation_videos/rollout_seed_101.mp4"
+    },
+    {
+        "episode": 3,
+        "seed": 102,
+        "success": false,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "upright",
+        "object_pose": "Pose([0.562883, -0.0771405, 0.877423], [0.00173952, -0.00185628, -0.708575, -0.705631])",
+        "video": "evaluation_videos/rollout_seed_102.mp4"
+    },
+    {
+        "episode": 4,
+        "seed": 103,
+        "success": true,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "laid_vertically",
+        "object_pose": "Pose([0.600459, 0.144239, 0.840576], [0.707056, -0.00810215, -0.0116197, -0.707016])",
+        "video": null
+    },
+    {
+        "episode": 5,
+        "seed": 104,
+        "success": true,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "laid_vertically",
+        "object_pose": "Pose([0.665826, 0.120441, 0.840576], [0.707053, -0.00809617, -0.0116137, -0.707019])",
+        "video": null
+    },
+    {
+        "episode": 6,
+        "seed": 105,
+        "success": true,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "upright",
+        "object_pose": "Pose([0.681065, 0.0735618, 0.877423], [0.00164424, -0.00195421, -0.708574, -0.705632])",
+        "video": null
+    },
+    {
+        "episode": 7,
+        "seed": 106,
+        "success": true,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "lr_switch",
+        "object_pose": "Pose([0.697137, -0.200051, 0.840576], [0.9999, 0.00248781, -0.0139379, 1.60011e-05])",
+        "video": null
+    },
+    {
+        "episode": 8,
+        "seed": 107,
+        "success": true,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "lr_switch",
+        "object_pose": "Pose([0.661686, -0.112259, 0.840576], [0.9999, 0.00248747, -0.0139398, 2.61073e-05])",
+        "video": null
+    },
+    {
+        "episode": 9,
+        "seed": 108,
+        "success": false,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "laid_vertically",
+        "object_pose": "Pose([0.646112, 0.205763, 0.840575], [0.707051, -0.00809699, -0.0116141, -0.707021])",
+        "video": null
+    },
+    {
+        "episode": 10,
+        "seed": 109,
+        "success": true,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "lr_switch",
+        "object_pose": "Pose([0.558469, 0.00361523, 0.840576], [0.9999, 0.00248765, -0.0139419, 2.13992e-05])",
+        "video": null
+    },
+    {
+        "episode": 11,
+        "seed": 110,
+        "success": true,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "upright",
+        "object_pose": "Pose([0.673656, -0.0694254, 0.877423], [0.00174339, -0.0018549, -0.708575, -0.705631])",
+        "video": null
+    },
+    {
+        "episode": 12,
+        "seed": 111,
+        "success": true,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "upright",
+        "object_pose": "Pose([0.559551, 0.145903, 0.877423], [0.00173998, -0.00185733, -0.708574, -0.705632])",
+        "video": null
+    },
+    {
+        "episode": 13,
+        "seed": 112,
+        "success": false,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "upright",
+        "object_pose": "Pose([0.614072, -0.0613989, 0.877435], [0.00167046, -0.00165805, -0.708784, -0.705422])",
+        "video": null
+    },
+    {
+        "episode": 14,
+        "seed": 113,
+        "success": false,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "laid_vertically",
+        "object_pose": "Pose([0.503886, 0.188376, 0.840576], [0.707058, -0.00810054, -0.0116184, -0.707014])",
+        "video": null
+    },
+    {
+        "episode": 15,
+        "seed": 114,
+        "success": true,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "lr_switch",
+        "object_pose": "Pose([0.66423, -0.162408, 0.840576], [0.9999, 0.00248786, -0.0139483, 2.01783e-05])",
+        "video": null
+    },
+    {
+        "episode": 16,
+        "seed": 115,
+        "success": true,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "lr_switch",
+        "object_pose": "Pose([0.654009, -0.0893781, 0.840576], [0.9999, 0.0024872, -0.0139438, 1.94337e-05])",
+        "video": null
+    },
+    {
+        "episode": 17,
+        "seed": 116,
+        "success": false,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "laid_vertically",
+        "object_pose": "Pose([0.613554, 0.0674602, 0.840576], [0.707046, -0.00809671, -0.0116152, -0.707026])",
+        "video": null
+    },
+    {
+        "episode": 18,
+        "seed": 117,
+        "success": true,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "lr_switch",
+        "object_pose": "Pose([0.595281, 0.0881369, 0.840576], [0.9999, 0.00248803, -0.0139447, 2.32246e-05])",
+        "video": null
+    },
+    {
+        "episode": 19,
+        "seed": 118,
+        "success": true,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "upright",
+        "object_pose": "Pose([0.48354, -0.0345254, 0.877423], [0.00175385, -0.00184579, -0.708575, -0.705631])",
+        "video": null
+    },
+    {
+        "episode": 20,
+        "seed": 119,
+        "success": true,
+        "scene_name": "google_pick_coke_can_1_v4",
+        "orientation": "lr_switch",
+        "object_pose": "Pose([0.50414, 0.000798538, 0.840578], [0.999908, 0.00244543, -0.0133786, 2.90445e-05])",
+        "video": null
+    }
+]
