@@ -116,7 +116,9 @@ class RT1Inference:
         self._initialize_task_description(task_description)
 
     @staticmethod
-    def _small_action_filter_google_robot(raw_action: dict[str, np.ndarray | tf.Tensor], arm_movement: bool = False, gripper: bool = True) -> dict[str, np.ndarray | tf.Tensor]:
+    def _small_action_filter_google_robot(
+        raw_action: dict[str, np.ndarray | tf.Tensor], arm_movement: bool = False, gripper: bool = True
+    ) -> dict[str, np.ndarray | tf.Tensor]:
         # small action filtering for google robot
         if arm_movement:
             raw_action["world_vector"] = tf.where(
@@ -147,7 +149,9 @@ class RT1Inference:
             )
         return raw_action
 
-    def step(self, image: np.ndarray, task_description: Optional[str] = None) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
+    def step(
+        self, image: np.ndarray, task_description: Optional[str] = None
+    ) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
         """
         Input:
             image: np.ndarray of shape (H, W, 3), uint8
@@ -165,7 +169,7 @@ class RT1Inference:
                 # task description has changed; update language embedding
                 # self._initialize_task_description(task_description)
                 self.reset(task_description)
-        
+
         assert image.dtype == np.uint8
         image = self._resize_image(image)
         self.observation["image"] = image
@@ -229,7 +233,9 @@ class RT1Inference:
 
         return raw_action, action
 
-    def visualize_epoch(self, predicted_raw_actions: Sequence[np.ndarray], images: Sequence[np.ndarray], save_path: str) -> None:
+    def visualize_epoch(
+        self, predicted_raw_actions: Sequence[np.ndarray], images: Sequence[np.ndarray], save_path: str
+    ) -> None:
         images = [self._resize_image(image) for image in images]
         predicted_action_name_to_values_over_time = defaultdict(list)
         figure_layout = [

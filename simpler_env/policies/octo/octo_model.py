@@ -57,7 +57,9 @@ class OctoInference:
             self.action_std = self.model.dataset_statistics[dataset_id]["action"]["std"]
         else:
             raise NotImplementedError()
-
+        print(
+            f"*** policy setup: {policy_setup}, dataset_id: {dataset_id}, model_type: {model_type}, mean {self.action_mean}, std {self.action_std} ***"
+        )
         self.image_size = image_size
         self.action_scale = action_scale
         self.horizon = horizon
@@ -127,7 +129,9 @@ class OctoInference:
         # self.gripper_is_closed = False
         self.previous_gripper_action = None
 
-    def step(self, image: np.ndarray, task_description: Optional[str] = None, *args, **kwargs) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
+    def step(
+        self, image: np.ndarray, task_description: Optional[str] = None, *args, **kwargs
+    ) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
         """
         Input:
             image: np.ndarray of shape (H, W, 3), uint8
@@ -241,7 +245,9 @@ class OctoInference:
 
         return raw_action, action
 
-    def visualize_epoch(self, predicted_raw_actions: Sequence[np.ndarray], images: Sequence[np.ndarray], save_path: str) -> None:
+    def visualize_epoch(
+        self, predicted_raw_actions: Sequence[np.ndarray], images: Sequence[np.ndarray], save_path: str
+    ) -> None:
         images = [self._resize_image(image) for image in images]
         ACTION_DIM_LABELS = ["x", "y", "z", "roll", "pitch", "yaw", "grasp"]
 

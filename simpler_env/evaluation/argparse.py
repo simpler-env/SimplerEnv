@@ -44,7 +44,7 @@ def get_args():
         help="Obtain image observation from this camera for policy input. None = default",
     )
     parser.add_argument("--action-scale", type=float, default=1.0)
-
+    parser.add_argument("--action-ensemble-temp", type=float, default=-0.8)
     parser.add_argument("--control-freq", type=int, default=3)
     parser.add_argument("--sim-freq", type=int, default=513)
     parser.add_argument("--max-episode-steps", type=int, default=80)
@@ -99,7 +99,6 @@ def get_args():
         default=[-0.02, 0.42, 5],
         help="[ymin, ymax, num]",
     )
-
     parser.add_argument(
         "--additional-env-build-kwargs",
         nargs="+",
